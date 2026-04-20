@@ -3,20 +3,16 @@ let activeListId = null;
 let activeListName = null;
 
 function getUserId() {
-  const name = localStorage.getItem('activeUser') || 'Edu';
+  const name = getActiveUser();
   return name === 'Edu' ? 1 : 2;
-}
-
-function getUserId() {
-  return USERS[localStorage.getItem('activeUser') || 'Edu'];
 }
 
 // ── CARGAR LISTAS ──
 async function loadLists() {
   const userId = getUserId();
-  const res    = await fetch(`${API}/lists/${userId}`);
-  const data   = await res.json();
-
+  console.log('loadLists userId:', userId);  // ← temporal para verificar
+  const res  = await fetch(`${API}/lists/${userId}`);
+  const data = await res.json();
   renderFolders(data.personal, 'personalLists', false);
   renderFolders(data.shared,   'sharedLists',   true);
 }
@@ -45,7 +41,7 @@ function renderFolders(lists, containerId, isShared) {
 
 // ── ABRIR LISTA ──
 async function openList(listId, listName, isShared) {
-  activeListId   = listId;
+  activeListId = listId;
   activeListName = listName;
 
   document.getElementById('listTitle').textContent = listName;
@@ -67,7 +63,7 @@ function goBack() {
 
 // ── PELÍCULAS DE UNA LISTA ──
 async function loadMovies(listId) {
-  const res    = await fetch(`${API}/movies/${listId}`);
+  const res = await fetch(`${API}/movies/${listId}`);
   const movies = await res.json();
   renderMovies(movies);
 }
@@ -87,8 +83,8 @@ function renderMovies(movies) {
     card.innerHTML = `
       <div class="movie-poster">
         ${movie.poster_url
-          ? `<img src="${movie.poster_url}" alt="${movie.title}" />`
-          : '<div class="no-poster">Sin poster</div>'}
+        ? `<img src="${movie.poster_url}" alt="${movie.title}" />`
+        : '<div class="no-poster">Sin poster</div>'}
       </div>
       <div class="movie-info">
         <div class="movie-title">${movie.title}</div>
@@ -105,7 +101,7 @@ async function searchMovies() {
   const q = document.getElementById('searchInput').value.trim();
   if (!q) return;
 
-  const res     = await fetch(`${API}/tmdb/search?q=${encodeURIComponent(q)}`);
+  const res = await fetch(`${API}/tmdb/search?q=${encodeURIComponent(q)}`);
   const results = await res.json();
 
   const container = document.getElementById('searchResults');
@@ -153,14 +149,16 @@ function closeModal() {
 }
 
 async function createList() {
-  const name      = document.getElementById('newListName').value.trim();
+  const name = document.getElementById('newListName').value.trim();
   const is_shared = document.getElementById('newListShared').checked;
   if (!name) return;
+
+  const userId = getUserId();  // ← asegurate que devuelve un número
 
   await fetch(`${API}/lists`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ name, owner_id: getUserId(), is_shared })
+    body: JSON.stringify({ name, owner_id: userId, is_shared })
   });
 
   closeModal();

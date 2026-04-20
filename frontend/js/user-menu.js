@@ -1,4 +1,3 @@
-// js/user-menu.js
 
 const USERS = {
     Edu: { initial: 'E', path: 'edu' },

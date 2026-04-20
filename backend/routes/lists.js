@@ -4,6 +4,8 @@ const pool = require('../db');
 
 // GET /api/lists/:userId — personales y compartidas separadas
 router.get('/:userId', async (req, res) => {
+  console.log('params completos:', req.params);
+  console.log('url completa:', req.url);
   const { userId } = req.params;
   console.log('userId recibido:', userId);
   try {
