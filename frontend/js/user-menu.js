@@ -33,7 +33,7 @@ function toggleMenu() {
 function selectUser(name) {
     setActiveUser(name);
     document.getElementById('userMenu').classList.remove('open');
-    window.location.href = '/frontend/inicio.html';
+    window.location.href = '/inicio.html';
 }
 
 document.addEventListener('DOMContentLoaded', () => {
