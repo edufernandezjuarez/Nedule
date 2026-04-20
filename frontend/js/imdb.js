@@ -2,7 +2,10 @@ const API = 'http://localhost:3000/api';
 let activeListId = null;
 let activeListName = null;
 
-const USERS = { Edu: 1, Nicole: 2 };
+function getUserId() {
+  const name = localStorage.getItem('activeUser') || 'Edu';
+  return name === 'Edu' ? 1 : 2;
+}
 
 function getUserId() {
   return USERS[localStorage.getItem('activeUser') || 'Edu'];

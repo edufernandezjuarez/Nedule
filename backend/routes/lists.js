@@ -5,6 +5,7 @@ const pool = require('../db');
 // GET /api/lists/:userId — personales y compartidas separadas
 router.get('/:userId', async (req, res) => {
   const { userId } = req.params;
+  console.log('userId recibido:', userId);
   try {
     const personal = await pool.query(
       `SELECT * FROM lists WHERE owner_id = $1 AND is_shared = FALSE ORDER BY created_at DESC`,
@@ -15,6 +16,7 @@ router.get('/:userId', async (req, res) => {
     );
     res.json({ personal: personal.rows, shared: shared.rows });
   } catch (err) {
+    console.log('Error completo:', err);
     res.status(500).json({ error: err.message });
   }
 });
