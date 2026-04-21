@@ -148,7 +148,7 @@ async function fetchAndRenderResults(reset = false) {
         <div class="movie-title">${item.title}</div>
         <div class="movie-year">${item.year} · ${item.type === "tv" ? "Series" : "Movie"}</div>
         <div class="movie-rating">★ ${item.rating}</div>
-        <button class="add-btn" onclick="addMovie(${JSON.stringify(item).replace(/"/g, "&quot;")})">+ Add</button>
+        <button class="add-btn" onclick="openAddModal(${JSON.stringify(item).replace(/"/g, "&quot;")})">+ Add</button>
       </div>
     `;
     container.appendChild(card);
@@ -192,17 +192,58 @@ function removeInfiniteScroll() {
 }
 
 // ── AGREGAR PELÍCULA ──
-async function addMovie(movie) {
+let pendingMovie = null;
+
+function openAddModal(movie) {
+  pendingMovie = movie;
+  const container = document.getElementById("modalListOptions");
+  container.innerHTML =
+    '<p style="font-size:13px;color:var(--text-secondary);">Loading...</p>';
+  document.getElementById("addToListModal").classList.remove("hidden");
+  loadListOptions();
+}
+
+function closeAddModal() {
+  document.getElementById("addToListModal").classList.add("hidden");
+  pendingMovie = null;
+}
+
+async function loadListOptions() {
   const userId = getUserId();
-  await fetch(`${API}/movies/${activeListId}`, {
+  const res = await fetch(`${API}/lists/${userId}`);
+  const data = await res.json();
+  const allLists = [...data.personal, ...data.shared];
+  const container = document.getElementById("modalListOptions");
+  container.innerHTML = "";
+
+  if (allLists.length === 0) {
+    container.innerHTML =
+      '<p style="font-size:13px;color:var(--text-secondary);">No lists yet</p>';
+    return;
+  }
+
+  allLists.forEach((list) => {
+    const btn = document.createElement("button");
+    btn.className = "list-option-btn";
+    btn.innerHTML = `
+      <div class="list-option-icon ${list.is_shared ? "shared" : "personal"}"></div>
+      <span>${list.name}</span>
+      ${list.is_shared ? '<span class="shared-badge">Shared</span>' : ""}
+    `;
+    btn.onclick = () => confirmAddMovie(list.id);
+    container.appendChild(btn);
+  });
+}
+
+async function confirmAddMovie(listId) {
+  if (!pendingMovie) return;
+  const userId = getUserId();
+  await fetch(`${API}/movies/${listId}`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ ...movie, added_by: userId }),
+    body: JSON.stringify({ ...pendingMovie, added_by: userId }),
   });
-
-  document.getElementById("searchResults").classList.add("hidden");
-  document.getElementById("searchInput").value = "";
-  await loadMovies(activeListId);
+  closeAddModal();
 }
 
 // ── NUEVA LISTA ──

@@ -40,8 +40,17 @@
         <button onclick="searchMovies()">Search</button>
       </div>
       <div class="search-results hidden" id="searchResults"></div>
+      <!-- Modal elegir lista -->
+      <div class="modal-overlay hidden" id="addToListModal">
+        <div class="modal">
+          <h3>Add to list</h3>
+          <div id="modalListOptions"></div>
+          <div class="modal-actions">
+            <button onclick="closeAddModal()">Cancel</button>
+          </div>
+        </div>
+      </div>
     </main>
-
     <script>
       localStorage.setItem("activeUser", "Edu");
     </script>
