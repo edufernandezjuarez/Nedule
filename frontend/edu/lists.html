@@ -1,0 +1,73 @@
+<!doctype html>
+<html>
+  <head>
+    <title>IMDB — Nedule</title>
+    <link rel="stylesheet" href="/css/inicio.css" />
+    <link rel="stylesheet" href="/css/imdb.css" />
+  </head>
+  <body>
+    <nav class="navbar">
+      <div class="nav-links">
+        <button class="nav-btn active" data-page="lists">Lists</button>
+        <button class="nav-btn" data-page="imdb">IMDB</button>
+      </div>
+      <div class="user-wrapper">
+        <button class="user-badge" id="userBadge" onclick="toggleMenu()">
+          <div class="avatar" id="avatarInitial">E</div>
+          <span class="username" id="usernameLabel">Edu</span>
+        </button>
+        <div class="user-menu" id="userMenu">
+          <button class="user-option" onclick="selectUser('Edu', 'E')">
+            Edu
+          </button>
+          <button class="user-option" onclick="selectUser('Nicole', 'N')">
+            Nicole
+          </button>
+        </div>
+      </div>
+    </nav>
+
+    <main class="page" id="listsView">
+      <div class="page-header">
+        <h2 class="page-title">Mis listas</h2>
+        <button class="btn-new" onclick="openNewListModal()">
+          + Nueva lista
+        </button>
+      </div>
+      <div class="section-label">Personales</div>
+      <div class="folders-grid" id="personalLists"></div>
+      <div class="section-label">Compartidas</div>
+      <div class="folders-grid" id="sharedLists"></div>
+    </main>
+
+    <main class="page hidden" id="moviesView">
+      <div class="movies-header">
+        <button class="back-btn" onclick="goBack()">&#8592;</button>
+        <span class="movies-title" id="listTitle"></span>
+        <span id="sharedBadge"></span>
+      </div>
+      <div class="movies-grid" id="moviesGrid"></div>
+    </main>
+
+    <!-- Modal nueva lista -->
+    <div class="modal-overlay hidden" id="modalOverlay">
+      <div class="modal">
+        <h3>Nueva lista</h3>
+        <input type="text" id="newListName" placeholder="Nombre de la lista" />
+        <label class="checkbox-label">
+          <input type="checkbox" id="newListShared" /> Compartida con Nicole
+        </label>
+        <div class="modal-actions">
+          <button onclick="closeModal()">Cancelar</button>
+          <button class="btn-primary" onclick="createList()">Crear</button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      localStorage.setItem("activeUser", "Edu");
+    </script>
+    <script src="/js/user-menu.js"></script>
+    <script src="/js/imdb.js"></script>
+  </body>
+</html>

@@ -2,18 +2,19 @@
 <html>
   <head>
     <title>Nedule</title>
-    <link rel="stylesheet" href="/frontend/css/inicio.css" />
+    <link rel="stylesheet" href="/css/inicio.css" />
   </head>
 
   <body>
     <nav class="navbar">
       <div class="nav-links">
+        <button class="nav-btn" data-page="lists">Lists</button>
         <button class="nav-btn" data-page="imdb">IMDB</button>
       </div>
       <div class="user-wrapper">
         <button class="user-badge" id="userBadge" onclick="toggleMenu()">
-          <div class="avatar" id="avatarInitial">E</div>
-          <span class="username" id="usernameLabel">Edu</span>
+          <div class="avatar" id="avatarInitial">N</div>
+          <span class="username" id="usernameLabel">Nicole</span>
         </button>
         <div class="user-menu" id="userMenu">
           <button class="user-option" onclick="selectUser('Edu', 'E')">
@@ -24,8 +25,7 @@
           </button>
         </div>
       </div>
-      <script src="/frontend/js/user-menu.js"></script>
     </nav>
-    <main></main>
+    <script src="/js/user-menu.js"></script>
   </body>
 </html>
