@@ -44,8 +44,24 @@
       <div class="movies-header">
         <button class="back-btn" onclick="goBack()">&#8592;</button>
         <span class="movies-title" id="listTitle"></span>
-        <span id="sharedBadge"></span>
+        <div style="margin-left: auto">
+          <button
+            class="btn-delete-mode"
+            id="btnDeleteMode"
+            onclick="toggleDeleteMode()"
+          >
+            Remove
+          </button>
+          <button
+            class="btn-done hidden"
+            id="btnDone"
+            onclick="toggleDeleteMode()"
+          >
+            Done
+          </button>
+        </div>
       </div>
+      <hr class="movies-divider" />
       <div class="movies-grid" id="moviesGrid"></div>
     </main>
 

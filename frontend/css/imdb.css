@@ -457,3 +457,63 @@
 .list-option-icon.shared::before {
   background: #5dcaa5;
 }
+.movies-divider {
+  border: none;
+  border-top: 0.5px solid var(--border-light);
+  margin: 0 0 1rem 0;
+}
+.btn-delete-mode {
+  padding: 7px 14px;
+  border-radius: var(--radius-md);
+  border: 0.5px var(--border-medium);
+  background: #e92f00c2;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  color: #ffffff;
+  transition: background 0.15s;
+}
+
+.btn-done {
+  padding: 7px 14px;
+  border-radius: var(--radius-md);
+  border: none;
+  background: #378add;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  color: #ffffff;
+  transition: background 0.15s;
+}
+
+.btn-done:hover {
+  background: #185fa5;
+}
+
+.movie-card {
+  position: relative;
+}
+
+.delete-x {
+  display: none;
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #e24b4a;
+  color: white;
+  border: none;
+  font-size: 11px;
+  cursor: pointer;
+  z-index: 10;
+  align-items: center;
+  justify-content: center;
+  font-weight: 500;
+  line-height: 1;
+}
+
+.movie-card.delete-mode .delete-x {
+  display: flex;
+}

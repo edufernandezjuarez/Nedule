@@ -7,7 +7,7 @@ function getUserId() {
   return name === "Edu" ? 1 : 2;
 }
 
-// ── CARGAR LISTAS ──
+// -- CARGAR LISTAS --
 async function loadLists() {
   const userId = getUserId();
   const res = await fetch(`${API}/lists/${userId}`);
@@ -37,12 +37,16 @@ function renderFolders(lists, containerId, isShared) {
   });
 }
 
-// ── ABRIR LISTA ──
+// -- ABRIR LISTA --
 async function openList(listId, listName, isShared) {
   activeListId = listId;
   activeListName = listName;
+  deleteMode = false;
 
   document.getElementById("listTitle").textContent = listName;
+
+  document.getElementById("btnDeleteMode").classList.remove("hidden");
+  document.getElementById("btnDone").classList.add("hidden");
 
   document.getElementById("listsView").classList.add("hidden");
   document.getElementById("moviesView").classList.remove("hidden");
@@ -75,13 +79,14 @@ function renderMovies(movies) {
 
   movies.forEach((movie) => {
     const card = document.createElement("div");
-    card.className = "movie-card";
+    card.className = `movie-card ${deleteMode ? "delete-mode" : ""}`;
     card.innerHTML = `
+      <button class="delete-x" onclick="removeMovie(${movie.id})">✕</button>
       <div class="movie-poster">
         ${
           movie.poster_url
             ? `<img src="${movie.poster_url}" alt="${movie.title}" />`
-            : '<div class="no-poster">Sin poster</div>'
+            : '<div class="no-poster">No poster</div>'
         }
       </div>
       <div class="movie-info">
@@ -94,7 +99,7 @@ function renderMovies(movies) {
   });
 }
 
-// ── BUSCAR EN TMDB ──
+// -- BUSCAR EN TMDB --
 let searchPage = 1;
 let currentQuery = "";
 let isLoadingMore = false;
@@ -191,7 +196,7 @@ function removeInfiniteScroll() {
   document.getElementById("scrollSentinel")?.remove();
 }
 
-// ── AGREGAR PELÍCULA ──
+// -- AGREGAR PELÍCULA --
 let pendingMovie = null;
 
 function openAddModal(movie) {
@@ -246,7 +251,7 @@ async function confirmAddMovie(listId) {
   closeAddModal();
 }
 
-// ── NUEVA LISTA ──
+// -- NUEVA LISTA --
 function openNewListModal() {
   document.getElementById("modalOverlay").classList.remove("hidden");
 }
@@ -284,3 +289,23 @@ document.addEventListener("DOMContentLoaded", () => {
     loadLists();
   }
 });
+
+//-- ELIMINAR PELICULA --
+let deleteMode = false;
+
+function toggleDeleteMode() {
+  deleteMode = !deleteMode;
+  document
+    .getElementById("btnDeleteMode")
+    .classList.toggle("hidden", deleteMode);
+  document.getElementById("btnDone").classList.toggle("hidden", !deleteMode);
+  document.querySelectorAll(".movie-card").forEach((card) => {
+    card.classList.toggle("delete-mode", deleteMode);
+  });
+}
+async function removeMovie(movieId) {
+  await fetch(`${API}/movies/${activeListId}/${movieId}`, {
+    method: "DELETE",
+  });
+  await loadMovies(activeListId);
+}
