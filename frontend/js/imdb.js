@@ -103,7 +103,11 @@ function renderMovies(movies) {
 
   movies.forEach((movie) => {
     const card = document.createElement("div");
-    card.className = `movie-card ${deleteMode ? "delete-mode" : ""}`;
+    card.className = `movie-card clickable ${deleteMode ? "delete-mode" : ""}`;
+    card.onclick = () => {
+      const tmdbId = movie.imdb_id.replace("tmdb_", "");
+      window.location.href = `/movie.html?id=${tmdbId}&type=movie`;
+    };
     card.innerHTML = `
       <button class="delete-x" onclick="removeMovie(${movie.id})">✕</button>
       <div class="movie-poster">
@@ -169,7 +173,11 @@ async function fetchAndRenderResults(reset = false) {
 
   data.results.forEach((item) => {
     const card = document.createElement("div");
-    card.className = "movie-card search-card";
+    card.className = "movie-card search-card clickable";
+    card.onclick = (e) => {
+      if (e.target.classList.contains("add-btn")) return;
+      window.location.href = `/movie.html?id=${item.tmdb_id}&type=${item.type}`;
+    };
     card.innerHTML = `
       <div class="movie-poster">
         ${

@@ -76,33 +76,44 @@ router.get("/detail/:tmdbId", async (req, res) => {
   const endpoint = type === "tv" ? "tv" : "movie";
 
   try {
-    const response = await axios.get(`${BASE_URL}/${endpoint}/${tmdbId}`, {
-      params: {
-        api_key: API_KEY,
-        language: "en-US",
-        append_to_response: "credits",
-      },
-    });
+    const [detail, images] = await Promise.all([
+      axios.get(`${BASE_URL}/${endpoint}/${tmdbId}`, {
+        params: {
+          api_key: API_KEY,
+          language: "en-US",
+          append_to_response: "credits",
+        },
+      }),
+      axios.get(`${BASE_URL}/${endpoint}/${tmdbId}/images`, {
+        params: { api_key: API_KEY },
+      }),
+    ]);
 
-    const m = response.data;
-
+    const m = detail.data;
     const director =
       m.credits?.crew?.find((p) => p.job === "Director")?.name ?? "N/A";
-
     const cast = m.credits?.cast?.slice(0, 5).map((a) => a.name) ?? [];
+
+    const gallery = images.data.backdrops
+      .slice(0, 12)
+      .map((img) => `https://image.tmdb.org/t/p/w780${img.file_path}`);
 
     res.json({
       tmdb_id: m.id,
       title: m.title ?? m.name,
       year: (m.release_date ?? m.first_air_date)?.slice(0, 4) ?? "N/A",
       poster_url: m.poster_path ? `${IMAGE_URL}${m.poster_path}` : null,
+      backdrop_url: m.backdrop_path
+        ? `https://image.tmdb.org/t/p/w1280${m.backdrop_path}`
+        : null,
       rating: m.vote_average?.toFixed(1) ?? "N/A",
       overview: m.overview,
       genres: m.genres?.map((g) => g.name) ?? [],
-      runtime: m.runtime ?? m.episode_run_time?.[0] ?? "N/A",
+      runtime: m.runtime ?? m.episode_run_time?.[0] ?? null,
       type: type ?? "movie",
       director,
       cast,
+      gallery,
     });
   } catch (err) {
     res.status(500).json({ error: err.message });

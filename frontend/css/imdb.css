@@ -663,3 +663,6 @@
   color: var(--bg-primary);
   border-color: var(--text-primary);
 }
+.clickable {
+  cursor: pointer;
+}

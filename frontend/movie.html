@@ -1,0 +1,71 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Nedule</title>
+    <link rel="stylesheet" href="/css/inicio.css" />
+    <link rel="stylesheet" href="/css/imdb.css" />
+    <link rel="stylesheet" href="/css/movie.css" />
+  </head>
+  <body>
+    <nav class="navbar">
+      <div class="nav-links">
+        <button class="nav-btn" data-page="lists">Lists</button>
+        <button class="nav-btn" data-page="imdb">IMDB</button>
+      </div>
+      <div class="user-wrapper">
+        <button class="user-badge" id="userBadge" onclick="toggleMenu()">
+          <div class="avatar" id="avatarInitial">E</div>
+          <span class="username" id="usernameLabel">Edu</span>
+        </button>
+        <div class="user-menu" id="userMenu">
+          <button class="user-option" onclick="selectUser('Edu', 'E')">
+            Edu
+          </button>
+          <button class="user-option" onclick="selectUser('Nicole', 'N')">
+            Nicole
+          </button>
+        </div>
+      </div>
+    </nav>
+
+    <main class="movie-page" id="moviePage">
+      <div class="movie-backdrop" id="movieBackdrop"></div>
+      <div class="movie-content">
+        <button class="back-btn" onclick="history.back()">&#8592; Back</button>
+        <div class="movie-main">
+          <img class="movie-detail-poster" id="moviePoster" src="" alt="" />
+          <div class="movie-detail-info">
+            <div class="movie-detail-genres" id="movieGenres"></div>
+            <h1 class="movie-detail-title" id="movieTitle"></h1>
+            <div class="movie-detail-meta" id="movieMeta"></div>
+            <p class="movie-detail-overview" id="movieOverview"></p>
+            <div class="movie-detail-crew" id="movieCrew"></div>
+            <div class="movie-detail-cast" id="movieCast"></div>
+            <button class="btn-add-detail" id="btnAddToList">
+              + Add to list
+            </button>
+          </div>
+        </div>
+
+        <div class="gallery-section" id="gallerySection">
+          <h2 class="section-title">Images</h2>
+          <div class="gallery-grid" id="galleryGrid"></div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Modal agregar a lista -->
+    <div class="modal-overlay hidden" id="addToListModal">
+      <div class="modal">
+        <h3>Add to list</h3>
+        <div id="modalListOptions"></div>
+        <div class="modal-actions">
+          <button onclick="closeAddModal()">Cancel</button>
+        </div>
+      </div>
+    </div>
+
+    <script src="/js/user-menu.js"></script>
+    <script src="/js/movie.js"></script>
+  </body>
+</html>
