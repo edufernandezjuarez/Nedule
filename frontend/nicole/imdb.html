@@ -37,6 +37,52 @@
           id="searchInput"
           placeholder="Search for a movie or series..."
         />
+        <div class="filter-wrapper">
+          <button
+            class="btn-filter"
+            id="filterBtn"
+            onclick="toggleFilterMenu()"
+          >
+            Filter
+          </button>
+          <div class="filter-menu hidden" id="filterMenu">
+            <div class="filter-section">
+              <label class="filter-label">Year range</label>
+              <div class="filter-year-display">
+                <span id="yearMinDisplay">1900</span> —
+                <span id="yearMaxDisplay">2026</span>
+              </div>
+              <div class="filter-slider-row">
+                <input
+                  type="range"
+                  id="yearMin"
+                  min="1900"
+                  max="2026"
+                  value="1900"
+                  step="1"
+                  oninput="updateYearFilter()"
+                />
+              </div>
+              <div class="filter-slider-row">
+                <input
+                  type="range"
+                  id="yearMax"
+                  min="1900"
+                  max="2026"
+                  value="2026"
+                  step="1"
+                  oninput="updateYearFilter()"
+                />
+              </div>
+            </div>
+            <div class="filter-actions">
+              <button onclick="clearFilters()">Clear</button>
+              <button class="btn-primary" onclick="applyFilters()">
+                Apply
+              </button>
+            </div>
+          </div>
+        </div>
         <button onclick="searchMovies()">Search</button>
       </div>
       <div class="search-results hidden" id="searchResults"></div>

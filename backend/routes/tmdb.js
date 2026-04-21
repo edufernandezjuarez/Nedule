@@ -9,7 +9,7 @@ const IMAGE_URL = process.env.TMDB_IMAGE_URL;
 
 // GET /api/tmdb/search?q=inception
 router.get("/search", async (req, res) => {
-  const { q, page = 1 } = req.query;
+  const { q, page = 1, yearMin, yearMax } = req.query;
   if (!q) return res.status(400).json({ error: "Falta el parámetro q" });
 
   try {
@@ -22,28 +22,41 @@ router.get("/search", async (req, res) => {
       }),
     ]);
 
-    const movieResults = movies.data.results.map((m) => ({
+    let movieResults = movies.data.results.map((m) => ({
       tmdb_id: m.id,
       title: m.title,
       year: m.release_date?.slice(0, 4) ?? "N/A",
       poster_url: m.poster_path ? `${IMAGE_URL}${m.poster_path}` : null,
       rating: m.vote_average?.toFixed(1) ?? "N/A",
       overview: m.overview,
+      popularity: m.popularity,
       type: "movie",
     }));
 
-    const tvResults = tv.data.results.map((t) => ({
+    let tvResults = tv.data.results.map((t) => ({
       tmdb_id: t.id,
       title: t.name,
       year: t.first_air_date?.slice(0, 4) ?? "N/A",
       poster_url: t.poster_path ? `${IMAGE_URL}${t.poster_path}` : null,
       rating: t.vote_average?.toFixed(1) ?? "N/A",
       overview: t.overview,
+      popularity: t.popularity,
       type: "tv",
     }));
 
+    if (yearMin || yearMax) {
+      const min = yearMin ? parseInt(yearMin) : 0;
+      const max = yearMax ? parseInt(yearMax) : 9999;
+      const inRange = (item) => {
+        const y = parseInt(item.year);
+        return !isNaN(y) && y >= min && y <= max;
+      };
+      movieResults = movieResults.filter(inRange);
+      tvResults = tvResults.filter(inRange);
+    }
+
     const combined = [...movieResults, ...tvResults].sort(
-      (a, b) => b.rating - a.rating,
+      (a, b) => b.popularity - a.popularity,
     );
 
     res.json({

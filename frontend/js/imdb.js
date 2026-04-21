@@ -155,9 +155,14 @@ async function fetchAndRenderResults(reset = false) {
   loadingEl.textContent = "Loading...";
   container.appendChild(loadingEl);
 
-  const res = await fetch(
-    `${API}/tmdb/search?q=${encodeURIComponent(currentQuery)}&page=${searchPage}`,
-  );
+  const params = new URLSearchParams({
+    q: currentQuery,
+    page: searchPage,
+    ...(activeFilters.yearMin && { yearMin: activeFilters.yearMin }),
+    ...(activeFilters.yearMax && { yearMax: activeFilters.yearMax }),
+  });
+
+  const res = await fetch(`${API}/tmdb/search?${params}`);
   const data = await res.json();
 
   document.getElementById("searchLoading")?.remove();
@@ -332,4 +337,48 @@ async function removeMovie(movieId) {
     method: "DELETE",
   });
   await loadMovies(activeListId);
+}
+
+//-- FILTROS DE BE BUSQUEDA--
+let activeFilters = { yearMin: null, yearMax: null };
+
+function toggleFilterMenu() {
+  document.getElementById("filterMenu").classList.toggle("hidden");
+}
+
+function updateYearFilter() {
+  const min = parseInt(document.getElementById("yearMin").value);
+  const max = parseInt(document.getElementById("yearMax").value);
+
+  if (min > max) {
+    document.getElementById("yearMin").value = max;
+    document.getElementById("yearMax").value = min;
+  }
+
+  document.getElementById("yearMinDisplay").textContent =
+    document.getElementById("yearMin").value;
+  document.getElementById("yearMaxDisplay").textContent =
+    document.getElementById("yearMax").value;
+}
+
+function applyFilters() {
+  activeFilters.yearMin = document.getElementById("yearMin").value;
+  activeFilters.yearMax = document.getElementById("yearMax").value;
+  document.getElementById("filterMenu").classList.add("hidden");
+
+  const btn = document.getElementById("filterBtn");
+  btn.classList.add("filter-active");
+
+  if (currentQuery) searchMovies();
+}
+
+function clearFilters() {
+  activeFilters = { yearMin: null, yearMax: null };
+  document.getElementById("yearMin").value = 1900;
+  document.getElementById("yearMax").value = 2026;
+  document.getElementById("yearMinDisplay").textContent = "1900";
+  document.getElementById("yearMaxDisplay").textContent = "2026";
+  document.getElementById("filterBtn").classList.remove("filter-active");
+  document.getElementById("filterMenu").classList.add("hidden");
+  if (currentQuery) searchMovies();
 }
