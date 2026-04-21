@@ -31,11 +31,35 @@ function renderFolders(lists, containerId, isShared) {
     folder.innerHTML = `
       <div class="folder-icon"></div>
       <div class="folder-name">${list.name}</div>
+      <button class="folder-menu-btn" onclick="toggleFolderMenu(event, ${list.id})">&#8942;</button>
+      <div class="folder-menu hidden" id="folderMenu-${list.id}">
+        <button onclick="deleteList(event, ${list.id})">Delete</button>
+      </div>
     `;
     folder.onclick = () => openList(list.id, list.name, isShared);
     container.appendChild(folder);
   });
 }
+// -- MENU LISTA --
+function toggleFolderMenu(e, listId) {
+  e.stopPropagation();
+  document.querySelectorAll(".folder-menu").forEach((m) => {
+    if (m.id !== `folderMenu-${listId}`) m.classList.add("hidden");
+  });
+  document.getElementById(`folderMenu-${listId}`).classList.toggle("hidden");
+}
+
+async function deleteList(e, listId) {
+  e.stopPropagation();
+  await fetch(`${API}/lists/${listId}`, { method: "DELETE" });
+  await loadLists();
+}
+
+document.addEventListener("click", () => {
+  document
+    .querySelectorAll(".folder-menu")
+    .forEach((m) => m.classList.add("hidden"));
+});
 
 // -- ABRIR LISTA --
 async function openList(listId, listName, isShared) {
