@@ -105,6 +105,7 @@ async function searchMovies() {
 
   currentQuery = q;
   searchPage = 1;
+  removeInfiniteScroll();
 
   const container = document.getElementById("searchResults");
   container.classList.remove("hidden");
@@ -122,7 +123,7 @@ async function fetchAndRenderResults(reset = false) {
   const loadingEl = document.createElement("div");
   loadingEl.className = "search-loading";
   loadingEl.id = "searchLoading";
-  loadingEl.textContent = "Cargando...";
+  loadingEl.textContent = "Loading...";
   container.appendChild(loadingEl);
 
   const res = await fetch(
@@ -133,33 +134,61 @@ async function fetchAndRenderResults(reset = false) {
   document.getElementById("searchLoading")?.remove();
 
   data.results.forEach((item) => {
-    const el = document.createElement("div");
-    el.className = "search-item";
-    el.innerHTML = `
-      <img src="${item.poster_url || ""}" alt="${item.title}" class="search-thumb" />
-      <div class="search-info">
-        <span class="search-title">${item.title}</span>
-        <span class="search-year">${item.year} · ${item.type === "tv" ? "Serie" : "Película"}</span>
+    const card = document.createElement("div");
+    card.className = "movie-card search-card";
+    card.innerHTML = `
+      <div class="movie-poster">
+        ${
+          item.poster_url
+            ? `<img src="${item.poster_url}" alt="${item.title}" />`
+            : '<div class="no-poster">No poster</div>'
+        }
       </div>
-      <button onclick="addMovie(${JSON.stringify(item).replace(/"/g, "&quot;")})">+</button>
+      <div class="movie-info">
+        <div class="movie-title">${item.title}</div>
+        <div class="movie-year">${item.year} · ${item.type === "tv" ? "Series" : "Movie"}</div>
+        <div class="movie-rating">★ ${item.rating}</div>
+        <button class="add-btn" onclick="addMovie(${JSON.stringify(item).replace(/"/g, "&quot;")})">+ Add</button>
+      </div>
     `;
-    container.appendChild(el);
+    container.appendChild(card);
   });
 
   if (data.hasMore) {
-    const loadMoreEl = document.createElement("div");
-    loadMoreEl.className = "search-load-more";
-    loadMoreEl.id = "loadMoreBtn";
-    loadMoreEl.textContent = "Cargar más";
-    loadMoreEl.onclick = () => {
-      searchPage++;
-      loadMoreEl.remove();
-      fetchAndRenderResults();
-    };
-    container.appendChild(loadMoreEl);
+    setupInfiniteScroll();
+  } else {
+    removeInfiniteScroll();
   }
 
   isLoadingMore = false;
+}
+
+function setupInfiniteScroll() {
+  removeInfiniteScroll();
+  const sentinel = document.createElement("div");
+  sentinel.id = "scrollSentinel";
+  document.getElementById("searchResults").appendChild(sentinel);
+
+  const observer = new IntersectionObserver(
+    (entries) => {
+      if (entries[0].isIntersecting && !isLoadingMore) {
+        searchPage++;
+        fetchAndRenderResults();
+      }
+    },
+    { threshold: 1.0 },
+  );
+
+  observer.observe(sentinel);
+  window._searchObserver = observer;
+}
+
+function removeInfiniteScroll() {
+  if (window._searchObserver) {
+    window._searchObserver.disconnect();
+    window._searchObserver = null;
+  }
+  document.getElementById("scrollSentinel")?.remove();
 }
 
 // ── AGREGAR PELÍCULA ──
