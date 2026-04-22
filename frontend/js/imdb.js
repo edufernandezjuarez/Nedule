@@ -164,6 +164,7 @@ async function fetchAndRenderResults(reset = false) {
     page: searchPage,
     ...(activeFilters.yearMin && { yearMin: activeFilters.yearMin }),
     ...(activeFilters.yearMax && { yearMax: activeFilters.yearMax }),
+    ...(activeFilters.genreId && { genreId: activeFilters.genreId }),
   });
 
   const res = await fetch(`${API}/tmdb/search?${params}`);
@@ -318,6 +319,7 @@ async function createList() {
 
 document.addEventListener("DOMContentLoaded", () => {
   if (document.getElementById("searchInput")) {
+    loadGenres();
     document.getElementById("searchInput").addEventListener("keydown", (e) => {
       if (e.key === "Enter") searchMovies();
     });
@@ -348,7 +350,7 @@ async function removeMovie(movieId) {
 }
 
 //-- FILTROS DE BE BUSQUEDA--
-let activeFilters = { yearMin: null, yearMax: null };
+let activeFilters = { yearMin: null, yearMax: null, genreId: null };
 
 function toggleFilterMenu() {
   document.getElementById("filterMenu").classList.toggle("hidden");
@@ -372,21 +374,42 @@ function updateYearFilter() {
 function applyFilters() {
   activeFilters.yearMin = document.getElementById("yearMin").value;
   activeFilters.yearMax = document.getElementById("yearMax").value;
+  activeFilters.genreId = document.getElementById("genreSelect").value || null;
   document.getElementById("filterMenu").classList.add("hidden");
 
-  const btn = document.getElementById("filterBtn");
-  btn.classList.add("filter-active");
+  const hasFilters =
+    activeFilters.yearMin !== "1900" ||
+    activeFilters.yearMax !== "2026" ||
+    activeFilters.genreId !== null;
+  document
+    .getElementById("filterBtn")
+    .classList.toggle("filter-active", hasFilters);
 
   if (currentQuery) searchMovies();
 }
 
 function clearFilters() {
-  activeFilters = { yearMin: null, yearMax: null };
+  activeFilters = { yearMin: null, yearMax: null, genreId: null };
   document.getElementById("yearMin").value = 1900;
   document.getElementById("yearMax").value = 2026;
   document.getElementById("yearMinDisplay").textContent = "1900";
   document.getElementById("yearMaxDisplay").textContent = "2026";
+  document.getElementById("genreSelect").value = "";
   document.getElementById("filterBtn").classList.remove("filter-active");
   document.getElementById("filterMenu").classList.add("hidden");
   if (currentQuery) searchMovies();
+}
+
+async function loadGenres() {
+  const res = await fetch(`${API}/tmdb/genres`);
+  const genres = await res.json();
+  const select = document.getElementById("genreSelect");
+  if (!select) return;
+
+  genres.forEach((g) => {
+    const opt = document.createElement("option");
+    opt.value = g.id;
+    opt.textContent = g.name;
+    select.appendChild(opt);
+  });
 }
