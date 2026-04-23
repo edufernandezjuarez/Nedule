@@ -44,7 +44,10 @@
       <div class="movies-header">
         <button class="back-btn" onclick="goBack()">&#8592;</button>
         <span class="movies-title" id="listTitle"></span>
-        <div style="margin-left: auto">
+        <div class="btns">
+          <button class="btn-ruleta" id="btnRuleta" onclick="spinRuleta()">
+            🎲
+          </button>
           <button
             class="btn-delete-mode"
             id="btnDeleteMode"
@@ -76,6 +79,21 @@
         <div class="modal-actions">
           <button onclick="closeModal()">Cancelar</button>
           <button class="btn-primary" onclick="createList()">Crear</button>
+        </div>
+      </div>
+    </div>
+    <!--Modal ruleta-->
+    <div class="modal-overlay hidden" id="ruletaModal">
+      <div class="modal ruleta-modal">
+        <p class="ruleta-label">Ahora salio</p>
+        <img class="ruleta-poster" id="ruletaPoster" src="" alt="" />
+        <div class="ruleta-info">
+          <div class="ruleta-title" id="ruletaTitle"></div>
+          <div class="ruleta-year" id="ruletaYear"></div>
+        </div>
+        <div class="modal-actions">
+          <button onclick="closeRuleta()">Close</button>
+          <button class="btn-primary" id="ruletaBtn">View</button>
         </div>
       </div>
     </div>

@@ -106,10 +106,12 @@ function renderMovies(movies) {
   movies.forEach((movie) => {
     const card = document.createElement("div");
     card.className = `movie-card clickable ${deleteMode ? "delete-mode" : ""}`;
+    const tmdbId = movie.imdb_id.replace("tmdb_", "");
+    const type = movie.media_type ?? "movie";
+    card.dataset.tmdbId = tmdbId;
+    card.dataset.type = type;
     card.onclick = (e) => {
       if (e.target.classList.contains("delete-x")) return;
-      const tmdbId = movie.imdb_id.replace("tmdb_", "");
-      const type = movie.media_type ?? "movie";
       window.location.href = `/movie.html?id=${tmdbId}&type=${type}`;
     };
     card.innerHTML = `
@@ -454,4 +456,32 @@ function setType(type) {
       type === "all" ? "typeAll" : type === "movie" ? "typeMovie" : "typeTv",
     )
     .classList.add("active");
+}
+//RULETAAAA
+function spinRuleta() {
+  const cards = document.querySelectorAll("#moviesGrid .movie-card");
+  if (!cards.length) return;
+
+  const randomCard = cards[Math.floor(Math.random() * cards.length)];
+  const title = randomCard.querySelector(".movie-title").textContent;
+  const year = randomCard.querySelector(".movie-year").textContent;
+  const poster = randomCard.querySelector("img")?.src ?? null;
+  const tmdbId = randomCard.dataset.tmdbId;
+  const type = randomCard.dataset.type;
+
+  document.getElementById("ruletaTitle").textContent = title;
+  document.getElementById("ruletaYear").textContent = year;
+  document.getElementById("ruletaPoster").src = poster ?? "";
+  document.getElementById("ruletaPoster").style.display = poster
+    ? "block"
+    : "none";
+  document.getElementById("ruletaBtn").onclick = () => {
+    window.location.href = `/movie.html?id=${tmdbId}&type=${type}`;
+  };
+
+  document.getElementById("ruletaModal").classList.remove("hidden");
+}
+
+function closeRuleta() {
+  document.getElementById("ruletaModal").classList.add("hidden");
 }
