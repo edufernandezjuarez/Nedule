@@ -51,11 +51,20 @@ async function loadMovie() {
 
   document.getElementById("movieCrew").innerHTML =
     movie.director !== "N/A"
-      ? `<span class="crew-label">Director</span> <span class="crew-value">${movie.director}</span>`
+      ? `<span class="crew-label">Director</span> <span class="crew-value">
+      <a class="person-link" href="/person.html?name=${encodeURIComponent(movie.director)}">${movie.director}</a>
+     </span>`
       : "";
 
   document.getElementById("movieCast").innerHTML = movie.cast.length
-    ? `<span class="crew-label">Cast</span> <span class="crew-value">${movie.cast.join(", ")}</span>`
+    ? `<span class="crew-label">Cast</span> <span class="crew-value">
+      ${movie.cast
+        .map(
+          (a) =>
+            `<a class="person-link" href="/person.html?name=${encodeURIComponent(a)}">${a}</a>`,
+        )
+        .join(", ")}
+     </span>`
     : "";
 
   document.getElementById("btnAddToList").onclick = () => openAddModal(movie);

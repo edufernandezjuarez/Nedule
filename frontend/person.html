@@ -1,0 +1,49 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Nedule</title>
+    <link rel="stylesheet" href="/css/inicio.css" />
+    <link rel="stylesheet" href="/css/imdb.css" />
+    <link rel="stylesheet" href="/css/person.css" />
+  </head>
+  <body>
+    <nav class="navbar">
+      <div class="nav-links">
+        <button class="nav-btn" data-page="lists">Lists</button>
+        <button class="nav-btn" data-page="imdb">IMDB</button>
+      </div>
+      <div class="user-wrapper">
+        <button class="user-badge" id="userBadge" onclick="toggleMenu()">
+          <div class="avatar" id="avatarInitial">E</div>
+          <span class="username" id="usernameLabel">Edu</span>
+        </button>
+        <div class="user-menu" id="userMenu">
+          <button class="user-option" onclick="selectUser('Edu', 'E')">
+            Edu
+          </button>
+          <button class="user-option" onclick="selectUser('Nicole', 'N')">
+            Nicole
+          </button>
+        </div>
+      </div>
+    </nav>
+
+    <main class="movie-content">
+      <button class="back-btn" onclick="history.back()">&#8592; Back</button>
+      <div class="person-main" id="personMain">
+        <div class="person-photo-wrapper">
+          <img class="person-photo" id="personPhoto" src="" alt="" />
+        </div>
+        <div class="person-info">
+          <h1 class="movie-detail-title" id="personName"></h1>
+          <p class="person-known-for" id="personKnownFor"></p>
+        </div>
+      </div>
+      <h2 class="section-title" style="margin-top: 2rem">Credits</h2>
+      <div class="movies-grid" id="creditsGrid"></div>
+    </main>
+
+    <script src="/js/user-menu.js"></script>
+    <script src="/js/person.js"></script>
+  </body>
+</html>

@@ -395,3 +395,16 @@
   min-width: 20px;
   text-align: center;
 }
+.person-link {
+  color: var(--text-primary);
+  text-decoration: none;
+  border-bottom: 0.5px solid var(--border-medium);
+  transition:
+    border-color 0.15s,
+    color 0.15s;
+}
+
+.person-link:hover {
+  color: #378add;
+  border-color: #378add;
+}

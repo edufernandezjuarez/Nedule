@@ -230,4 +230,62 @@ router.get("/popular", async (req, res) => {
   }
 });
 
+router.get("/person/search/:name", async (req, res) => {
+  try {
+    const response = await axios.get(`${BASE_URL}/search/person`, {
+      params: { api_key: API_KEY, query: req.params.name, language: "en-US" },
+    });
+    const result = response.data.results[0];
+    if (!result) return res.status(404).json({ error: "Not found" });
+    res.json({ id: result.id });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+router.get("/person/:personId", async (req, res) => {
+  try {
+    const response = await axios.get(
+      `${BASE_URL}/person/${req.params.personId}`,
+      {
+        params: {
+          api_key: API_KEY,
+          language: "en-US",
+          append_to_response: "combined_credits",
+        },
+      },
+    );
+
+    const p = response.data;
+
+    const credits = p.combined_credits.cast
+      .concat(p.combined_credits.crew.filter((c) => c.job === "Director"))
+      .filter((c) => c.poster_path)
+      .filter((c, i, arr) => arr.findIndex((x) => x.id === c.id) === i)
+      .sort((a, b) => (b.popularity ?? 0) - (a.popularity ?? 0))
+      .slice(0, 24)
+      .map((c) => ({
+        tmdb_id: c.id,
+        title: c.title ?? c.name,
+        year: (c.release_date ?? c.first_air_date)?.slice(0, 4) ?? "N/A",
+        poster_url: `${IMAGE_URL}${c.poster_path}`,
+        rating: c.vote_average?.toFixed(1) ?? "N/A",
+        type: c.media_type,
+        role: c.character ?? c.job ?? "",
+      }));
+
+    res.json({
+      id: p.id,
+      name: p.name,
+      photo_url: p.profile_path
+        ? `https://image.tmdb.org/t/p/w342${p.profile_path}`
+        : null,
+      known_for: p.known_for_department,
+      credits,
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 module.exports = router;
