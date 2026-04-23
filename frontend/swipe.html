@@ -1,0 +1,134 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Swipe — Nedule</title>
+    <link rel="stylesheet" href="/css/inicio.css" />
+    <link rel="stylesheet" href="/css/imdb.css" />
+    <link rel="stylesheet" href="/css/swipe.css" />
+  </head>
+  <body>
+    <nav class="navbar">
+      <div class="nav-links">
+        <button class="nav-btn" data-page="lists">Lists</button>
+        <button class="nav-btn" data-page="imdb">IMDB</button>
+        <button class="nav-btn active" data-page="swipe">Swipe</button>
+      </div>
+      <div class="user-wrapper">
+        <button class="user-badge" id="userBadge" onclick="toggleMenu()">
+          <div class="avatar" id="avatarInitial">E</div>
+          <span class="username" id="usernameLabel">Edu</span>
+        </button>
+        <div class="user-menu" id="userMenu">
+          <button class="user-option" onclick="selectUser('Edu', 'E')">
+            Edu
+          </button>
+          <button class="user-option" onclick="selectUser('Nicole', 'N')">
+            Nicole
+          </button>
+        </div>
+      </div>
+    </nav>
+
+    <main class="swipe-layout">
+      <!-- Filtros -->
+      <aside class="swipe-filters">
+        <h3 class="swipe-filters-title">Filters</h3>
+
+        <div class="filter-section">
+          <label class="filter-label">Type</label>
+          <div class="filter-type-row">
+            <button
+              class="type-btn active"
+              id="typeAll"
+              onclick="setType('all')"
+            >
+              All
+            </button>
+            <button class="type-btn" id="typeMovie" onclick="setType('movie')">
+              Movies
+            </button>
+            <button class="type-btn" id="typeTv" onclick="setType('tv')">
+              Series
+            </button>
+          </div>
+        </div>
+
+        <div class="filter-section">
+          <label class="filter-label">Year range</label>
+          <div class="filter-year-display">
+            <span id="yearMinDisplay">1900</span> —
+            <span id="yearMaxDisplay">2026</span>
+          </div>
+          <div class="filter-slider-row">
+            <input
+              type="range"
+              id="yearMin"
+              min="1900"
+              max="2026"
+              value="1900"
+              step="1"
+              oninput="updateYearFilter()"
+            />
+          </div>
+          <div class="filter-slider-row">
+            <input
+              type="range"
+              id="yearMax"
+              min="1900"
+              max="2026"
+              value="2026"
+              step="1"
+              oninput="updateYearFilter()"
+            />
+          </div>
+        </div>
+
+        <div class="filter-section">
+          <label class="filter-label">Genre</label>
+          <select id="genreSelect" class="filter-select">
+            <option value="">All genres</option>
+          </select>
+        </div>
+      </aside>
+
+      <!-- Card -->
+      <div class="swipe-center">
+        <div class="swipe-card clickable" id="swipeCard">
+          <div class="swipe-poster-wrap">
+            <img class="swipe-poster" id="swipePoster" src="" alt="" />
+          </div>
+          <div class="swipe-info">
+            <div class="swipe-title" id="swipeTitle"></div>
+            <div class="swipe-meta" id="swipeMeta"></div>
+            <div class="swipe-overview" id="swipeOverview"></div>
+          </div>
+        </div>
+        <div class="swipe-actions">
+          <button
+            class="swipe-btn swipe-add"
+            onclick="openAddModal(currentSwipe)"
+          >
+            + Add to list
+          </button>
+          <button class="swipe-btn swipe-next" onclick="loadSwipe()">
+            Next →
+          </button>
+        </div>
+      </div>
+    </main>
+
+    <!-- Modal agregar a lista -->
+    <div class="modal-overlay hidden" id="addToListModal">
+      <div class="modal">
+        <h3>Add to list</h3>
+        <div id="modalListOptions"></div>
+        <div class="modal-actions">
+          <button onclick="closeAddModal()">Cancel</button>
+        </div>
+      </div>
+    </div>
+
+    <script src="/js/user-menu.js"></script>
+    <script src="/js/swipe.js"></script>
+  </body>
+</html>

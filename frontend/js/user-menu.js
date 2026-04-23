@@ -21,11 +21,13 @@ function updateNavLinks(name) {
   const user = USERS[name];
   const listsBtn = document.querySelector('.nav-btn[data-page="lists"]');
   const imdbBtn = document.querySelector('.nav-btn[data-page="imdb"]');
+  const swipeBtn = document.querySelector('.nav-btn[data-page="swipe"]');
   if (listsBtn)
     listsBtn.onclick = () =>
       (window.location.href = `/${user.path}/lists.html`);
   if (imdbBtn)
     imdbBtn.onclick = () => (window.location.href = `/${user.path}/imdb.html`);
+  if (swipeBtn) swipeBtn.onclick = () => (window.location.href = `/swipe.html`);
 }
 
 function toggleMenu() {

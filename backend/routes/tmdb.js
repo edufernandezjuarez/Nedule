@@ -310,5 +310,79 @@ router.get("/people/search", async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+router.get("/swipe", async (req, res) => {
+  const { yearMin, yearMax, genreId, type } = req.query;
+
+  try {
+    const randomPage = Math.floor(Math.random() * 10) + 1;
+
+    const movieParams = {
+      api_key: API_KEY,
+      language: "en-US",
+      page: randomPage,
+    };
+    const tvParams = { api_key: API_KEY, language: "en-US", page: randomPage };
+    if (genreId) {
+      movieParams.with_genres = genreId;
+      tvParams.with_genres = genreId;
+    }
+    if (yearMin) {
+      movieParams["primary_release_date.gte"] = `${yearMin}-01-01`;
+      tvParams["first_air_date.gte"] = `${yearMin}-01-01`;
+    }
+    if (yearMax) {
+      movieParams["primary_release_date.lte"] = `${yearMax}-12-31`;
+      tvParams["first_air_date.lte"] = `${yearMax}-12-31`;
+    }
+
+    const requests = [];
+    if (type !== "tv") {
+      requests.push(
+        axios.get(`${BASE_URL}/movie/popular`, { params: movieParams }),
+      );
+      requests.push(
+        axios.get(`${BASE_URL}/discover/movie`, { params: movieParams }),
+      );
+    }
+    if (type !== "movie") {
+      requests.push(axios.get(`${BASE_URL}/tv/popular`, { params: tvParams }));
+      requests.push(axios.get(`${BASE_URL}/discover/tv`, { params: tvParams }));
+    }
+
+    const responses = await Promise.all(requests);
+    let pool = responses.flatMap((r) => r.data.results);
+
+    if (yearMin || yearMax) {
+      const min = yearMin ? parseInt(yearMin) : 0;
+      const max = yearMax ? parseInt(yearMax) : 9999;
+      pool = pool.filter((item) => {
+        const y = parseInt(
+          (item.release_date ?? item.first_air_date)?.slice(0, 4),
+        );
+        return !isNaN(y) && y >= min && y <= max;
+      });
+    }
+
+    pool = pool.filter((item) => item.poster_path);
+    if (!pool.length) return res.json(null);
+
+    const pick = pool[Math.floor(Math.random() * pool.length)];
+    const isTV = !!pick.name;
+
+    res.json({
+      tmdb_id: pick.id,
+      title: pick.title ?? pick.name,
+      year: (pick.release_date ?? pick.first_air_date)?.slice(0, 4) ?? "N/A",
+      poster_url: pick.poster_path ? `${IMAGE_URL}${pick.poster_path}` : null,
+      rating: pick.vote_average?.toFixed(1) ?? "N/A",
+      overview: pick.overview,
+      popularity: pick.popularity,
+      genre_ids: pick.genre_ids,
+      type: isTV ? "tv" : "movie",
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
 
 module.exports = router;

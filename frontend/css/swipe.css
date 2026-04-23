@@ -1,0 +1,122 @@
+.swipe-layout {
+  display: flex;
+  gap: 2rem;
+  padding: 1.5rem;
+  min-height: calc(100vh - 52px);
+  background: var(--bg-tertiary);
+  align-items: flex-start;
+}
+
+.swipe-filters {
+  width: 220px;
+  min-width: 220px;
+  background: var(--bg-primary);
+  border: 0.5px solid var(--border-light);
+  border-radius: var(--radius-lg);
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.swipe-filters-title {
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--text-primary);
+  margin-bottom: 8px;
+}
+
+.swipe-center {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.25rem;
+}
+
+.swipe-card {
+  background: var(--bg-primary);
+  border: 0.5px solid var(--border-light);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  display: flex;
+  width: 100%;
+  max-width: 600px;
+  transition: opacity 0.2s;
+}
+
+.swipe-card.swipe-loading {
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+.swipe-poster-wrap {
+  flex-shrink: 0;
+  width: 200px;
+}
+
+.swipe-poster {
+  width: 200px;
+  height: 300px;
+  object-fit: cover;
+  display: block;
+}
+
+.swipe-info {
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.swipe-title {
+  font-size: 22px;
+  font-weight: 500;
+  color: var(--text-primary);
+  line-height: 1.2;
+}
+
+.swipe-meta {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.swipe-overview {
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  display: -webkit-box;
+  -webkit-line-clamp: 5;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.swipe-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.swipe-btn {
+  padding: 10px 24px;
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: opacity 0.15s;
+  border: none;
+}
+
+.swipe-add {
+  background: var(--bg-primary);
+  border: 0.5px solid var(--border-medium) !important;
+  color: var(--text-primary);
+}
+
+.swipe-next {
+  background: var(--text-primary);
+  color: var(--bg-primary);
+}
+
+.swipe-btn:hover {
+  opacity: 0.8;
+}
