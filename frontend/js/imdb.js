@@ -156,31 +156,25 @@ async function fetchAndRenderResults(reset = false) {
   isLoadingMore = true;
 
   const container = document.getElementById("searchResults");
-
   const loadingEl = document.createElement("div");
   loadingEl.className = "search-loading";
   loadingEl.id = "searchLoading";
   loadingEl.textContent = "Loading...";
   container.appendChild(loadingEl);
 
+  const filterParams = {
+    page: searchPage,
+    ...(activeFilters.yearMin && { yearMin: activeFilters.yearMin }),
+    ...(activeFilters.yearMax && { yearMax: activeFilters.yearMax }),
+    ...(activeFilters.genreId && { genreId: activeFilters.genreId }),
+    ...(activeFilters.type !== "all" && { type: activeFilters.type }),
+  };
+
   let url;
   if (isPopularMode) {
-    const params = new URLSearchParams({
-      page: searchPage,
-      ...(activeFilters.yearMin && { yearMin: activeFilters.yearMin }),
-      ...(activeFilters.yearMax && { yearMax: activeFilters.yearMax }),
-      ...(activeFilters.genreId && { genreId: activeFilters.genreId }),
-    });
-    url = `${API}/tmdb/popular?${params}`;
+    url = `${API}/tmdb/popular?${new URLSearchParams(filterParams)}`;
   } else {
-    const params = new URLSearchParams({
-      q: currentQuery,
-      page: searchPage,
-      ...(activeFilters.yearMin && { yearMin: activeFilters.yearMin }),
-      ...(activeFilters.yearMax && { yearMax: activeFilters.yearMax }),
-      ...(activeFilters.genreId && { genreId: activeFilters.genreId }),
-    });
-    url = `${API}/tmdb/search?${params}`;
+    url = `${API}/tmdb/search?${new URLSearchParams({ q: currentQuery, ...filterParams })}`;
   }
 
   const res = await fetch(url);
@@ -368,7 +362,12 @@ async function removeMovie(movieId) {
 }
 
 //-- FILTROS DE BE BUSQUEDA--
-let activeFilters = { yearMin: null, yearMax: null, genreId: null };
+let activeFilters = {
+  yearMin: null,
+  yearMax: null,
+  genreId: null,
+  type: "all",
+};
 
 function toggleFilterMenu() {
   document.getElementById("filterMenu").classList.toggle("hidden");
@@ -393,7 +392,13 @@ function applyFilters() {
   activeFilters.yearMin = document.getElementById("yearMin").value;
   activeFilters.yearMax = document.getElementById("yearMax").value;
   activeFilters.genreId = document.getElementById("genreSelect").value || null;
-  document.getElementById("filterMenu").classList.add("hidden");
+  activeFilters.type =
+    document
+      .querySelector(".type-btn.active")
+      ?.id.replace("type", "")
+      .replace("All", "all")
+      .replace("Movie", "movie")
+      .replace("Tv", "tv") ?? "all";
 
   const hasFilters =
     activeFilters.yearMin !== "1900" ||
@@ -410,7 +415,11 @@ function applyFilters() {
 }
 
 function clearFilters() {
-  activeFilters = { yearMin: null, yearMax: null, genreId: null };
+  activeFilters = { yearMin: null, yearMax: null, genreId: null, type: "all" };
+  document
+    .querySelectorAll(".type-btn")
+    .forEach((b) => b.classList.remove("active"));
+  document.getElementById("typeAll").classList.add("active");
   document.getElementById("yearMin").value = 1900;
   document.getElementById("yearMax").value = 2026;
   document.getElementById("yearMinDisplay").textContent = "1900";
@@ -433,4 +442,16 @@ async function loadGenres() {
     opt.textContent = g.name;
     select.appendChild(opt);
   });
+}
+
+function setType(type) {
+  activeFilters.type = type;
+  document
+    .querySelectorAll(".type-btn")
+    .forEach((b) => b.classList.remove("active"));
+  document
+    .getElementById(
+      type === "all" ? "typeAll" : type === "movie" ? "typeMovie" : "typeTv",
+    )
+    .classList.add("active");
 }

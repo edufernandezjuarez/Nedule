@@ -682,3 +682,27 @@
   color: var(--text-tertiary);
   margin-top: 2px;
 }
+.filter-type-row {
+  display: flex;
+  gap: 6px;
+}
+
+.type-btn {
+  flex: 1;
+  padding: 6px 0;
+  border-radius: var(--radius-md);
+  border: 0.5px solid var(--border-medium);
+  background: transparent;
+  font-size: 13px;
+  cursor: pointer;
+  color: var(--text-secondary);
+  transition:
+    background 0.15s,
+    color 0.15s;
+}
+
+.type-btn.active {
+  background: var(--text-primary);
+  color: var(--bg-primary);
+  border-color: var(--text-primary);
+}

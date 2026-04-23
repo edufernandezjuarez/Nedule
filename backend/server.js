@@ -25,3 +25,6 @@ app.use("/api/tmdb", tmdbRouter);
 
 const reviewsRouter = require("./routes/reviews");
 app.use("/api/reviews", reviewsRouter);
+
+const progressRouter = require("./routes/progress");
+app.use("/api/progress", progressRouter);

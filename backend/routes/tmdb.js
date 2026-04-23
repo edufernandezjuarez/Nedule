@@ -9,7 +9,7 @@ const IMAGE_URL = process.env.TMDB_IMAGE_URL;
 
 // GET /api/tmdb/search?q=inception por ejemplo
 router.get("/search", async (req, res) => {
-  const { q, page = 1, yearMin, yearMax, genreId } = req.query;
+  const { q, page = 1, yearMin, yearMax, genreId, type } = req.query;
   if (!q) return res.status(400).json({ error: "Falta el parámetro q" });
 
   try {
@@ -63,9 +63,16 @@ router.get("/search", async (req, res) => {
       tvResults = tvResults.filter((t) => t.genre_ids?.includes(id));
     }
 
-    const combined = [...movieResults, ...tvResults].sort(
-      (a, b) => b.popularity - a.popularity,
-    );
+    let combined;
+    if (type === "movie") {
+      combined = movieResults;
+    } else if (type === "tv") {
+      combined = tvResults;
+    } else {
+      combined = [...movieResults, ...tvResults];
+    }
+
+    combined = combined.sort((a, b) => b.popularity - a.popularity);
 
     res.json({
       results: combined,
@@ -151,7 +158,7 @@ router.get("/genres", async (req, res) => {
 });
 
 router.get("/popular", async (req, res) => {
-  const { page = 1, yearMin, yearMax, genreId } = req.query;
+  const { q, page = 1, yearMin, yearMax, genreId, type } = req.query;
 
   try {
     const [movies, tv] = await Promise.all([
@@ -204,10 +211,15 @@ router.get("/popular", async (req, res) => {
       tvResults = tvResults.filter((t) => t.genre_ids?.includes(id));
     }
 
-    const combined = [...movieResults, ...tvResults].sort(
-      (a, b) => b.popularity - a.popularity,
-    );
-
+    let combined;
+    if (type === "movie") {
+      combined = movieResults;
+    } else if (type === "tv") {
+      combined = tvResults;
+    } else {
+      combined = [...movieResults, ...tvResults];
+    }
+    combined = combined.sort((a, b) => b.popularity - a.popularity);
     res.json({
       results: combined,
       page: parseInt(page),

@@ -81,6 +81,26 @@
                 <option value="">All genres</option>
               </select>
             </div>
+            <label class="filter-label">Type</label>
+            <div class="filter-type-row">
+              <button
+                class="type-btn active"
+                id="typeAll"
+                onclick="setType('all')"
+              >
+                All
+              </button>
+              <button
+                class="type-btn"
+                id="typeMovie"
+                onclick="setType('movie')"
+              >
+                Movies
+              </button>
+              <button class="type-btn" id="typeTv" onclick="setType('tv')">
+                Series
+              </button>
+            </div>
             <div class="filter-actions">
               <button onclick="clearFilters()">Clear</button>
               <button class="btn-primary" onclick="applyFilters()">

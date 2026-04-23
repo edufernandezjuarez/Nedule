@@ -41,9 +41,29 @@
             <p class="movie-detail-overview" id="movieOverview"></p>
             <div class="movie-detail-crew" id="movieCrew"></div>
             <div class="movie-detail-cast" id="movieCast"></div>
-            <button class="btn-add-detail" id="btnAddToList">
-              + Add to list
-            </button>
+            <div class="movie-actions">
+              <button class="btn-add-detail" id="btnAddToList">
+                + Add to list
+              </button>
+              <div class="progress-tracker hidden" id="progressTracker">
+                <div class="progress-counter">
+                  <span class="progress-label">Season</span>
+                  <div class="counter-controls">
+                    <button onclick="updateCounter('season', -1)">−</button>
+                    <span id="seasonCount">1</span>
+                    <button onclick="updateCounter('season', 1)">+</button>
+                  </div>
+                </div>
+                <div class="progress-counter">
+                  <span class="progress-label">Episode</span>
+                  <div class="counter-controls">
+                    <button onclick="updateCounter('episode', -1)">−</button>
+                    <span id="episodeCount">1</span>
+                    <button onclick="updateCounter('episode', 1)">+</button>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
         <!--Galeria de imagenes-->

@@ -61,6 +61,12 @@ async function loadMovie() {
   document.getElementById("btnAddToList").onclick = () => openAddModal(movie);
 
   renderGallery(movie.gallery ?? []);
+
+  if (type === "tv") {
+    document.getElementById("progressTracker").classList.remove("hidden");
+    await loadProgress(tmdbId);
+  }
+
   buildStars();
   await loadReviews(tmdbId);
 }
@@ -232,4 +238,45 @@ async function submitReview() {
 async function deleteReview(tmdbId, userId) {
   await fetch(`${API}/reviews/${tmdbId}/${userId}`, { method: "DELETE" });
   await loadReviews(tmdbId);
+}
+
+//--Progreso en series--
+let progressData = { season: 1, episode: 1 };
+
+async function loadProgress(tmdbId) {
+  const userId = getUserId();
+  const res = await fetch(`${API}/progress/${tmdbId}/${userId}`);
+  const data = await res.json();
+
+  if (data) {
+    progressData.season = data.season;
+    progressData.episode = data.episode;
+    document.getElementById("seasonCount").textContent = data.season;
+    document.getElementById("episodeCount").textContent = data.episode;
+  }
+}
+
+async function updateCounter(field, delta) {
+  progressData[field] = Math.max(1, progressData[field] + delta);
+  document.getElementById(
+    field === "season" ? "seasonCount" : "episodeCount",
+  ).textContent = progressData[field];
+  await saveProgress();
+}
+
+async function saveProgress() {
+  const { tmdbId } = getParams();
+  const userId = getUserId();
+  await fetch(`${API}/progress/${tmdbId}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      user_id: userId,
+      season: progressData.season,
+      episode: progressData.episode,
+      title: currentMovie.title,
+      year: currentMovie.year,
+      poster_url: currentMovie.poster_url,
+    }),
+  });
 }
