@@ -7,11 +7,21 @@ router.get("/:userId", async (req, res) => {
   const { userId } = req.params;
   try {
     const personal = await pool.query(
-      `SELECT * FROM lists WHERE owner_id = $1 AND is_shared = FALSE ORDER BY created_at DESC`,
+      `SELECT l.*, COUNT(lm.movie_id) as movie_count
+       FROM lists l
+       LEFT JOIN list_movies lm ON l.id = lm.list_id
+       WHERE l.owner_id = $1 AND l.is_shared = FALSE
+       GROUP BY l.id
+       ORDER BY l.created_at DESC`,
       [userId],
     );
     const shared = await pool.query(
-      `SELECT * FROM lists WHERE is_shared = TRUE ORDER BY created_at DESC`,
+      `SELECT l.*, COUNT(lm.movie_id) as movie_count
+       FROM lists l
+       LEFT JOIN list_movies lm ON l.id = lm.list_id
+       WHERE l.is_shared = TRUE
+       GROUP BY l.id
+       ORDER BY l.created_at DESC`,
     );
     res.json({ personal: personal.rows, shared: shared.rows });
   } catch (err) {

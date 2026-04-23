@@ -20,6 +20,7 @@ async function loadMovie() {
 
   const res = await fetch(`${API}/tmdb/detail/${tmdbId}?type=${type}`);
   const movie = await res.json();
+  currentMovie = movie;
 
   document.title = `${movie.title} — Nedule`;
 
@@ -60,6 +61,8 @@ async function loadMovie() {
   document.getElementById("btnAddToList").onclick = () => openAddModal(movie);
 
   renderGallery(movie.gallery ?? []);
+  buildStars();
+  await loadReviews(tmdbId);
 }
 
 function renderGallery(images) {
@@ -134,3 +137,99 @@ async function confirmAddMovie(listId) {
 }
 
 document.addEventListener("DOMContentLoaded", loadMovie);
+
+//--Reviews--
+let selectedRating = 0;
+let currentMovie = null;
+
+async function loadReviews(tmdbId) {
+  const res = await fetch(`${API}/reviews/${tmdbId}`);
+  const reviews = await res.json();
+  renderReviews(reviews);
+}
+
+function renderReviews(reviews) {
+  const container = document.getElementById("reviewsList");
+  container.innerHTML = "";
+
+  if (reviews.length === 0) {
+    container.innerHTML = '<p class="empty-msg">No reviews yet</p>';
+    return;
+  }
+
+  const { tmdbId } = getParams();
+  const userId = getUserId();
+
+  reviews.forEach((r) => {
+    const div = document.createElement("div");
+    div.className = "review-card";
+    div.innerHTML = `
+      <div class="review-header">
+        <div class="review-avatar">${r.username[0]}</div>
+        <span class="review-username">${r.username}</span>
+        <span class="review-rating">${"★".repeat(r.rating)}${"☆".repeat(10 - r.rating)}</span>
+        <span class="review-score">${r.rating}/10</span>
+        ${
+          r.user_id === userId
+            ? `<button class="review-delete-btn" onclick="deleteReview('${tmdbId}', ${r.user_id})">✕</button>`
+            : ""
+        }
+      </div>
+      ${r.comment ? `<p class="review-comment">${r.comment}</p>` : ""}
+    `;
+    container.appendChild(div);
+  });
+}
+
+function buildStars() {
+  const row = document.getElementById("starsRow");
+  row.innerHTML = "";
+  for (let i = 1; i <= 10; i++) {
+    const star = document.createElement("button");
+    star.className = "star-btn";
+    star.textContent = "★";
+    star.dataset.value = i;
+    star.onclick = () => setRating(i);
+    row.appendChild(star);
+  }
+}
+
+function setRating(value) {
+  selectedRating = value;
+  document.querySelectorAll(".star-btn").forEach((s) => {
+    s.classList.toggle("active", parseInt(s.dataset.value) <= value);
+  });
+}
+
+async function submitReview() {
+  if (!selectedRating) {
+    alert("Please select a rating");
+    return;
+  }
+
+  const { tmdbId, type } = getParams();
+  const comment = document.getElementById("reviewComment").value.trim();
+  const userId = getUserId();
+
+  await fetch(`${API}/reviews/${tmdbId}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      user_id: userId,
+      rating: selectedRating,
+      comment,
+      title: currentMovie.title,
+      year: currentMovie.year,
+      poster_url: currentMovie.poster_url,
+    }),
+  });
+
+  selectedRating = 0;
+  document.getElementById("reviewComment").value = "";
+  buildStars();
+  await loadReviews(tmdbId);
+}
+async function deleteReview(tmdbId, userId) {
+  await fetch(`${API}/reviews/${tmdbId}/${userId}`, { method: "DELETE" });
+  await loadReviews(tmdbId);
+}

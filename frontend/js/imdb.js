@@ -1,6 +1,7 @@
 const API = "http://localhost:3000/api";
 let activeListId = null;
 let activeListName = null;
+let isPopularMode = true;
 
 function getUserId() {
   const name = getActiveUser();
@@ -29,12 +30,13 @@ function renderFolders(lists, containerId, isShared) {
     const folder = document.createElement("div");
     folder.className = `folder ${isShared ? "shared" : "personal"}`;
     folder.innerHTML = `
-      <div class="folder-icon"></div>
-      <div class="folder-name">${list.name}</div>
-      <button class="folder-menu-btn" onclick="toggleFolderMenu(event, ${list.id})">&#8942;</button>
-      <div class="folder-menu hidden" id="folderMenu-${list.id}">
-        <button onclick="deleteList(event, ${list.id})">Delete</button>
-      </div>
+    <div class="folder-icon"></div>
+    <div class="folder-name">${list.name}</div>
+    <div class="folder-count">${list.movie_count} ${parseInt(list.movie_count) === 1 ? "title" : "titles"}</div>
+    <button class="folder-menu-btn" onclick="toggleFolderMenu(event, ${list.id})">&#8942;</button>
+    <div class="folder-menu hidden" id="folderMenu-${list.id}">
+      <button onclick="deleteList(event, ${list.id})">Delete</button>
+    </div>
     `;
     folder.onclick = () => openList(list.id, list.name, isShared);
     container.appendChild(folder);
@@ -104,9 +106,11 @@ function renderMovies(movies) {
   movies.forEach((movie) => {
     const card = document.createElement("div");
     card.className = `movie-card clickable ${deleteMode ? "delete-mode" : ""}`;
-    card.onclick = () => {
+    card.onclick = (e) => {
+      if (e.target.classList.contains("delete-x")) return;
       const tmdbId = movie.imdb_id.replace("tmdb_", "");
-      window.location.href = `/movie.html?id=${tmdbId}&type=movie`;
+      const type = movie.media_type ?? "movie";
+      window.location.href = `/movie.html?id=${tmdbId}&type=${type}`;
     };
     card.innerHTML = `
       <button class="delete-x" onclick="removeMovie(${movie.id})">✕</button>
@@ -134,10 +138,10 @@ let isLoadingMore = false;
 
 async function searchMovies() {
   const q = document.getElementById("searchInput").value.trim();
-  if (!q) return;
 
   currentQuery = q;
   searchPage = 1;
+  isPopularMode = !q;
   removeInfiniteScroll();
 
   const container = document.getElementById("searchResults");
@@ -159,15 +163,27 @@ async function fetchAndRenderResults(reset = false) {
   loadingEl.textContent = "Loading...";
   container.appendChild(loadingEl);
 
-  const params = new URLSearchParams({
-    q: currentQuery,
-    page: searchPage,
-    ...(activeFilters.yearMin && { yearMin: activeFilters.yearMin }),
-    ...(activeFilters.yearMax && { yearMax: activeFilters.yearMax }),
-    ...(activeFilters.genreId && { genreId: activeFilters.genreId }),
-  });
+  let url;
+  if (isPopularMode) {
+    const params = new URLSearchParams({
+      page: searchPage,
+      ...(activeFilters.yearMin && { yearMin: activeFilters.yearMin }),
+      ...(activeFilters.yearMax && { yearMax: activeFilters.yearMax }),
+      ...(activeFilters.genreId && { genreId: activeFilters.genreId }),
+    });
+    url = `${API}/tmdb/popular?${params}`;
+  } else {
+    const params = new URLSearchParams({
+      q: currentQuery,
+      page: searchPage,
+      ...(activeFilters.yearMin && { yearMin: activeFilters.yearMin }),
+      ...(activeFilters.yearMax && { yearMax: activeFilters.yearMax }),
+      ...(activeFilters.genreId && { genreId: activeFilters.genreId }),
+    });
+    url = `${API}/tmdb/search?${params}`;
+  }
 
-  const res = await fetch(`${API}/tmdb/search?${params}`);
+  const res = await fetch(url);
   const data = await res.json();
 
   document.getElementById("searchLoading")?.remove();
@@ -175,10 +191,6 @@ async function fetchAndRenderResults(reset = false) {
   data.results.forEach((item) => {
     const card = document.createElement("div");
     card.className = "movie-card search-card clickable";
-    card.onclick = (e) => {
-      if (e.target.classList.contains("add-btn")) return;
-      window.location.href = `/movie.html?id=${item.tmdb_id}&type=${item.type}`;
-    };
     card.innerHTML = `
       <div class="movie-poster">
         ${
@@ -194,6 +206,10 @@ async function fetchAndRenderResults(reset = false) {
         <button class="add-btn" onclick="openAddModal(${JSON.stringify(item).replace(/"/g, "&quot;")})">+ Add</button>
       </div>
     `;
+    card.onclick = (e) => {
+      if (e.target.classList.contains("add-btn")) return;
+      window.location.href = `/movie.html?id=${item.tmdb_id}&type=${item.type}`;
+    };
     container.appendChild(card);
   });
 
@@ -320,6 +336,8 @@ async function createList() {
 document.addEventListener("DOMContentLoaded", () => {
   if (document.getElementById("searchInput")) {
     loadGenres();
+    document.getElementById("searchResults").classList.remove("hidden");
+    fetchAndRenderResults(true);
     document.getElementById("searchInput").addEventListener("keydown", (e) => {
       if (e.key === "Enter") searchMovies();
     });
@@ -385,7 +403,10 @@ function applyFilters() {
     .getElementById("filterBtn")
     .classList.toggle("filter-active", hasFilters);
 
-  if (currentQuery) searchMovies();
+  searchPage = 1;
+  removeInfiniteScroll();
+  document.getElementById("searchResults").innerHTML = "";
+  fetchAndRenderResults(true);
 }
 
 function clearFilters() {

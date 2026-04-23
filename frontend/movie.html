@@ -46,10 +46,27 @@
             </button>
           </div>
         </div>
-
+        <!--Galeria de imagenes-->
         <div class="gallery-section" id="gallerySection">
           <h2 class="section-title">Images</h2>
           <div class="gallery-grid" id="galleryGrid"></div>
+        </div>
+        <!--Seccion de reviews-->
+        <div class="reviews-section">
+          <h2 class="section-title">Reviews</h2>
+          <div id="reviewsList"></div>
+          <div class="review-form" id="reviewForm">
+            <h3 class="review-form-title" id="reviewFormTitle">Your review</h3>
+            <div class="stars-row" id="starsRow"></div>
+            <textarea
+              id="reviewComment"
+              placeholder="Leave a comment..."
+              rows="3"
+            ></textarea>
+            <button class="btn-submit-review" onclick="submitReview()">
+              Submit
+            </button>
+          </div>
         </div>
       </div>
     </main>

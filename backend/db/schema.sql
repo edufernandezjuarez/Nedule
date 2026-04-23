@@ -19,7 +19,8 @@ CREATE TABLE movies (
   title       VARCHAR(255) NOT NULL,
   year        VARCHAR(10),
   poster_url  TEXT,
-  imdb_rating VARCHAR(10)
+  imdb_rating VARCHAR(10),
+  media_type VARCHAR(10) DEFAULT 'movie'
 );
 
 CREATE TABLE list_movies (
@@ -28,4 +29,22 @@ CREATE TABLE list_movies (
   added_by   INTEGER REFERENCES users(id),
   added_at   TIMESTAMP DEFAULT NOW(),
   PRIMARY KEY (list_id, movie_id)
+);
+CREATE TABLE reviews (
+  id         SERIAL PRIMARY KEY,
+  movie_id   INTEGER REFERENCES movies(id) ON DELETE CASCADE,
+  user_id    INTEGER REFERENCES users(id),
+  rating     INTEGER CHECK (rating >= 1 AND rating <= 10),
+  comment    TEXT,
+  created_at TIMESTAMP DEFAULT NOW(),
+  UNIQUE (movie_id, user_id)
+);
+CREATE TABLE series_progress (
+  id         SERIAL PRIMARY KEY,
+  movie_id   INTEGER REFERENCES movies(id) ON DELETE CASCADE,
+  user_id    INTEGER REFERENCES users(id),
+  season     INTEGER DEFAULT 1,
+  episode    INTEGER DEFAULT 1,
+  updated_at TIMESTAMP DEFAULT NOW(),
+  UNIQUE (movie_id, user_id)
 );
