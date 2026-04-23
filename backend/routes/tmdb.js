@@ -287,5 +287,28 @@ router.get("/person/:personId", async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+router.get("/people/search", async (req, res) => {
+  const { q } = req.query;
+  if (!q) return res.status(400).json({ error: "Falta el parámetro q" });
+
+  try {
+    const response = await axios.get(`${BASE_URL}/search/person`, {
+      params: { api_key: API_KEY, query: q, language: "en-US" },
+    });
+
+    const results = response.data.results.slice(0, 12).map((p) => ({
+      id: p.id,
+      name: p.name,
+      photo_url: p.profile_path
+        ? `https://image.tmdb.org/t/p/w185${p.profile_path}`
+        : null,
+      known_for: p.known_for_department ?? "Acting",
+    }));
+
+    res.json(results);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
 
 module.exports = router;
