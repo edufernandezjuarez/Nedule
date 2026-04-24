@@ -81,9 +81,7 @@
             </div>
             <div class="filter-section">
               <label class="filter-label">Genre</label>
-              <select id="genreSelect" class="filter-select">
-                <option value="">All genres</option>
-              </select>
+              <div class="genre-chips" id="genreChips"></div>
             </div>
             <label class="filter-label">Type</label>
             <div class="filter-type-row">
@@ -127,6 +125,8 @@
         </div>
       </div>
     </main>
+    <script src="/js/auth.js"></script>
+    <script src="/js/user-menu.js"></script>
     <script>
       localStorage.setItem("activeUser", "Nicole");
     </script>

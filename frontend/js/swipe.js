@@ -1,11 +1,6 @@
-const API = "http://localhost:3000/api";
+const API = "http://nedule.duckdns.org:3000/api";
 let currentSwipe = null;
-let activeFilters = {
-  yearMin: null,
-  yearMax: null,
-  genreId: null,
-  type: "all",
-};
+let activeFilters = { yearMin: null, yearMax: null, genreIds: [], type: "all" };
 let pendingMovie = null;
 
 function getUserId() {
@@ -22,7 +17,9 @@ async function loadSwipe() {
       activeFilters.yearMin !== "1900" && { yearMin: activeFilters.yearMin }),
     ...(activeFilters.yearMax &&
       activeFilters.yearMax !== "2026" && { yearMax: activeFilters.yearMax }),
-    ...(activeFilters.genreId && { genreId: activeFilters.genreId }),
+    ...(activeFilters.genreIds.length > 0 && {
+      genreIds: activeFilters.genreIds.join(","),
+    }),
     ...(activeFilters.type !== "all" && { type: activeFilters.type }),
   });
 
@@ -79,16 +76,26 @@ function updateYearFilter() {
 async function loadGenres() {
   const res = await fetch(`${API}/tmdb/genres`);
   const genres = await res.json();
-  const select = document.getElementById("genreSelect");
+  const chips = document.getElementById("genreChips");
+
   genres.forEach((g) => {
-    const opt = document.createElement("option");
-    opt.value = g.id;
-    opt.textContent = g.name;
-    select.appendChild(opt);
+    const btn = document.createElement("button");
+    btn.className = "genre-chip";
+    btn.textContent = g.name;
+    btn.dataset.id = g.id;
+    btn.onclick = () => {
+      btn.classList.toggle("active");
+      if (btn.classList.contains("active")) {
+        activeFilters.genreIds.push(g.id);
+      } else {
+        activeFilters.genreIds = activeFilters.genreIds.filter(
+          (x) => x !== g.id,
+        );
+      }
+    };
+    chips.appendChild(btn);
   });
-  select.onchange = () => {
-    activeFilters.genreId = select.value || null;
-  };
+  select.onchange = undefined;
 }
 
 // ── MODAL ──

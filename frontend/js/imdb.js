@@ -1,4 +1,4 @@
-const API = "http://localhost:3000/api";
+const API = "http://nedule.duckdns.org:3000/api";
 let activeListId = null;
 let activeListName = null;
 let isPopularMode = true;
@@ -168,7 +168,9 @@ async function fetchAndRenderResults(reset = false) {
     page: searchPage,
     ...(activeFilters.yearMin && { yearMin: activeFilters.yearMin }),
     ...(activeFilters.yearMax && { yearMax: activeFilters.yearMax }),
-    ...(activeFilters.genreId && { genreId: activeFilters.genreId }),
+    ...(activeFilters.genreIds.length > 0 && {
+      genreIds: activeFilters.genreIds.join(","),
+    }),
     ...(activeFilters.type !== "all" && { type: activeFilters.type }),
   };
 
@@ -364,12 +366,7 @@ async function removeMovie(movieId) {
 }
 
 //-- FILTROS DE BE BUSQUEDA--
-let activeFilters = {
-  yearMin: null,
-  yearMax: null,
-  genreId: null,
-  type: "all",
-};
+let activeFilters = { yearMin: null, yearMax: null, genreIds: [], type: "all" };
 
 function toggleFilterMenu() {
   document.getElementById("filterMenu").classList.toggle("hidden");
@@ -393,7 +390,6 @@ function updateYearFilter() {
 function applyFilters() {
   activeFilters.yearMin = document.getElementById("yearMin").value;
   activeFilters.yearMax = document.getElementById("yearMax").value;
-  activeFilters.genreId = document.getElementById("genreSelect").value || null;
   activeFilters.type =
     document
       .querySelector(".type-btn.active")
@@ -402,10 +398,13 @@ function applyFilters() {
       .replace("Movie", "movie")
       .replace("Tv", "tv") ?? "all";
 
+  document.getElementById("filterMenu").classList.add("hidden");
+
   const hasFilters =
     activeFilters.yearMin !== "1900" ||
     activeFilters.yearMax !== "2026" ||
-    activeFilters.genreId !== null;
+    activeFilters.genreIds.length > 0 ||
+    activeFilters.type !== "all";
   document
     .getElementById("filterBtn")
     .classList.toggle("filter-active", hasFilters);
@@ -417,33 +416,49 @@ function applyFilters() {
 }
 
 function clearFilters() {
-  activeFilters = { yearMin: null, yearMax: null, genreId: null, type: "all" };
-  document
-    .querySelectorAll(".type-btn")
-    .forEach((b) => b.classList.remove("active"));
-  document.getElementById("typeAll").classList.add("active");
+  activeFilters = { yearMin: null, yearMax: null, genreIds: [], type: "all" };
   document.getElementById("yearMin").value = 1900;
   document.getElementById("yearMax").value = 2026;
   document.getElementById("yearMinDisplay").textContent = "1900";
   document.getElementById("yearMaxDisplay").textContent = "2026";
-  document.getElementById("genreSelect").value = "";
+  document
+    .querySelectorAll(".genre-chip")
+    .forEach((c) => c.classList.remove("active"));
+  document
+    .querySelectorAll(".type-btn")
+    .forEach((b) => b.classList.remove("active"));
+  document.getElementById("typeAll").classList.add("active");
   document.getElementById("filterBtn").classList.remove("filter-active");
   document.getElementById("filterMenu").classList.add("hidden");
-  if (currentQuery) searchMovies();
+  searchPage = 1;
+  removeInfiniteScroll();
+  document.getElementById("searchResults").innerHTML = "";
+  fetchAndRenderResults(true);
 }
 
 async function loadGenres() {
   const res = await fetch(`${API}/tmdb/genres`);
   const genres = await res.json();
-  const select = document.getElementById("genreSelect");
-  if (!select) return;
+  const chips = document.getElementById("genreChips");
+  if (!chips) return;
 
   genres.forEach((g) => {
-    const opt = document.createElement("option");
-    opt.value = g.id;
-    opt.textContent = g.name;
-    select.appendChild(opt);
+    const btn = document.createElement("button");
+    btn.className = "genre-chip";
+    btn.textContent = g.name;
+    btn.dataset.id = g.id;
+    btn.onclick = () => toggleGenre(btn, g.id);
+    chips.appendChild(btn);
   });
+}
+
+function toggleGenre(btn, id) {
+  btn.classList.toggle("active");
+  if (btn.classList.contains("active")) {
+    activeFilters.genreIds.push(id);
+  } else {
+    activeFilters.genreIds = activeFilters.genreIds.filter((x) => x !== id);
+  }
 }
 
 function setType(type) {

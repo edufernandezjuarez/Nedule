@@ -752,3 +752,36 @@
   color: var(--text-secondary);
   margin-top: 3px;
 }
+.genre-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  max-height: 180px;
+  overflow-y: auto;
+}
+
+.genre-chip {
+  padding: 4px 12px;
+  border-radius: 20px;
+  border: 0.5px solid var(--border-medium);
+  background: transparent;
+  font-size: 12px;
+  cursor: pointer;
+  color: var(--text-secondary);
+  transition:
+    background 0.12s,
+    color 0.12s,
+    border-color 0.12s;
+  white-space: nowrap;
+}
+
+.genre-chip.active {
+  background: #378add;
+  color: white;
+  border-color: #378add;
+}
+
+.genre-chip:hover:not(.active) {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+}

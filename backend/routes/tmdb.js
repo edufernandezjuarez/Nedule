@@ -9,7 +9,7 @@ const IMAGE_URL = process.env.TMDB_IMAGE_URL;
 
 // GET /api/tmdb/search?q=inception por ejemplo
 router.get("/search", async (req, res) => {
-  const { q, page = 1, yearMin, yearMax, genreId, type } = req.query;
+  const { q, page = 1, yearMin, yearMax, genreIds, type } = req.query;
   if (!q) return res.status(400).json({ error: "Falta el parámetro q" });
 
   try {
@@ -57,10 +57,14 @@ router.get("/search", async (req, res) => {
       tvResults = tvResults.filter(inRange);
     }
 
-    if (genreId) {
-      const id = parseInt(genreId);
-      movieResults = movieResults.filter((m) => m.genre_ids?.includes(id));
-      tvResults = tvResults.filter((t) => t.genre_ids?.includes(id));
+    if (genreIds) {
+      const ids = genreIds.split(",").map(Number);
+      movieResults = movieResults.filter((m) =>
+        ids.every((id) => m.genre_ids?.includes(id)),
+      );
+      tvResults = tvResults.filter((t) =>
+        ids.every((id) => t.genre_ids?.includes(id)),
+      );
     }
 
     let combined;
@@ -158,41 +162,68 @@ router.get("/genres", async (req, res) => {
 });
 
 router.get("/popular", async (req, res) => {
-  const { q, page = 1, yearMin, yearMax, genreId, type } = req.query;
+  const { page = 1, yearMin, yearMax, genreIds, type } = req.query;
 
   try {
-    const [movies, tv] = await Promise.all([
-      axios.get(`${BASE_URL}/movie/popular`, {
-        params: { api_key: API_KEY, language: "en-US", page },
-      }),
-      axios.get(`${BASE_URL}/tv/popular`, {
-        params: { api_key: API_KEY, language: "en-US", page },
-      }),
-    ]);
+    const movieParams = { api_key: API_KEY, language: "en-US", page };
+    const tvParams = { api_key: API_KEY, language: "en-US", page };
 
-    let movieResults = movies.data.results.map((m) => ({
-      tmdb_id: m.id,
-      title: m.title,
-      year: m.release_date?.slice(0, 4) ?? "N/A",
-      poster_url: m.poster_path ? `${IMAGE_URL}${m.poster_path}` : null,
-      rating: m.vote_average?.toFixed(1) ?? "N/A",
-      overview: m.overview,
-      popularity: m.popularity,
-      genre_ids: m.genre_ids,
-      type: "movie",
-    }));
+    if (yearMin) {
+      movieParams["primary_release_date.gte"] = `${yearMin}-01-01`;
+      tvParams["first_air_date.gte"] = `${yearMin}-01-01`;
+    }
+    if (yearMax) {
+      movieParams["primary_release_date.lte"] = `${yearMax}-12-31`;
+      tvParams["first_air_date.lte"] = `${yearMax}-12-31`;
+    }
+    if (genreIds) {
+      movieParams.with_genres = genreIds;
+      tvParams.with_genres = genreIds;
+    }
 
-    let tvResults = tv.data.results.map((t) => ({
-      tmdb_id: t.id,
-      title: t.name,
-      year: t.first_air_date?.slice(0, 4) ?? "N/A",
-      poster_url: t.poster_path ? `${IMAGE_URL}${t.poster_path}` : null,
-      rating: t.vote_average?.toFixed(1) ?? "N/A",
-      overview: t.overview,
-      popularity: t.popularity,
-      genre_ids: t.genre_ids,
-      type: "tv",
-    }));
+    const movieEndpoint = genreIds
+      ? `${BASE_URL}/discover/movie`
+      : `${BASE_URL}/movie/popular`;
+    const tvEndpoint = genreIds
+      ? `${BASE_URL}/discover/tv`
+      : `${BASE_URL}/tv/popular`;
+
+    const requests = [];
+    if (type !== "tv")
+      requests.push(axios.get(movieEndpoint, { params: movieParams }));
+    if (type !== "movie")
+      requests.push(axios.get(tvEndpoint, { params: tvParams }));
+
+    const responses = await Promise.all(requests);
+
+    let movieResults = [],
+      tvResults = [];
+    if (type !== "tv")
+      movieResults =
+        responses[0]?.data.results.map((m) => ({
+          tmdb_id: m.id,
+          title: m.title,
+          year: m.release_date?.slice(0, 4) ?? "N/A",
+          poster_url: m.poster_path ? `${IMAGE_URL}${m.poster_path}` : null,
+          rating: m.vote_average?.toFixed(1) ?? "N/A",
+          overview: m.overview,
+          popularity: m.popularity,
+          genre_ids: m.genre_ids,
+          type: "movie",
+        })) ?? [];
+    if (type !== "movie")
+      tvResults =
+        responses[type !== "tv" ? 1 : 0]?.data.results.map((t) => ({
+          tmdb_id: t.id,
+          title: t.name,
+          year: t.first_air_date?.slice(0, 4) ?? "N/A",
+          poster_url: t.poster_path ? `${IMAGE_URL}${t.poster_path}` : null,
+          rating: t.vote_average?.toFixed(1) ?? "N/A",
+          overview: t.overview,
+          popularity: t.popularity,
+          genre_ids: t.genre_ids,
+          type: "tv",
+        })) ?? [];
 
     if (yearMin || yearMax) {
       const min = yearMin ? parseInt(yearMin) : 0;
@@ -205,25 +236,18 @@ router.get("/popular", async (req, res) => {
       tvResults = tvResults.filter(inRange);
     }
 
-    if (genreId) {
-      const id = parseInt(genreId);
-      movieResults = movieResults.filter((m) => m.genre_ids?.includes(id));
-      tvResults = tvResults.filter((t) => t.genre_ids?.includes(id));
-    }
-
     let combined;
-    if (type === "movie") {
-      combined = movieResults;
-    } else if (type === "tv") {
-      combined = tvResults;
-    } else {
-      combined = [...movieResults, ...tvResults];
-    }
+    if (type === "movie") combined = movieResults;
+    else if (type === "tv") combined = tvResults;
+    else combined = [...movieResults, ...tvResults];
+
     combined = combined.sort((a, b) => b.popularity - a.popularity);
+
+    const totalPages = responses[0]?.data.total_pages ?? 1;
     res.json({
       results: combined,
       page: parseInt(page),
-      hasMore: movies.data.total_pages > page || tv.data.total_pages > page,
+      hasMore: totalPages > page,
     });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -311,21 +335,16 @@ router.get("/people/search", async (req, res) => {
   }
 });
 router.get("/swipe", async (req, res) => {
-  const { yearMin, yearMax, genreId, type } = req.query;
-
+  const { yearMin, yearMax, genreIds, type } = req.query;
   try {
     const randomPage = Math.floor(Math.random() * 10) + 1;
-
     const movieParams = {
       api_key: API_KEY,
       language: "en-US",
       page: randomPage,
     };
     const tvParams = { api_key: API_KEY, language: "en-US", page: randomPage };
-    if (genreId) {
-      movieParams.with_genres = genreId;
-      tvParams.with_genres = genreId;
-    }
+
     if (yearMin) {
       movieParams["primary_release_date.gte"] = `${yearMin}-01-01`;
       tvParams["first_air_date.gte"] = `${yearMin}-01-01`;
@@ -334,19 +353,41 @@ router.get("/swipe", async (req, res) => {
       movieParams["primary_release_date.lte"] = `${yearMax}-12-31`;
       tvParams["first_air_date.lte"] = `${yearMax}-12-31`;
     }
+    if (genreIds) {
+      movieParams.with_genres = genreIds;
+      tvParams.with_genres = genreIds;
+    }
 
     const requests = [];
-    if (type !== "tv") {
-      requests.push(
-        axios.get(`${BASE_URL}/movie/popular`, { params: movieParams }),
-      );
-      requests.push(
-        axios.get(`${BASE_URL}/discover/movie`, { params: movieParams }),
-      );
-    }
-    if (type !== "movie") {
-      requests.push(axios.get(`${BASE_URL}/tv/popular`, { params: tvParams }));
-      requests.push(axios.get(`${BASE_URL}/discover/tv`, { params: tvParams }));
+    if (genreIds) {
+      // Con géneros usamos solo discover que soporta AND
+      if (type !== "tv") {
+        requests.push(
+          axios.get(`${BASE_URL}/discover/movie`, { params: movieParams }),
+        );
+      }
+      if (type !== "movie") {
+        requests.push(
+          axios.get(`${BASE_URL}/discover/tv`, { params: tvParams }),
+        );
+      }
+    } else {
+      if (type !== "tv") {
+        requests.push(
+          axios.get(`${BASE_URL}/movie/popular`, { params: movieParams }),
+        );
+        requests.push(
+          axios.get(`${BASE_URL}/discover/movie`, { params: movieParams }),
+        );
+      }
+      if (type !== "movie") {
+        requests.push(
+          axios.get(`${BASE_URL}/tv/popular`, { params: tvParams }),
+        );
+        requests.push(
+          axios.get(`${BASE_URL}/discover/tv`, { params: tvParams }),
+        );
+      }
     }
 
     const responses = await Promise.all(requests);
