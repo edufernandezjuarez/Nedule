@@ -1,4 +1,5 @@
-const API = "http://nedule.duckdns.org:3000/api";
+const API = "http://146.181.49.255:3000/api";
+
 let selectedUser = null;
 
 function selectUser(name) {

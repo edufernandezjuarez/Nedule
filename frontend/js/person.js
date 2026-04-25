@@ -1,4 +1,4 @@
-const API = "http://nedule.duckdns.org:3000/api";
+const API = "http://146.181.49.255:3000/api";
 
 async function loadPerson() {
   const params = new URLSearchParams(window.location.search);
