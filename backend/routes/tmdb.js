@@ -268,6 +268,10 @@ router.get("/person/search/:name", async (req, res) => {
 });
 
 router.get("/person/:personId", async (req, res) => {
+  const { page = 1 } = req.query;
+  const limit = 24;
+  const offset = (parseInt(page) - 1) * limit;
+
   try {
     const response = await axios.get(
       `${BASE_URL}/person/${req.params.personId}`,
@@ -282,21 +286,22 @@ router.get("/person/:personId", async (req, res) => {
 
     const p = response.data;
 
-    const credits = p.combined_credits.cast
+    const allCredits = p.combined_credits.cast
       .concat(p.combined_credits.crew.filter((c) => c.job === "Director"))
       .filter((c) => c.poster_path)
       .filter((c, i, arr) => arr.findIndex((x) => x.id === c.id) === i)
-      .sort((a, b) => (b.popularity ?? 0) - (a.popularity ?? 0))
-      .slice(0, 24)
-      .map((c) => ({
-        tmdb_id: c.id,
-        title: c.title ?? c.name,
-        year: (c.release_date ?? c.first_air_date)?.slice(0, 4) ?? "N/A",
-        poster_url: `${IMAGE_URL}${c.poster_path}`,
-        rating: c.vote_average?.toFixed(1) ?? "N/A",
-        type: c.media_type,
-        role: c.character ?? c.job ?? "",
-      }));
+      .sort((a, b) => (b.popularity ?? 0) - (a.popularity ?? 0));
+
+    const total = allCredits.length;
+    const credits = allCredits.slice(offset, offset + limit).map((c) => ({
+      tmdb_id: c.id,
+      title: c.title ?? c.name,
+      year: (c.release_date ?? c.first_air_date)?.slice(0, 4) ?? "N/A",
+      poster_url: `${IMAGE_URL}${c.poster_path}`,
+      rating: c.vote_average?.toFixed(1) ?? "N/A",
+      type: c.media_type,
+      role: c.character ?? c.job ?? "",
+    }));
 
     res.json({
       id: p.id,
@@ -306,11 +311,14 @@ router.get("/person/:personId", async (req, res) => {
         : null,
       known_for: p.known_for_department,
       credits,
+      page: parseInt(page),
+      hasMore: offset + limit < total,
     });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
+
 router.get("/people/search", async (req, res) => {
   const { q } = req.query;
   if (!q) return res.status(400).json({ error: "Falta el parámetro q" });

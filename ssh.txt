@@ -1,0 +1,1 @@
+ssh -i C:\Users\Edu\Documents\nedule_keys\ssh-key-2026-04-25.key ubuntu@146.181.49.255
