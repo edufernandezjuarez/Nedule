@@ -12,10 +12,21 @@
         <button class="nav-btn active" data-page="imdb">TMDB</button>
         <button class="nav-btn" data-page="swipe">Swipe</button>
       </div>
-      <div class="user-wrapper">
+      <div
+        class="user-wrapper"
+        style="display: flex; align-items: center; gap: 8px"
+      >
+        <div class="info-wrapper">
+          <button class="btn-info" id="infoBtn" onclick="toggleInfoMenu()">
+            Info
+          </button>
+          <div class="info-menu hidden" id="infoMenu">
+            <button onclick="goToReviews()">Review history</button>
+          </div>
+        </div>
         <button class="user-badge" id="userBadge" onclick="toggleMenu()">
-          <div class="avatar" id="avatarInitial">N</div>
-          <span class="username" id="usernameLabel">Nicole</span>
+          <div class="avatar" id="avatarInitial">E</div>
+          <span class="username" id="usernameLabel">Edu</span>
         </button>
         <div class="user-menu" id="userMenu">
           <button class="user-option" onclick="selectUser('Edu', 'E')">

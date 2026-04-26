@@ -53,3 +53,28 @@ document.addEventListener("click", (e) => {
     menu.classList.remove("open");
   }
 });
+function toggleInfoMenu() {
+  document.getElementById("infoMenu").classList.toggle("hidden");
+}
+
+function goToReviews() {
+  window.location.href = "/reviews.html";
+}
+
+document.addEventListener("click", (e) => {
+  const infoBtn = document.getElementById("infoBtn");
+  const infoMenu = document.getElementById("infoMenu");
+  if (
+    infoBtn &&
+    infoMenu &&
+    !infoBtn.contains(e.target) &&
+    !infoMenu.contains(e.target)
+  ) {
+    infoMenu.classList.add("hidden");
+  }
+  const badge = document.getElementById("userBadge");
+  const menu = document.getElementById("userMenu");
+  if (!badge.contains(e.target) && !menu.contains(e.target)) {
+    menu.classList.remove("open");
+  }
+});

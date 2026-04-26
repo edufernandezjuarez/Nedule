@@ -62,4 +62,20 @@ router.delete("/:tmdbId/:userId", async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+router.get("/user/:userId", async (req, res) => {
+  const { userId } = req.params;
+  try {
+    const result = await pool.query(
+      `SELECT r.*, m.title, m.year, m.poster_url, m.imdb_id, m.media_type
+       FROM reviews r
+       JOIN movies m ON r.movie_id = m.id
+       WHERE r.user_id = $1
+       ORDER BY r.created_at DESC`,
+      [userId],
+    );
+    res.json(result.rows);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
 module.exports = router;
