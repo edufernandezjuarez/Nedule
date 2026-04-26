@@ -63,3 +63,8 @@
   overflow-wrap: break-word;
   white-space: normal;
 }
+.page {
+  padding: 1.5rem;
+  background: var(--bg-tertiary);
+  min-height: calc(100vh - 52px);
+}
