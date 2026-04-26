@@ -9,9 +9,6 @@ async function loadReviews() {
   const userId = getUserId();
   const name = getActiveUser();
 
-  document.getElementById("reviewsTitle").textContent =
-    `${name}'s Review History`;
-
   const res = await fetch(`${API}/reviews/user/${userId}`);
   const reviews = await res.json();
 
