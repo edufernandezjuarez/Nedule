@@ -57,3 +57,9 @@
   line-height: 1.5;
   margin: 0;
 }
+.review-row-comment,
+.review-comment {
+  word-break: break-word;
+  overflow-wrap: break-word;
+  white-space: normal;
+}

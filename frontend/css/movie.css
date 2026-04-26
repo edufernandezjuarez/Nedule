@@ -408,3 +408,9 @@
   color: #378add;
   border-color: #378add;
 }
+.review-row-comment,
+.review-comment {
+  word-break: break-word;
+  overflow-wrap: break-word;
+  white-space: normal;
+}
