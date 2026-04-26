@@ -9,6 +9,8 @@ function getUserId() {
   return name === "Edu" ? 1 : 2;
 }
 
+const seenIds = new Set();
+
 async function loadSwipe() {
   const card = document.getElementById("swipeCard");
   card.classList.add("swipe-loading");
@@ -22,6 +24,7 @@ async function loadSwipe() {
       genreIds: activeFilters.genreIds.join(","),
     }),
     ...(activeFilters.type !== "all" && { type: activeFilters.type }),
+    exclude: [...seenIds].join(","),
   });
 
   const res = await fetch(`${API}/tmdb/swipe?${params}`);
@@ -30,9 +33,11 @@ async function loadSwipe() {
   card.classList.remove("swipe-loading");
 
   if (!data) {
-    document.getElementById("swipeTitle").textContent = "No results found";
+    document.getElementById("swipeTitle").textContent = "No more results";
     return;
   }
+
+  seenIds.add(data.tmdb_id);
 
   currentSwipe = data;
 

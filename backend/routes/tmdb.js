@@ -342,8 +342,9 @@ router.get("/people/search", async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+
 router.get("/swipe", async (req, res) => {
-  const { yearMin, yearMax, genreIds, type } = req.query;
+  const { yearMin, yearMax, genreIds, type, exclude } = req.query;
   try {
     const randomPage = Math.floor(Math.random() * 10) + 1;
     const movieParams = {
@@ -413,6 +414,10 @@ router.get("/swipe", async (req, res) => {
     }
 
     pool = pool.filter((item) => item.poster_path);
+    const excludeIds = exclude ? exclude.split(",").map(Number) : [];
+    pool = pool.filter((item) => !excludeIds.includes(item.id));
+
+    if (!pool.length) return res.json(null);
     if (!pool.length) return res.json(null);
 
     const pick = pool[Math.floor(Math.random() * pool.length)];
