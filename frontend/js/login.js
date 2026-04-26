@@ -32,7 +32,6 @@ async function submitLogin() {
 
   localStorage.setItem("token", data.token);
   localStorage.setItem("activeUser", data.username);
-  const path =
-    data.username === "Edu" ? "/edu/lists.html" : "/nicole/lists.html";
+  const path = data.username === "Edu" ? "/inicio.html" : "/inicio.html";
   window.location.href = path;
 }

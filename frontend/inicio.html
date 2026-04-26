@@ -4,6 +4,10 @@
   <head>
     <title>Nedule</title>
     <link rel="stylesheet" href="/css/inicio.css" />
+    <script>
+      const user = localStorage.getItem("activeUser");
+      if (!user) window.location.href = "/login.html";
+    </script>
   </head>
 
   <body>
