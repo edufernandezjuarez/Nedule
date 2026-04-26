@@ -51,6 +51,17 @@ router.delete("/:listId/:movieId", async (req, res) => {
       "DELETE FROM list_movies WHERE list_id = $1 AND movie_id = $2",
       [listId, movieId],
     );
+
+    // Limpiar la película si ya no tiene lista, review ni progreso
+    await pool.query(
+      `DELETE FROM movies 
+       WHERE id = $1
+       AND id NOT IN (SELECT movie_id FROM list_movies)
+       AND id NOT IN (SELECT movie_id FROM reviews)
+       AND id NOT IN (SELECT movie_id FROM series_progress)`,
+      [movieId],
+    );
+
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: err.message });
