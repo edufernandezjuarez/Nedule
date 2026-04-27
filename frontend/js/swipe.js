@@ -1,5 +1,11 @@
 const API = "http://146.181.49.255:3000/api";
-
+document.addEventListener("DOMContentLoaded", () => {
+  console.log("isMobile:", isMobile());
+  console.log(
+    "swipeMobile display:",
+    document.getElementById("swipeMobile")?.style.display,
+  );
+});
 let currentSwipe = null;
 let activeFilters = { yearMin: null, yearMax: null, genreIds: [], type: "all" };
 let pendingMovie = null;
