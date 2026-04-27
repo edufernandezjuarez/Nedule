@@ -414,3 +414,10 @@
   overflow-wrap: break-word;
   white-space: normal;
 }
+@media (max-width: 600px) and (pointer: coarse) {
+  .mobile-nav {
+    display: flex !important;
+    position: fixed !important;
+    bottom: 0 !important;
+  }
+}

@@ -120,3 +120,20 @@
 .swipe-btn:hover {
   opacity: 0.8;
 }
+@media (max-width: 600px) and (pointer: coarse) {
+  .mobile-nav {
+    display: flex !important;
+    position: fixed !important;
+    bottom: 0 !important;
+  }
+
+  .swipe-layout {
+    flex-direction: column;
+    padding-bottom: 80px;
+  }
+
+  .swipe-filters {
+    width: 100%;
+    min-width: unset;
+  }
+}
