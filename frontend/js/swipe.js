@@ -16,10 +16,8 @@ async function loadSwipe() {
   if (card) card.classList.add("swipe-loading");
 
   const params = new URLSearchParams({
-    ...(activeFilters.yearMin &&
-      activeFilters.yearMin !== "1900" && { yearMin: activeFilters.yearMin }),
-    ...(activeFilters.yearMax &&
-      activeFilters.yearMax !== "2026" && { yearMax: activeFilters.yearMax }),
+    ...(activeFilters.yearMin && activeFilters.yearMin !== "1900" && { yearMin: activeFilters.yearMin }),
+    ...(activeFilters.yearMax && activeFilters.yearMax !== "2026" && { yearMax: activeFilters.yearMax }),
     ...(activeFilters.genreIds.length > 0 && {
       genreIds: activeFilters.genreIds.join(","),
     }),
@@ -42,10 +40,8 @@ async function loadSwipe() {
 
   currentSwipe = data;
 
-  if (document.getElementById("swipePoster"))
-    document.getElementById("swipePoster").src = data.poster_url ?? "";
-  if (document.getElementById("swipeTitle"))
-    document.getElementById("swipeTitle").textContent = data.title;
+  if (document.getElementById("swipePoster")) document.getElementById("swipePoster").src = data.poster_url ?? "";
+  if (document.getElementById("swipeTitle")) document.getElementById("swipeTitle").textContent = data.title;
   if (document.getElementById("swipeMeta"))
     document.getElementById("swipeMeta").textContent =
       `${data.year} · ${data.type === "tv" ? "Series" : "Movie"} · ★ ${data.rating}`;
@@ -64,23 +60,15 @@ async function loadSwipe() {
 // ── FILTROS ──
 function setType(type) {
   activeFilters.type = type;
-  document
-    .querySelectorAll(".type-btn")
-    .forEach((b) => b.classList.remove("active"));
+  document.querySelectorAll(".type-btn").forEach((b) => b.classList.remove("active"));
 
   // Desktop
-  const desktopBtn = document.getElementById(
-    type === "all" ? "typeAll" : type === "movie" ? "typeMovie" : "typeTv",
-  );
+  const desktopBtn = document.getElementById(type === "all" ? "typeAll" : type === "movie" ? "typeMovie" : "typeTv");
   if (desktopBtn) desktopBtn.classList.add("active");
 
   // Mobile
   const mobileBtn = document.getElementById(
-    type === "all"
-      ? "mobileTypeAll"
-      : type === "movie"
-        ? "mobileTypeMovie"
-        : "mobileTypeTv",
+    type === "all" ? "mobileTypeAll" : type === "movie" ? "mobileTypeMovie" : "mobileTypeTv",
   );
   if (mobileBtn) mobileBtn.classList.add("active");
 }
@@ -113,9 +101,7 @@ async function loadGenres() {
       if (btn.classList.contains("active")) {
         activeFilters.genreIds.push(g.id);
       } else {
-        activeFilters.genreIds = activeFilters.genreIds.filter(
-          (x) => x !== g.id,
-        );
+        activeFilters.genreIds = activeFilters.genreIds.filter((x) => x !== g.id);
       }
     };
     chips.appendChild(btn);
@@ -126,8 +112,7 @@ async function loadGenres() {
 function openAddModal(movie) {
   pendingMovie = movie;
   const container = document.getElementById("modalListOptions");
-  container.innerHTML =
-    '<p style="font-size:13px;color:var(--text-secondary);">Loading...</p>';
+  container.innerHTML = '<p style="font-size:13px;color:var(--text-secondary);">Loading...</p>';
   document.getElementById("addToListModal").classList.remove("hidden");
   loadListOptions();
 }
@@ -146,8 +131,7 @@ async function loadListOptions() {
   container.innerHTML = "";
 
   if (!allLists.length) {
-    container.innerHTML =
-      '<p style="font-size:13px;color:var(--text-secondary);">No lists yet</p>';
+    container.innerHTML = '<p style="font-size:13px;color:var(--text-secondary);">No lists yet</p>';
     return;
   }
 
@@ -217,9 +201,7 @@ async function loadMobileGenres() {
       if (btn.classList.contains("active")) {
         activeFilters.genreIds.push(g.id);
       } else {
-        activeFilters.genreIds = activeFilters.genreIds.filter(
-          (x) => x !== g.id,
-        );
+        activeFilters.genreIds = activeFilters.genreIds.filter((x) => x !== g.id);
       }
     };
     chips.appendChild(btn);
@@ -246,12 +228,8 @@ function clearMobileFilters() {
   document.getElementById("mobileYearMax").value = 2026;
   document.getElementById("mobileYearMinDisplay").textContent = "1900";
   document.getElementById("mobileYearMaxDisplay").textContent = "2026";
-  document
-    .querySelectorAll("#mobileGenreChips .genre-chip")
-    .forEach((c) => c.classList.remove("active"));
-  document
-    .querySelectorAll("#swipeMobileFiltersModal .type-btn")
-    .forEach((b) => b.classList.remove("active"));
+  document.querySelectorAll("#mobileGenreChips .genre-chip").forEach((c) => c.classList.remove("active"));
+  document.querySelectorAll("#swipeMobileFiltersModal .type-btn").forEach((b) => b.classList.remove("active"));
   document.getElementById("mobileTypeAll").classList.add("active");
   toggleMobileFilters();
   loadSwipe();
@@ -338,4 +316,22 @@ async function swipeRight() {
     card.classList.remove("swiping-right");
     await loadSwipe();
   }, 300);
+}
+
+async function hideTitle() {
+  if (!currentSwipe) return;
+  const userId = getUserId();
+  await fetch(`${API}/hidden`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      user_id: userId,
+      tmdb_id: currentSwipe.tmdb_id,
+      title: currentSwipe.title,
+      poster_url: currentSwipe.poster_url,
+      media_type: currentSwipe.type,
+    }),
+  });
+  seenIds.add(currentSwipe.tmdb_id);
+  await loadSwipe();
 }
