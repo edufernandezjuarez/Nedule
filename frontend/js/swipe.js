@@ -101,7 +101,6 @@ async function loadGenres() {
     };
     chips.appendChild(btn);
   });
-  select.onchange = undefined;
 }
 
 // ── MODAL ──
