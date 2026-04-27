@@ -785,27 +785,24 @@
   background: var(--bg-secondary);
   color: var(--text-primary);
 }
-@media (max-width: 600px) {
+@media (max-width: 600px) and (pointer: coarse) {
   .folders-grid {
-    grid-template-columns: repeat(2, 1fr);
+    display: flex;
+    overflow-x: auto;
+    gap: 10px;
+    padding-bottom: 8px;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  .folders-grid::-webkit-scrollbar {
+    display: none;
   }
 
   .folder {
-    aspect-ratio: 1 / 1;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-end;
-    padding: 0.75rem;
-  }
-
-  .folder-icon {
-    position: absolute;
-    top: 0.75rem;
-    left: 0.75rem;
-  }
-
-  .page {
-    padding: 1rem;
+    min-width: 140px;
+    max-width: 140px;
+    flex-shrink: 0;
   }
 
   .movies-grid {
@@ -813,6 +810,10 @@
   }
 
   .movie-poster {
-    height: 140px;
+    height: 150px;
+  }
+
+  .page {
+    padding: 1rem 1rem 80px;
   }
 }

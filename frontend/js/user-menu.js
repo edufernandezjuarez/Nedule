@@ -44,6 +44,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const active = getActiveUser();
   updateNavbar(active);
   updateNavLinks(active);
+  updateMobileNav(active);
+  setupMobileNav();
 });
 
 document.addEventListener("click", (e) => {
@@ -51,6 +53,16 @@ document.addEventListener("click", (e) => {
   const menu = document.getElementById("userMenu");
   if (!badge.contains(e.target) && !menu.contains(e.target)) {
     menu.classList.remove("open");
+  }
+  const mobileUserBtn = document.getElementById("mobileUserBtn");
+  const mobileUserMenu = document.getElementById("mobileUserMenu");
+  if (
+    mobileUserBtn &&
+    mobileUserMenu &&
+    !mobileUserBtn.contains(e.target) &&
+    !mobileUserMenu.contains(e.target)
+  ) {
+    mobileUserMenu.classList.add("hidden");
   }
 });
 function toggleInfoMenu() {
@@ -78,3 +90,40 @@ document.addEventListener("click", (e) => {
     menu.classList.remove("open");
   }
 });
+function toggleMobileUserMenu() {
+  const menu = document.getElementById("mobileUserMenu");
+  if (menu) menu.classList.toggle("hidden");
+}
+
+function selectMobileUser(name) {
+  localStorage.removeItem("token");
+  localStorage.removeItem("activeUser");
+  window.location.href = "/login.html";
+}
+
+function updateMobileNav(name) {
+  const avatar = document.getElementById("mobileAvatar");
+  const username = document.getElementById("mobileUsername");
+  if (avatar) avatar.textContent = name[0];
+  if (username) username.textContent = name;
+
+  const eduBtn = document.getElementById("mobileUserEdu");
+  const nicoleBtn = document.getElementById("mobileUserNicole");
+  if (eduBtn) eduBtn.classList.toggle("active", name === "Edu");
+  if (nicoleBtn) nicoleBtn.classList.toggle("active", name === "Nicole");
+}
+
+function setupMobileNav() {
+  const user = getActiveUser();
+  const path = user === "Edu" ? "edu" : "nicole";
+
+  const swipeBtn = document.getElementById("mobileSwipeBtn");
+  const imdbBtn = document.getElementById("mobileImdbBtn");
+  const listsBtn = document.getElementById("mobileListsBtn");
+
+  if (swipeBtn) swipeBtn.onclick = () => (window.location.href = "/swipe.html");
+  if (imdbBtn)
+    imdbBtn.onclick = () => (window.location.href = `/${path}/imdb.html`);
+  if (listsBtn)
+    listsBtn.onclick = () => (window.location.href = `/${path}/lists.html`);
+}

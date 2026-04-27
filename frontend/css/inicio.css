@@ -213,3 +213,128 @@ body {
 .hidden {
   display: none !important;
 }
+/* ── MOBILE NAV ── */
+.mobile-nav {
+  display: none;
+}
+.mobile-user-menu {
+  display: none;
+}
+
+@media (max-width: 600px) and (pointer: coarse) {
+  .navbar {
+    display: none;
+  }
+
+  .mobile-nav {
+    display: flex;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 64px;
+    background: var(--bg-primary);
+    border-top: 0.5px solid var(--border-light);
+    z-index: 1000;
+    align-items: center;
+    justify-content: space-around;
+    padding: 0 4px;
+  }
+
+  .mobile-nav-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    padding: 6px 8px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    font-size: 10px;
+    color: var(--text-secondary);
+    font-family: inherit;
+    border-radius: var(--radius-md);
+    transition: color 0.15s;
+    min-width: 48px;
+  }
+
+  .mobile-nav-btn.active {
+    color: var(--text-primary);
+  }
+
+  .mobile-nav-btn svg {
+    width: 22px;
+    height: 22px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .mobile-nav-btn.imdb-btn {
+    background: var(--text-primary);
+    color: var(--bg-primary);
+    border-radius: 50%;
+    width: 52px;
+    height: 52px;
+    padding: 0;
+    font-size: 11px;
+    font-weight: 600;
+    flex-shrink: 0;
+  }
+
+  .page,
+  main {
+    padding-bottom: 80px;
+  }
+
+  .mobile-user-menu {
+    display: block;
+    position: fixed;
+    bottom: 72px;
+    right: 8px;
+    background: var(--bg-primary);
+    border: 0.5px solid var(--border-medium);
+    border-radius: var(--radius-lg);
+    padding: 6px;
+    min-width: 190px;
+    z-index: 1001;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  }
+
+  .mobile-user-menu.hidden {
+    display: none !important;
+  }
+
+  .mobile-user-menu-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 10px 14px;
+    border-radius: var(--radius-md);
+    font-size: 14px;
+    cursor: pointer;
+    color: var(--text-secondary);
+    border: none;
+    background: transparent;
+    text-align: left;
+    font-family: inherit;
+    transition:
+      background 0.12s,
+      color 0.12s;
+  }
+
+  .mobile-user-menu-item:hover,
+  .mobile-user-menu-item.active {
+    color: var(--text-primary);
+    font-weight: 500;
+  }
+
+  .mobile-user-menu-divider {
+    border: none;
+    border-top: 0.5px solid var(--border-light);
+    margin: 4px 0;
+  }
+}
