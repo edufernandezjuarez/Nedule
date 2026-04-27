@@ -169,22 +169,6 @@ document.addEventListener("DOMContentLoaded", () => {
   if (isMobile()) {
     setupTouchSwipe();
   }
-  if (isMobile()) {
-    const swipeMobile = document.getElementById("swipeMobile");
-    swipeMobile.style.display = "flex";
-    swipeMobile.style.flexDirection = "column";
-    swipeMobile.style.height = "calc(100vh - 64px)";
-    swipeMobile.style.padding = "12px 12px 0";
-    swipeMobile.style.position = "relative";
-
-    const card = document.getElementById("swipeMobileCard");
-    card.style.flex = "1";
-    card.style.minHeight = "400px";
-    card.style.borderRadius = "12px";
-    card.style.overflow = "hidden";
-    card.style.position = "relative";
-    card.style.border = "2px solid transparent";
-  }
 });
 
 // ── MOBILE SWIPE ──
