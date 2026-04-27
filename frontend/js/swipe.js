@@ -13,7 +13,7 @@ const seenIds = new Set();
 
 async function loadSwipe() {
   const card = document.getElementById("swipeCard");
-  card.classList.add("swipe-loading");
+  if (card) card.classList.add("swipe-loading");
 
   const params = new URLSearchParams({
     ...(activeFilters.yearMin &&
@@ -30,7 +30,7 @@ async function loadSwipe() {
   const res = await fetch(`${API}/tmdb/swipe?${params}`);
   const data = await res.json();
 
-  card.classList.remove("swipe-loading");
+  if (card) card.classList.remove("swipe-loading");
 
   if (!data) {
     document.getElementById("swipeTitle").textContent = "No more results";
@@ -41,16 +41,20 @@ async function loadSwipe() {
 
   currentSwipe = data;
 
-  document.getElementById("swipePoster").src = data.poster_url ?? "";
-  document.getElementById("swipePoster").alt = data.title;
-  document.getElementById("swipeTitle").textContent = data.title;
-  document.getElementById("swipeMeta").textContent =
-    `${data.year} · ${data.type === "tv" ? "Series" : "Movie"} · ★ ${data.rating}`;
-  document.getElementById("swipeOverview").textContent = data.overview ?? "";
+  if (document.getElementById("swipePoster"))
+    document.getElementById("swipePoster").src = data.poster_url ?? "";
+  if (document.getElementById("swipeTitle"))
+    document.getElementById("swipeTitle").textContent = data.title;
+  if (document.getElementById("swipeMeta"))
+    document.getElementById("swipeMeta").textContent =
+      `${data.year} · ${data.type === "tv" ? "Series" : "Movie"} · ★ ${data.rating}`;
+  if (document.getElementById("swipeOverview"))
+    document.getElementById("swipeOverview").textContent = data.overview ?? "";
+  if (document.getElementById("swipeCard"))
+    document.getElementById("swipeCard").onclick = () => {
+      window.open(`/movie.html?id=${data.tmdb_id}&type=${data.type}`, "_blank");
+    };
 
-  document.getElementById("swipeCard").onclick = () => {
-    window.open(`/movie.html?id=${data.tmdb_id}&type=${data.type}`, "_blank");
-  };
   if (isMobile()) {
     updateMobileCard(data);
   }
