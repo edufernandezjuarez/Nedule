@@ -175,7 +175,12 @@ function isMobile() {
 function updateMobileCard(data) {
   if (!data) return;
   document.getElementById("swipeMobilePoster").src = data.poster_url ?? "";
-  document.getElementById("swipeMobileTitle").textContent = data.title;
+
+  const titleEl = document.getElementById("swipeMobileTitle");
+  titleEl.textContent = data.title;
+  titleEl.style.cursor = "pointer";
+  titleEl.onclick = () => window.open(`/movie.html?id=${data.tmdb_id}&type=${data.type}`, "_blank");
+
   document.getElementById("swipeMobileMeta").textContent =
     `${data.year} · ${data.type === "tv" ? "Series" : "Movie"} · ★ ${data.rating}`;
 }
