@@ -6,7 +6,7 @@ require("dotenv").config();
 const BASE_URL = process.env.TMDB_BASE_URL;
 const API_KEY = process.env.TMDB_API_KEY;
 const IMAGE_URL = process.env.TMDB_IMAGE_URL;
-const pool = require("../db");
+const db = require("../db");
 
 // GET /api/tmdb/search?q=inception por ejemplo
 router.get("/search", async (req, res) => {
@@ -60,12 +60,8 @@ router.get("/search", async (req, res) => {
 
     if (genreIds) {
       const ids = genreIds.split(",").map(Number);
-      movieResults = movieResults.filter((m) =>
-        ids.every((id) => m.genre_ids?.includes(id)),
-      );
-      tvResults = tvResults.filter((t) =>
-        ids.every((id) => t.genre_ids?.includes(id)),
-      );
+      movieResults = movieResults.filter((m) => ids.every((id) => m.genre_ids?.includes(id)));
+      tvResults = tvResults.filter((t) => ids.every((id) => t.genre_ids?.includes(id)));
     }
 
     let combined;
@@ -110,22 +106,17 @@ router.get("/detail/:tmdbId", async (req, res) => {
     ]);
 
     const m = detail.data;
-    const director =
-      m.credits?.crew?.find((p) => p.job === "Director")?.name ?? "N/A";
+    const director = m.credits?.crew?.find((p) => p.job === "Director")?.name ?? "N/A";
     const cast = m.credits?.cast?.slice(0, 5).map((a) => a.name) ?? [];
 
-    const gallery = images.data.backdrops
-      .slice(0, 12)
-      .map((img) => `https://image.tmdb.org/t/p/w780${img.file_path}`);
+    const gallery = images.data.backdrops.slice(0, 12).map((img) => `https://image.tmdb.org/t/p/w780${img.file_path}`);
 
     res.json({
       tmdb_id: m.id,
       title: m.title ?? m.name,
       year: (m.release_date ?? m.first_air_date)?.slice(0, 4) ?? "N/A",
       poster_url: m.poster_path ? `${IMAGE_URL}${m.poster_path}` : null,
-      backdrop_url: m.backdrop_path
-        ? `https://image.tmdb.org/t/p/w1280${m.backdrop_path}`
-        : null,
+      backdrop_url: m.backdrop_path ? `https://image.tmdb.org/t/p/w1280${m.backdrop_path}` : null,
       rating: m.vote_average?.toFixed(1) ?? "N/A",
       overview: m.overview,
       genres: m.genres?.map((g) => g.name) ?? [],
@@ -182,18 +173,12 @@ router.get("/popular", async (req, res) => {
       tvParams.with_genres = genreIds;
     }
 
-    const movieEndpoint = genreIds
-      ? `${BASE_URL}/discover/movie`
-      : `${BASE_URL}/movie/popular`;
-    const tvEndpoint = genreIds
-      ? `${BASE_URL}/discover/tv`
-      : `${BASE_URL}/tv/popular`;
+    const movieEndpoint = genreIds ? `${BASE_URL}/discover/movie` : `${BASE_URL}/movie/popular`;
+    const tvEndpoint = genreIds ? `${BASE_URL}/discover/tv` : `${BASE_URL}/tv/popular`;
 
     const requests = [];
-    if (type !== "tv")
-      requests.push(axios.get(movieEndpoint, { params: movieParams }));
-    if (type !== "movie")
-      requests.push(axios.get(tvEndpoint, { params: tvParams }));
+    if (type !== "tv") requests.push(axios.get(movieEndpoint, { params: movieParams }));
+    if (type !== "movie") requests.push(axios.get(tvEndpoint, { params: tvParams }));
 
     const responses = await Promise.all(requests);
 
@@ -274,16 +259,13 @@ router.get("/person/:personId", async (req, res) => {
   const offset = (parseInt(page) - 1) * limit;
 
   try {
-    const response = await axios.get(
-      `${BASE_URL}/person/${req.params.personId}`,
-      {
-        params: {
-          api_key: API_KEY,
-          language: "en-US",
-          append_to_response: "combined_credits",
-        },
+    const response = await axios.get(`${BASE_URL}/person/${req.params.personId}`, {
+      params: {
+        api_key: API_KEY,
+        language: "en-US",
+        append_to_response: "combined_credits",
       },
-    );
+    });
 
     const p = response.data;
 
@@ -307,9 +289,7 @@ router.get("/person/:personId", async (req, res) => {
     res.json({
       id: p.id,
       name: p.name,
-      photo_url: p.profile_path
-        ? `https://image.tmdb.org/t/p/w342${p.profile_path}`
-        : null,
+      photo_url: p.profile_path ? `https://image.tmdb.org/t/p/w342${p.profile_path}` : null,
       known_for: p.known_for_department,
       credits,
       page: parseInt(page),
@@ -332,9 +312,7 @@ router.get("/people/search", async (req, res) => {
     const results = response.data.results.slice(0, 12).map((p) => ({
       id: p.id,
       name: p.name,
-      photo_url: p.profile_path
-        ? `https://image.tmdb.org/t/p/w185${p.profile_path}`
-        : null,
+      photo_url: p.profile_path ? `https://image.tmdb.org/t/p/w185${p.profile_path}` : null,
       known_for: p.known_for_department ?? "Acting",
     }));
 
@@ -370,30 +348,16 @@ router.get("/swipe", async (req, res) => {
 
     const requests = [];
     if (genreIds) {
-      if (type !== "tv")
-        requests.push(
-          axios.get(`${BASE_URL}/discover/movie`, { params: movieParams }),
-        );
-      if (type !== "movie")
-        requests.push(
-          axios.get(`${BASE_URL}/discover/tv`, { params: tvParams }),
-        );
+      if (type !== "tv") requests.push(axios.get(`${BASE_URL}/discover/movie`, { params: movieParams }));
+      if (type !== "movie") requests.push(axios.get(`${BASE_URL}/discover/tv`, { params: tvParams }));
     } else {
       if (type !== "tv") {
-        requests.push(
-          axios.get(`${BASE_URL}/movie/popular`, { params: movieParams }),
-        );
-        requests.push(
-          axios.get(`${BASE_URL}/discover/movie`, { params: movieParams }),
-        );
+        requests.push(axios.get(`${BASE_URL}/movie/popular`, { params: movieParams }));
+        requests.push(axios.get(`${BASE_URL}/discover/movie`, { params: movieParams }));
       }
       if (type !== "movie") {
-        requests.push(
-          axios.get(`${BASE_URL}/tv/popular`, { params: tvParams }),
-        );
-        requests.push(
-          axios.get(`${BASE_URL}/discover/tv`, { params: tvParams }),
-        );
+        requests.push(axios.get(`${BASE_URL}/tv/popular`, { params: tvParams }));
+        requests.push(axios.get(`${BASE_URL}/discover/tv`, { params: tvParams }));
       }
     }
 
@@ -404,9 +368,7 @@ router.get("/swipe", async (req, res) => {
       const min = yearMin ? parseInt(yearMin) : 0;
       const max = yearMax ? parseInt(yearMax) : 9999;
       pool = pool.filter((item) => {
-        const y = parseInt(
-          (item.release_date ?? item.first_air_date)?.slice(0, 4),
-        );
+        const y = parseInt((item.release_date ?? item.first_air_date)?.slice(0, 4));
         return !isNaN(y) && y >= min && y <= max;
       });
     }
@@ -417,10 +379,7 @@ router.get("/swipe", async (req, res) => {
     const excludeIds = exclude ? exclude.split(",").map(Number) : [];
     let hiddenIds = [];
     if (userId) {
-      const hidden = await pool.query(
-        "SELECT tmdb_id FROM hidden_titles WHERE user_id = $1",
-        [userId],
-      );
+      const hidden = await db.query("SELECT tmdb_id FROM hidden_titles WHERE user_id = $1", [userId]);
       hiddenIds = hidden.rows.map((r) => r.tmdb_id);
     }
     const allExcluded = [...excludeIds, ...hiddenIds];
