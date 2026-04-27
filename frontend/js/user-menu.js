@@ -22,11 +22,8 @@ function updateNavLinks(name) {
   const listsBtn = document.querySelector('.nav-btn[data-page="lists"]');
   const imdbBtn = document.querySelector('.nav-btn[data-page="imdb"]');
   const swipeBtn = document.querySelector('.nav-btn[data-page="swipe"]');
-  if (listsBtn)
-    listsBtn.onclick = () =>
-      (window.location.href = `/${user.path}/lists.html`);
-  if (imdbBtn)
-    imdbBtn.onclick = () => (window.location.href = `/${user.path}/imdb.html`);
+  if (listsBtn) listsBtn.onclick = () => (window.location.href = `/${user.path}/lists.html`);
+  if (imdbBtn) imdbBtn.onclick = () => (window.location.href = `/${user.path}/imdb.html`);
   if (swipeBtn) swipeBtn.onclick = () => (window.location.href = `/swipe.html`);
 }
 
@@ -56,12 +53,7 @@ document.addEventListener("click", (e) => {
   }
   const mobileUserBtn = document.getElementById("mobileUserBtn");
   const mobileUserMenu = document.getElementById("mobileUserMenu");
-  if (
-    mobileUserBtn &&
-    mobileUserMenu &&
-    !mobileUserBtn.contains(e.target) &&
-    !mobileUserMenu.contains(e.target)
-  ) {
+  if (mobileUserBtn && mobileUserMenu && !mobileUserBtn.contains(e.target) && !mobileUserMenu.contains(e.target)) {
     mobileUserMenu.classList.add("hidden");
   }
 });
@@ -72,16 +64,14 @@ function toggleInfoMenu() {
 function goToReviews() {
   window.location.href = "/reviews.html";
 }
+function goToHidden() {
+  window.location.href = "/hidden.html";
+}
 
 document.addEventListener("click", (e) => {
   const infoBtn = document.getElementById("infoBtn");
   const infoMenu = document.getElementById("infoMenu");
-  if (
-    infoBtn &&
-    infoMenu &&
-    !infoBtn.contains(e.target) &&
-    !infoMenu.contains(e.target)
-  ) {
+  if (infoBtn && infoMenu && !infoBtn.contains(e.target) && !infoMenu.contains(e.target)) {
     infoMenu.classList.add("hidden");
   }
   const badge = document.getElementById("userBadge");
@@ -122,8 +112,6 @@ function setupMobileNav() {
   const listsBtn = document.getElementById("mobileListsBtn");
 
   if (swipeBtn) swipeBtn.onclick = () => (window.location.href = "/swipe.html");
-  if (imdbBtn)
-    imdbBtn.onclick = () => (window.location.href = `/${path}/imdb.html`);
-  if (listsBtn)
-    listsBtn.onclick = () => (window.location.href = `/${path}/lists.html`);
+  if (imdbBtn) imdbBtn.onclick = () => (window.location.href = `/${path}/imdb.html`);
+  if (listsBtn) listsBtn.onclick = () => (window.location.href = `/${path}/lists.html`);
 }

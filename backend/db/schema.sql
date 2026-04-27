@@ -48,3 +48,13 @@ CREATE TABLE series_progress (
   updated_at TIMESTAMP DEFAULT NOW(),
   UNIQUE (movie_id, user_id)
 );
+CREATE TABLE hidden_titles (
+  id         SERIAL PRIMARY KEY,
+  user_id    INTEGER REFERENCES users(id),
+  tmdb_id    INTEGER NOT NULL,
+  title      VARCHAR(255),
+  poster_url TEXT,
+  media_type VARCHAR(10) DEFAULT 'movie',
+  hidden_at  TIMESTAMP DEFAULT NOW(),
+  UNIQUE (user_id, tmdb_id)
+);

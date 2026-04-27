@@ -13,16 +13,12 @@
         <button class="nav-btn active" data-page="imdb">IMDB</button>
         <button class="nav-btn" data-page="swipe">Swipe</button>
       </div>
-      <div
-        class="user-wrapper"
-        style="display: flex; align-items: center; gap: 8px"
-      >
+      <div class="user-wrapper" style="display: flex; align-items: center; gap: 8px">
         <div class="info-wrapper">
-          <button class="btn-info" id="infoBtn" onclick="toggleInfoMenu()">
-            Info
-          </button>
+          <button class="btn-info" id="infoBtn" onclick="toggleInfoMenu()">Info</button>
           <div class="info-menu hidden" id="infoMenu">
             <button onclick="goToReviews()">Review history</button>
+            <button onclick="goToHidden()">Hidden titles</button>
           </div>
         </div>
         <button class="user-badge" id="userBadge" onclick="toggleMenu()">
@@ -30,12 +26,8 @@
           <span class="username" id="usernameLabel">Edu</span>
         </button>
         <div class="user-menu" id="userMenu">
-          <button class="user-option" onclick="selectUser('Edu', 'E')">
-            Edu
-          </button>
-          <button class="user-option" onclick="selectUser('Nicole', 'N')">
-            Nicole
-          </button>
+          <button class="user-option" onclick="selectUser('Edu', 'E')">Edu</button>
+          <button class="user-option" onclick="selectUser('Nicole', 'N')">Nicole</button>
         </div>
       </div>
     </nav>
@@ -43,24 +35,12 @@
     <main class="page" id="imdbView">
       <div class="page-header">
         <h2 class="page-title">Search</h2>
-        <button class="btn-new" onclick="window.location.href = '/cast.html'">
-          Cast & Directors
-        </button>
+        <button class="btn-new" onclick="window.location.href = '/cast.html'">Cast & Directors</button>
       </div>
       <div class="search-bar">
-        <input
-          type="text"
-          id="searchInput"
-          placeholder="Search for a movie or series..."
-        />
+        <input type="text" id="searchInput" placeholder="Search for a movie or series..." />
         <div class="filter-wrapper">
-          <button
-            class="btn-filter"
-            id="filterBtn"
-            onclick="toggleFilterMenu()"
-          >
-            Filter
-          </button>
+          <button class="btn-filter" id="filterBtn" onclick="toggleFilterMenu()">Filter</button>
           <div class="filter-menu hidden" id="filterMenu">
             <div class="filter-section">
               <label class="filter-label">Year range</label>
@@ -97,29 +77,13 @@
             </div>
             <label class="filter-label">Type</label>
             <div class="filter-type-row">
-              <button
-                class="type-btn active"
-                id="typeAll"
-                onclick="setType('all')"
-              >
-                All
-              </button>
-              <button
-                class="type-btn"
-                id="typeMovie"
-                onclick="setType('movie')"
-              >
-                Movies
-              </button>
-              <button class="type-btn" id="typeTv" onclick="setType('tv')">
-                Series
-              </button>
+              <button class="type-btn active" id="typeAll" onclick="setType('all')">All</button>
+              <button class="type-btn" id="typeMovie" onclick="setType('movie')">Movies</button>
+              <button class="type-btn" id="typeTv" onclick="setType('tv')">Series</button>
             </div>
             <div class="filter-actions">
               <button onclick="clearFilters()">Clear</button>
-              <button class="btn-primary" onclick="applyFilters()">
-                Apply
-              </button>
+              <button class="btn-primary" onclick="applyFilters()">Apply</button>
             </div>
           </div>
         </div>
@@ -138,10 +102,7 @@
       </div>
     </main>
     <nav class="mobile-nav" id="mobileNav">
-      <button
-        class="mobile-nav-btn"
-        onclick="window.location.href = '/inicio.html'"
-      >
+      <button class="mobile-nav-btn" onclick="window.location.href = '/inicio.html'">
         <svg viewBox="0 0 24 24">
           <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
           <polyline points="9 22 9 12 15 12 15 22" />
@@ -174,50 +135,24 @@
         </svg>
         Lists
       </button>
-      <button
-        class="mobile-nav-btn"
-        id="mobileUserBtn"
-        onclick="toggleMobileUserMenu()"
-      >
-        <div
-          class="avatar"
-          id="mobileAvatar"
-          style="width: 28px; height: 28px; font-size: 12px"
-        >
-          E
-        </div>
+      <button class="mobile-nav-btn" id="mobileUserBtn" onclick="toggleMobileUserMenu()">
+        <div class="avatar" id="mobileAvatar" style="width: 28px; height: 28px; font-size: 12px">E</div>
         <span id="mobileUsername">Edu</span>
       </button>
     </nav>
 
     <div class="mobile-user-menu hidden" id="mobileUserMenu">
-      <button
-        class="mobile-user-menu-item"
-        id="mobileUserEdu"
-        onclick="selectMobileUser('Edu')"
-      >
-        <div class="avatar" style="width: 24px; height: 24px; font-size: 10px">
-          E
-        </div>
+      <button class="mobile-user-menu-item" id="mobileUserEdu" onclick="selectMobileUser('Edu')">
+        <div class="avatar" style="width: 24px; height: 24px; font-size: 10px">E</div>
         Edu
       </button>
-      <button
-        class="mobile-user-menu-item"
-        id="mobileUserNicole"
-        onclick="selectMobileUser('Nicole')"
-      >
-        <div class="avatar" style="width: 24px; height: 24px; font-size: 10px">
-          N
-        </div>
+      <button class="mobile-user-menu-item" id="mobileUserNicole" onclick="selectMobileUser('Nicole')">
+        <div class="avatar" style="width: 24px; height: 24px; font-size: 10px">N</div>
         Nicole
       </button>
       <hr class="mobile-user-menu-divider" />
-      <button
-        class="mobile-user-menu-item"
-        onclick="window.location.href = '/reviews.html'"
-      >
-        📋 Review history
-      </button>
+      <button class="mobile-user-menu-item" onclick="window.location.href = '/reviews.html'">📋 Review history</button>
+      <button class="mobile-user-menu-item" onclick="window.location.href = '/hidden.html'">🚫 Hidden titles</button>
     </div>
     <script src="/js/auth.js"></script>
     <script src="/js/user-menu.js"></script>

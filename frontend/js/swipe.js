@@ -25,6 +25,7 @@ async function loadSwipe() {
     }),
     ...(activeFilters.type !== "all" && { type: activeFilters.type }),
     exclude: [...seenIds].join(","),
+    userId: getUserId(), // ← agregá esto
   });
 
   const res = await fetch(`${API}/tmdb/swipe?${params}`);

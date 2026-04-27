@@ -1,11 +1,9 @@
 <!doctype html>
 <html>
   <head>
-    <title>Nedule</title>
+    <title>Hidden Titles — Nedule</title>
     <link rel="stylesheet" href="/css/inicio.css" />
-    <link rel="stylesheet" href="/css/imdb.css" />
-    <link rel="stylesheet" href="/css/person.css" />
-    <link rel="stylesheet" href="/css/movie.css" />
+    <link rel="stylesheet" href="/css/review.css" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   </head>
   <body>
@@ -34,20 +32,10 @@
       </div>
     </nav>
 
-    <main class="movie-content">
-      <button class="back-btn" onclick="history.back()">&#8592; Back</button>
-      <div class="person-main" id="personMain">
-        <div class="person-photo-wrapper">
-          <img class="person-photo" id="personPhoto" src="" alt="" />
-        </div>
-        <div class="person-info">
-          <h1 class="movie-detail-title" id="personName"></h1>
-          <p class="person-known-for" id="personKnownFor"></p>
-        </div>
-      </div>
-      <h2 class="section-title" style="margin-top: 2rem">Credits</h2>
-      <div class="movies-grid" id="creditsGrid"></div>
+    <main class="page">
+      <div id="hiddenList"></div>
     </main>
+
     <nav class="mobile-nav" id="mobileNav">
       <button class="mobile-nav-btn" onclick="window.location.href = '/inicio.html'">
         <svg viewBox="0 0 24 24">
@@ -64,7 +52,7 @@
         </svg>
         Swipe
       </button>
-      <button class="mobile-nav-btn imdb-btn active" id="mobileImdbBtn">
+      <button class="mobile-nav-btn imdb-btn" id="mobileImdbBtn">
         <svg viewBox="0 0 24 24">
           <circle cx="11" cy="11" r="8" />
           <line x1="21" y1="21" x2="16.65" y2="16.65" />
@@ -101,9 +89,9 @@
       <button class="mobile-user-menu-item" onclick="window.location.href = '/reviews.html'">📋 Review history</button>
       <button class="mobile-user-menu-item" onclick="window.location.href = '/hidden.html'">🚫 Hidden titles</button>
     </div>
+
     <script src="/js/auth.js"></script>
     <script src="/js/user-menu.js"></script>
-    <script src="/js/user-menu.js"></script>
-    <script src="/js/person.js"></script>
+    <script src="/js/hidden.js"></script>
   </body>
 </html>

@@ -31,3 +31,6 @@ app.use("/api/progress", progressRouter);
 
 const authRouter = require("./routes/auth");
 app.use("/api/auth", authRouter);
+
+const hiddenRouter = require("./routes/hidden");
+app.use("/api/hidden", hiddenRouter);

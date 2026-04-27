@@ -127,6 +127,16 @@
 .swipe-mobile-filters-modal {
   display: none;
 }
+.swipe-hide {
+  background: rgba(226, 75, 74, 0.7);
+  color: white;
+  border: none !important;
+}
+
+.swipe-hide:hover {
+  background: #e24b4a;
+}
+
 @media (max-width: 600px) and (pointer: coarse) {
   .mobile-nav {
     display: flex !important;
@@ -156,7 +166,6 @@
   }
 
   .swipe-mobile-filters-btn {
-    position: absolute;
     top: 16px;
     right: 16px;
     padding: 6px 14px;
@@ -290,5 +299,20 @@
     cursor: pointer;
     color: var(--text-secondary);
     padding: 4px;
+  }
+  .swipe-mobile-hide-btn {
+    padding: 6px 14px;
+    background: rgba(226, 75, 74, 0.7);
+    color: white;
+    border: none;
+    border-radius: var(--radius-md);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    cursor: pointer;
+  }
+
+  .swipe-mobile-filters-btn {
+    position: static; /* ya no es absolute */
   }
 }

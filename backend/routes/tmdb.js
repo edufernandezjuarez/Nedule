@@ -6,6 +6,7 @@ require("dotenv").config();
 const BASE_URL = process.env.TMDB_BASE_URL;
 const API_KEY = process.env.TMDB_API_KEY;
 const IMAGE_URL = process.env.TMDB_IMAGE_URL;
+const pool = require("../db");
 
 // GET /api/tmdb/search?q=inception por ejemplo
 router.get("/search", async (req, res) => {
@@ -344,7 +345,7 @@ router.get("/people/search", async (req, res) => {
 });
 
 router.get("/swipe", async (req, res) => {
-  const { yearMin, yearMax, genreIds, type, exclude } = req.query;
+  const { yearMin, yearMax, genreIds, type, exclude, userId } = req.query;
   try {
     const randomPage = Math.floor(Math.random() * 10) + 1;
     const movieParams = {
@@ -369,17 +370,14 @@ router.get("/swipe", async (req, res) => {
 
     const requests = [];
     if (genreIds) {
-      // Con géneros usamos solo discover que soporta AND
-      if (type !== "tv") {
+      if (type !== "tv")
         requests.push(
           axios.get(`${BASE_URL}/discover/movie`, { params: movieParams }),
         );
-      }
-      if (type !== "movie") {
+      if (type !== "movie")
         requests.push(
           axios.get(`${BASE_URL}/discover/tv`, { params: tvParams }),
         );
-      }
     } else {
       if (type !== "tv") {
         requests.push(
@@ -414,10 +412,20 @@ router.get("/swipe", async (req, res) => {
     }
 
     pool = pool.filter((item) => item.poster_path);
-    const excludeIds = exclude ? exclude.split(",").map(Number) : [];
-    pool = pool.filter((item) => !excludeIds.includes(item.id));
 
-    if (!pool.length) return res.json(null);
+    // Excluir sesión + bloqueados permanentes
+    const excludeIds = exclude ? exclude.split(",").map(Number) : [];
+    let hiddenIds = [];
+    if (userId) {
+      const hidden = await pool.query(
+        "SELECT tmdb_id FROM hidden_titles WHERE user_id = $1",
+        [userId],
+      );
+      hiddenIds = hidden.rows.map((r) => r.tmdb_id);
+    }
+    const allExcluded = [...excludeIds, ...hiddenIds];
+    pool = pool.filter((item) => !allExcluded.includes(item.id));
+
     if (!pool.length) return res.json(null);
 
     const pick = pool[Math.floor(Math.random() * pool.length)];
@@ -439,4 +447,21 @@ router.get("/swipe", async (req, res) => {
   }
 });
 
+async function hideTitle() {
+  if (!currentSwipe) return;
+  const userId = getUserId();
+  await fetch(`${API}/hidden`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      user_id: userId,
+      tmdb_id: currentSwipe.tmdb_id,
+      title: currentSwipe.title,
+      poster_url: currentSwipe.poster_url,
+      media_type: currentSwipe.type,
+    }),
+  });
+  seenIds.add(currentSwipe.tmdb_id);
+  await loadSwipe();
+}
 module.exports = router;
