@@ -294,9 +294,9 @@ function setupTouchSwipe() {
     card.classList.remove("swiping-left", "swiping-right");
 
     if (diffX < -60) {
-      await loadSwipe();
+      await swipeRight(); // izquierda = agregar
     } else if (diffX > 60) {
-      await swipeRight();
+      await loadSwipe(); // derecha = next
     }
   });
 }
