@@ -128,12 +128,174 @@
   }
 
   .swipe-layout {
-    flex-direction: column;
-    padding-bottom: 80px;
+    display: block;
+    padding: 0;
+    min-height: 100vh;
   }
 
+  /* Ocultar filtros y layout desktop */
   .swipe-filters {
-    width: 100%;
-    min-width: unset;
+    display: none;
   }
+  .swipe-center {
+    display: none;
+  }
+
+  /* Layout mobile */
+  .swipe-mobile {
+    display: flex;
+    flex-direction: column;
+    height: calc(100vh - 64px);
+    padding: 12px 12px 0;
+    position: relative;
+  }
+
+  .swipe-mobile-filters-btn {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    padding: 6px 14px;
+    background: rgba(0, 0, 0, 0.6);
+    color: white;
+    border: none;
+    border-radius: var(--radius-md);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    cursor: pointer;
+    z-index: 10;
+  }
+
+  .swipe-mobile-card {
+    flex: 1;
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    position: relative;
+    border: 2px solid transparent;
+    transition:
+      border-color 0.2s,
+      transform 0.15s;
+    touch-action: pan-y;
+    user-select: none;
+  }
+
+  .swipe-mobile-card img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    pointer-events: none;
+  }
+
+  .swipe-mobile-card-info {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 1rem;
+    background: linear-gradient(transparent, rgba(0, 0, 0, 0.75));
+    color: white;
+  }
+
+  .swipe-mobile-card-title {
+    font-size: 18px;
+    font-weight: 500;
+    line-height: 1.2;
+    margin-bottom: 4px;
+  }
+
+  .swipe-mobile-card-meta {
+    font-size: 13px;
+    opacity: 0.85;
+  }
+
+  .swipe-mobile-card.swiping-left {
+    border-color: #e24b4a;
+  }
+  .swipe-mobile-card.swiping-right {
+    border-color: #378add;
+  }
+
+  .swipe-mobile-actions {
+    display: flex;
+    gap: 12px;
+    padding: 12px 0;
+  }
+
+  .swipe-mobile-next {
+    flex: 1;
+    padding: 14px;
+    background: #e24b4a;
+    color: white;
+    border: none;
+    border-radius: var(--radius-lg);
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  .swipe-mobile-add {
+    flex: 1;
+    padding: 14px;
+    background: #378add;
+    color: white;
+    border: none;
+    border-radius: var(--radius-lg);
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  /* Modal de filtros mobile */
+  .swipe-mobile-filters-modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 500;
+    display: flex;
+    align-items: flex-end;
+  }
+
+  .swipe-mobile-filters-modal.hidden {
+    display: none;
+  }
+
+  .swipe-mobile-filters-content {
+    background: var(--bg-primary);
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    padding: 1.25rem;
+    width: 100%;
+    max-height: 80vh;
+    overflow-y: auto;
+  }
+
+  .swipe-mobile-filters-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+  }
+
+  .swipe-mobile-filters-header h3 {
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--text-primary);
+  }
+
+  .swipe-mobile-filters-close {
+    background: transparent;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+    color: var(--text-secondary);
+    padding: 4px;
+  }
+}
+
+/* Ocultar elementos mobile en desktop */
+.swipe-mobile {
+  display: none;
+}
+.swipe-mobile-filters-modal {
+  display: none;
 }

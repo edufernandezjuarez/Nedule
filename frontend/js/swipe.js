@@ -51,6 +51,9 @@ async function loadSwipe() {
   document.getElementById("swipeCard").onclick = () => {
     window.open(`/movie.html?id=${data.tmdb_id}&type=${data.type}`, "_blank");
   };
+  if (isMobile()) {
+    updateMobileCard(data);
+  }
 }
 
 // ── FILTROS ──
@@ -159,4 +162,163 @@ async function confirmAddMovie(listId) {
 document.addEventListener("DOMContentLoaded", () => {
   loadGenres();
   loadSwipe();
+  if (isMobile()) {
+    setupTouchSwipe();
+  }
 });
+// ── MOBILE SWIPE ──
+function isMobile() {
+  return window.matchMedia("(max-width: 600px) and (pointer: coarse)").matches;
+}
+
+function updateMobileCard(data) {
+  if (!data) return;
+  document.getElementById("swipeMobilePoster").src = data.poster_url ?? "";
+  document.getElementById("swipeMobileTitle").textContent = data.title;
+  document.getElementById("swipeMobileMeta").textContent =
+    `${data.year} · ${data.type === "tv" ? "Series" : "Movie"} · ★ ${data.rating}`;
+}
+
+function toggleMobileFilters() {
+  document.getElementById("swipeMobileFiltersModal").classList.toggle("hidden");
+  if (!document.getElementById("mobileGenreChips").children.length) {
+    loadMobileGenres();
+  }
+}
+
+async function loadMobileGenres() {
+  const res = await fetch(`${API}/tmdb/genres`);
+  const genres = await res.json();
+  const chips = document.getElementById("mobileGenreChips");
+  genres.forEach((g) => {
+    const btn = document.createElement("button");
+    btn.className = "genre-chip";
+    btn.textContent = g.name;
+    btn.dataset.id = g.id;
+    btn.onclick = () => {
+      btn.classList.toggle("active");
+      if (btn.classList.contains("active")) {
+        activeFilters.genreIds.push(g.id);
+      } else {
+        activeFilters.genreIds = activeFilters.genreIds.filter(
+          (x) => x !== g.id,
+        );
+      }
+    };
+    chips.appendChild(btn);
+  });
+}
+
+function updateMobileYearFilter() {
+  const min = parseInt(document.getElementById("mobileYearMin").value);
+  const max = parseInt(document.getElementById("mobileYearMax").value);
+  document.getElementById("mobileYearMinDisplay").textContent = min;
+  document.getElementById("mobileYearMaxDisplay").textContent = max;
+  activeFilters.yearMin = String(min);
+  activeFilters.yearMax = String(max);
+}
+
+function applyMobileFilters() {
+  toggleMobileFilters();
+  loadSwipe();
+}
+
+function clearMobileFilters() {
+  activeFilters = { yearMin: null, yearMax: null, genreIds: [], type: "all" };
+  document.getElementById("mobileYearMin").value = 1900;
+  document.getElementById("mobileYearMax").value = 2026;
+  document.getElementById("mobileYearMinDisplay").textContent = "1900";
+  document.getElementById("mobileYearMaxDisplay").textContent = "2026";
+  document
+    .querySelectorAll("#mobileGenreChips .genre-chip")
+    .forEach((c) => c.classList.remove("active"));
+  document
+    .querySelectorAll("#swipeMobileFiltersModal .type-btn")
+    .forEach((b) => b.classList.remove("active"));
+  document.getElementById("mobileTypeAll").classList.add("active");
+  toggleMobileFilters();
+  loadSwipe();
+}
+
+// ── TOUCH SWIPE ──
+function setupTouchSwipe() {
+  const card = document.getElementById("swipeMobileCard");
+  if (!card) return;
+
+  let startX = 0;
+  let isDragging = false;
+
+  card.addEventListener(
+    "touchstart",
+    (e) => {
+      startX = e.touches[0].clientX;
+      isDragging = true;
+    },
+    { passive: true },
+  );
+
+  card.addEventListener(
+    "touchmove",
+    (e) => {
+      if (!isDragging) return;
+      const diffX = e.touches[0].clientX - startX;
+      if (diffX < -30) card.classList.add("swiping-left");
+      else if (diffX > 30) card.classList.add("swiping-right");
+      else {
+        card.classList.remove("swiping-left", "swiping-right");
+      }
+    },
+    { passive: true },
+  );
+
+  card.addEventListener("touchend", async (e) => {
+    if (!isDragging) return;
+    isDragging = false;
+    const diffX = e.changedTouches[0].clientX - startX;
+    card.classList.remove("swiping-left", "swiping-right");
+
+    if (diffX < -60) {
+      await loadSwipe();
+    } else if (diffX > 60) {
+      await swipeRight();
+    }
+  });
+}
+
+async function swipeRight() {
+  if (!currentSwipe) return;
+  const userId = getUserId();
+
+  // Buscar o crear la lista "Swipe"
+  const listsRes = await fetch(`${API}/lists/${userId}`);
+  const listsData = await listsRes.json();
+  const allLists = [...listsData.personal, ...listsData.shared];
+  let swipeList = allLists.find((l) => l.name === "Swipe");
+
+  if (!swipeList) {
+    const createRes = await fetch(`${API}/lists`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        name: "Swipe",
+        owner_id: userId,
+        is_shared: false,
+      }),
+    });
+    swipeList = await createRes.json();
+  }
+
+  await fetch(`${API}/movies/${swipeList.id}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ ...currentSwipe, added_by: userId }),
+  });
+
+  // Feedback visual
+  const card = document.getElementById("swipeMobileCard");
+  card.classList.add("swiping-right");
+  setTimeout(async () => {
+    card.classList.remove("swiping-right");
+    await loadSwipe();
+  }, 300);
+}
