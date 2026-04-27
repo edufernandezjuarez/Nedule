@@ -1,5 +1,7 @@
 const API = "http://146.181.49.255:3000/api";
 document.addEventListener("DOMContentLoaded", () => {
+  document.getElementById("debugInfo").textContent =
+    "isMobile: " + isMobile() + " | w: " + window.innerWidth;
   console.log("isMobile:", isMobile());
   console.log(
     "swipeMobile display:",
