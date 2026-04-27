@@ -150,7 +150,7 @@
 
   /* Layout mobile */
   .swipe-mobile {
-    display: flex;
+    display: flex !important;
     flex-direction: column;
     height: calc(100vh - 64px);
     padding: 12px 12px 0;
