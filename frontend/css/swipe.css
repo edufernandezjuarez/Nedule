@@ -175,6 +175,7 @@
 
   .swipe-mobile-card {
     flex: 1;
+    min-height: 400px;
     border-radius: var(--radius-lg);
     overflow: hidden;
     position: relative;
