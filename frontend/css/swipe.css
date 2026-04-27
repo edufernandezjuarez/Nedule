@@ -297,4 +297,7 @@
     color: var(--text-secondary);
     padding: 4px;
   }
+  #swipeMobile {
+    display: flex !important;
+  }
 }
