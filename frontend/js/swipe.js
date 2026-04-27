@@ -164,12 +164,21 @@ async function confirmAddMovie(listId) {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
+  if (isMobile()) {
+    const swipeMobile = document.getElementById("swipeMobile");
+    swipeMobile.style.display = "flex";
+    swipeMobile.style.flexDirection = "column";
+    swipeMobile.style.height = "calc(100vh - 64px)";
+    swipeMobile.style.padding = "12px 12px 0";
+    swipeMobile.style.position = "relative";
+  }
   loadGenres();
   loadSwipe();
   if (isMobile()) {
     setupTouchSwipe();
   }
 });
+
 // ── MOBILE SWIPE ──
 function isMobile() {
   return window.matchMedia("(max-width: 600px) and (pointer: coarse)").matches;
