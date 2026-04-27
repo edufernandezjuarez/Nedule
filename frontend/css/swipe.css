@@ -120,6 +120,13 @@
 .swipe-btn:hover {
   opacity: 0.8;
 }
+/* Ocultar elementos mobile en desktop */
+.swipe-mobile {
+  display: none;
+}
+.swipe-mobile-filters-modal {
+  display: none;
+}
 @media (max-width: 600px) and (pointer: coarse) {
   .mobile-nav {
     display: flex !important;
@@ -290,12 +297,4 @@
     color: var(--text-secondary);
     padding: 4px;
   }
-}
-
-/* Ocultar elementos mobile en desktop */
-.swipe-mobile {
-  display: none;
-}
-.swipe-mobile-filters-modal {
-  display: none;
 }
