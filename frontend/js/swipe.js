@@ -66,11 +66,22 @@ function setType(type) {
   document
     .querySelectorAll(".type-btn")
     .forEach((b) => b.classList.remove("active"));
-  document
-    .getElementById(
-      type === "all" ? "typeAll" : type === "movie" ? "typeMovie" : "typeTv",
-    )
-    .classList.add("active");
+
+  // Desktop
+  const desktopBtn = document.getElementById(
+    type === "all" ? "typeAll" : type === "movie" ? "typeMovie" : "typeTv",
+  );
+  if (desktopBtn) desktopBtn.classList.add("active");
+
+  // Mobile
+  const mobileBtn = document.getElementById(
+    type === "all"
+      ? "mobileTypeAll"
+      : type === "movie"
+        ? "mobileTypeMovie"
+        : "mobileTypeTv",
+  );
+  if (mobileBtn) mobileBtn.classList.add("active");
 }
 
 function updateYearFilter() {
