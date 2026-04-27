@@ -449,7 +449,7 @@
 
   .movie-detail-overview {
     font-size: 13px;
-    -webkit-line-clamp: 6;
+    line-clamp: 6;
   }
 
   .movie-detail-crew,
