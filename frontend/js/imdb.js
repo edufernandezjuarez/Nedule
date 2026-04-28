@@ -59,9 +59,7 @@ async function deleteList(e, listId) {
 }
 
 document.addEventListener("click", () => {
-  document
-    .querySelectorAll(".folder-menu")
-    .forEach((m) => m.classList.add("hidden"));
+  document.querySelectorAll(".folder-menu").forEach((m) => m.classList.add("hidden"));
 });
 
 // -- ABRIR LISTA --
@@ -118,11 +116,7 @@ function renderMovies(movies) {
     card.innerHTML = `
       <button class="delete-x" onclick="removeMovie(${movie.id})">✕</button>
       <div class="movie-poster">
-        ${
-          movie.poster_url
-            ? `<img src="${movie.poster_url}" alt="${movie.title}" />`
-            : '<div class="no-poster">No poster</div>'
-        }
+        ${movie.poster_url ? `<img src="${movie.poster_url}" alt="${movie.title}" />` : '<div class="no-poster">No poster</div>'}
       </div>
       <div class="movie-info">
         <div class="movie-title">${movie.title}</div>
@@ -169,9 +163,9 @@ async function fetchAndRenderResults(reset = false) {
     page: searchPage,
     ...(activeFilters.yearMin && { yearMin: activeFilters.yearMin }),
     ...(activeFilters.yearMax && { yearMax: activeFilters.yearMax }),
-    ...(activeFilters.genreIds.length > 0 && {
-      genreIds: activeFilters.genreIds.join(","),
-    }),
+    ...(activeFilters.genreIds.length > 0 && { genreIds: activeFilters.genreIds.join(",") }),
+    ...(activeFilters.continents.length > 0 && { continents: activeFilters.continents.join(",") }),
+    ...(activeFilters.countryName && { countryName: activeFilters.countryName }),
     ...(activeFilters.type !== "all" && { type: activeFilters.type }),
   };
 
@@ -192,11 +186,7 @@ async function fetchAndRenderResults(reset = false) {
     card.className = "movie-card search-card clickable";
     card.innerHTML = `
       <div class="movie-poster">
-        ${
-          item.poster_url
-            ? `<img src="${item.poster_url}" alt="${item.title}" />`
-            : '<div class="no-poster">No poster</div>'
-        }
+        ${item.poster_url ? `<img src="${item.poster_url}" alt="${item.title}" />` : '<div class="no-poster">No poster</div>'}
       </div>
       <div class="movie-info">
         <div class="movie-title">${item.title}</div>
@@ -255,8 +245,7 @@ let pendingMovie = null;
 function openAddModal(movie) {
   pendingMovie = movie;
   const container = document.getElementById("modalListOptions");
-  container.innerHTML =
-    '<p style="font-size:13px;color:var(--text-secondary);">Loading...</p>';
+  container.innerHTML = '<p style="font-size:13px;color:var(--text-secondary);">Loading...</p>';
   document.getElementById("addToListModal").classList.remove("hidden");
   loadListOptions();
 }
@@ -275,8 +264,7 @@ async function loadListOptions() {
   container.innerHTML = "";
 
   if (allLists.length === 0) {
-    container.innerHTML =
-      '<p style="font-size:13px;color:var(--text-secondary);">No lists yet</p>';
+    container.innerHTML = '<p style="font-size:13px;color:var(--text-secondary);">No lists yet</p>';
     return;
   }
 
@@ -351,9 +339,7 @@ let deleteMode = false;
 
 function toggleDeleteMode() {
   deleteMode = !deleteMode;
-  document
-    .getElementById("btnDeleteMode")
-    .classList.toggle("hidden", deleteMode);
+  document.getElementById("btnDeleteMode").classList.toggle("hidden", deleteMode);
   document.getElementById("btnDone").classList.toggle("hidden", !deleteMode);
   document.querySelectorAll(".movie-card").forEach((card) => {
     card.classList.toggle("delete-mode", deleteMode);
@@ -367,7 +353,7 @@ async function removeMovie(movieId) {
 }
 
 //-- FILTROS DE BE BUSQUEDA--
-let activeFilters = { yearMin: null, yearMax: null, genreIds: [], type: "all" };
+let activeFilters = { yearMin: null, yearMax: null, genreIds: [], type: "all", continents: [], countryName: "" };
 
 function toggleFilterMenu() {
   document.getElementById("filterMenu").classList.toggle("hidden");
@@ -382,33 +368,20 @@ function updateYearFilter() {
     document.getElementById("yearMax").value = min;
   }
 
-  document.getElementById("yearMinDisplay").textContent =
-    document.getElementById("yearMin").value;
-  document.getElementById("yearMaxDisplay").textContent =
-    document.getElementById("yearMax").value;
+  document.getElementById("yearMinDisplay").textContent = document.getElementById("yearMin").value;
+  document.getElementById("yearMaxDisplay").textContent = document.getElementById("yearMax").value;
 }
 
 function applyFilters() {
   activeFilters.yearMin = document.getElementById("yearMin").value;
   activeFilters.yearMax = document.getElementById("yearMax").value;
   activeFilters.type =
-    document
-      .querySelector(".type-btn.active")
-      ?.id.replace("type", "")
-      .replace("All", "all")
-      .replace("Movie", "movie")
-      .replace("Tv", "tv") ?? "all";
+    document.querySelector(".type-btn.active")?.id.replace("type", "").replace("All", "all").replace("Movie", "movie").replace("Tv", "tv") ?? "all";
 
   document.getElementById("filterMenu").classList.add("hidden");
 
-  const hasFilters =
-    activeFilters.yearMin !== "1900" ||
-    activeFilters.yearMax !== "2026" ||
-    activeFilters.genreIds.length > 0 ||
-    activeFilters.type !== "all";
-  document
-    .getElementById("filterBtn")
-    .classList.toggle("filter-active", hasFilters);
+  const hasFilters = activeFilters.yearMin !== "1900" || activeFilters.yearMax !== "2026" || activeFilters.genreIds.length > 0 || activeFilters.type !== "all";
+  document.getElementById("filterBtn").classList.toggle("filter-active", hasFilters);
 
   searchPage = 1;
   removeInfiniteScroll();
@@ -417,17 +390,15 @@ function applyFilters() {
 }
 
 function clearFilters() {
-  activeFilters = { yearMin: null, yearMax: null, genreIds: [], type: "all" };
+  let activeFilters = { yearMin: null, yearMax: null, genreIds: [], type: "all", continents: [], countryName: "" };
   document.getElementById("yearMin").value = 1900;
   document.getElementById("yearMax").value = 2026;
   document.getElementById("yearMinDisplay").textContent = "1900";
   document.getElementById("yearMaxDisplay").textContent = "2026";
-  document
-    .querySelectorAll(".genre-chip")
-    .forEach((c) => c.classList.remove("active"));
-  document
-    .querySelectorAll(".type-btn")
-    .forEach((b) => b.classList.remove("active"));
+  document.querySelectorAll(".genre-chip").forEach((c) => c.classList.remove("active"));
+  document.querySelectorAll(".continent-chip").forEach((c) => c.classList.remove("active"));
+  document.getElementById("countryInput").value = "";
+  document.querySelectorAll(".type-btn").forEach((b) => b.classList.remove("active"));
   document.getElementById("typeAll").classList.add("active");
   document.getElementById("filterBtn").classList.remove("filter-active");
   document.getElementById("filterMenu").classList.add("hidden");
@@ -464,14 +435,8 @@ function toggleGenre(btn, id) {
 
 function setType(type) {
   activeFilters.type = type;
-  document
-    .querySelectorAll(".type-btn")
-    .forEach((b) => b.classList.remove("active"));
-  document
-    .getElementById(
-      type === "all" ? "typeAll" : type === "movie" ? "typeMovie" : "typeTv",
-    )
-    .classList.add("active");
+  document.querySelectorAll(".type-btn").forEach((b) => b.classList.remove("active"));
+  document.getElementById(type === "all" ? "typeAll" : type === "movie" ? "typeMovie" : "typeTv").classList.add("active");
 }
 //RULETAAAA
 function spinRuleta() {
@@ -488,9 +453,7 @@ function spinRuleta() {
   document.getElementById("ruletaTitle").textContent = title;
   document.getElementById("ruletaYear").textContent = year;
   document.getElementById("ruletaPoster").src = poster ?? "";
-  document.getElementById("ruletaPoster").style.display = poster
-    ? "block"
-    : "none";
+  document.getElementById("ruletaPoster").style.display = poster ? "block" : "none";
   document.getElementById("ruletaBtn").onclick = () => {
     window.location.href = `/movie.html?id=${tmdbId}&type=${type}`;
   };
@@ -500,4 +463,13 @@ function spinRuleta() {
 
 function closeRuleta() {
   document.getElementById("ruletaModal").classList.add("hidden");
+}
+
+function toggleContinent(btn, continent) {
+  btn.classList.toggle("active");
+  if (btn.classList.contains("active")) {
+    activeFilters.continents.push(continent);
+  } else {
+    activeFilters.continents = activeFilters.continents.filter((c) => c !== continent);
+  }
 }

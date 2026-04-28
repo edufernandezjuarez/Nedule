@@ -817,3 +817,34 @@
     padding: 1rem 1rem 80px;
   }
 }
+.continent-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.continent-chip {
+  padding: 4px 12px;
+  border-radius: 20px;
+  border: 0.5px solid var(--border-medium);
+  background: transparent;
+  font-size: 12px;
+  cursor: pointer;
+  color: var(--text-secondary);
+  transition:
+    background 0.12s,
+    color 0.12s,
+    border-color 0.12s;
+  white-space: nowrap;
+}
+
+.continent-chip.active {
+  background: #378add;
+  color: white;
+  border-color: #378add;
+}
+
+.continent-chip:hover:not(.active) {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+}

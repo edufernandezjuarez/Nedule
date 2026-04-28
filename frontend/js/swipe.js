@@ -1,7 +1,7 @@
 const API = "http://146.181.49.255:3000/api";
 
 let currentSwipe = null;
-let activeFilters = { yearMin: null, yearMax: null, genreIds: [], type: "all" };
+let activeFilters = { yearMin: null, yearMax: null, genreIds: [], type: "all", continents: [], countryName: "" };
 let pendingMovie = null;
 
 function getUserId() {
@@ -18,12 +18,12 @@ async function loadSwipe() {
   const params = new URLSearchParams({
     ...(activeFilters.yearMin && activeFilters.yearMin !== "1900" && { yearMin: activeFilters.yearMin }),
     ...(activeFilters.yearMax && activeFilters.yearMax !== "2026" && { yearMax: activeFilters.yearMax }),
-    ...(activeFilters.genreIds.length > 0 && {
-      genreIds: activeFilters.genreIds.join(","),
-    }),
+    ...(activeFilters.genreIds.length > 0 && { genreIds: activeFilters.genreIds.join(",") }),
+    ...(activeFilters.continents.length > 0 && { continents: activeFilters.continents.join(",") }),
+    ...(activeFilters.countryName && { countryName: activeFilters.countryName }),
     ...(activeFilters.type !== "all" && { type: activeFilters.type }),
     exclude: [...seenIds].join(","),
-    userId: getUserId(), // ← agregá esto
+    userId: getUserId(),
   });
 
   const res = await fetch(`${API}/tmdb/swipe?${params}`);
@@ -43,10 +43,8 @@ async function loadSwipe() {
   if (document.getElementById("swipePoster")) document.getElementById("swipePoster").src = data.poster_url ?? "";
   if (document.getElementById("swipeTitle")) document.getElementById("swipeTitle").textContent = data.title;
   if (document.getElementById("swipeMeta"))
-    document.getElementById("swipeMeta").textContent =
-      `${data.year} · ${data.type === "tv" ? "Series" : "Movie"} · ★ ${data.rating}`;
-  if (document.getElementById("swipeOverview"))
-    document.getElementById("swipeOverview").textContent = data.overview ?? "";
+    document.getElementById("swipeMeta").textContent = `${data.year} · ${data.type === "tv" ? "Series" : "Movie"} · ★ ${data.rating}`;
+  if (document.getElementById("swipeOverview")) document.getElementById("swipeOverview").textContent = data.overview ?? "";
   if (document.getElementById("swipeCard"))
     document.getElementById("swipeCard").onclick = () => {
       window.open(`/movie.html?id=${data.tmdb_id}&type=${data.type}`, "_blank");
@@ -67,9 +65,7 @@ function setType(type) {
   if (desktopBtn) desktopBtn.classList.add("active");
 
   // Mobile
-  const mobileBtn = document.getElementById(
-    type === "all" ? "mobileTypeAll" : type === "movie" ? "mobileTypeMovie" : "mobileTypeTv",
-  );
+  const mobileBtn = document.getElementById(type === "all" ? "mobileTypeAll" : type === "movie" ? "mobileTypeMovie" : "mobileTypeTv");
   if (mobileBtn) mobileBtn.classList.add("active");
 }
 
@@ -181,8 +177,7 @@ function updateMobileCard(data) {
   titleEl.style.cursor = "pointer";
   titleEl.onclick = () => window.open(`/movie.html?id=${data.tmdb_id}&type=${data.type}`, "_blank");
 
-  document.getElementById("swipeMobileMeta").textContent =
-    `${data.year} · ${data.type === "tv" ? "Series" : "Movie"} · ★ ${data.rating}`;
+  document.getElementById("swipeMobileMeta").textContent = `${data.year} · ${data.type === "tv" ? "Series" : "Movie"} · ★ ${data.rating}`;
 }
 
 function toggleMobileFilters() {
@@ -339,4 +334,12 @@ async function hideTitle() {
   });
   seenIds.add(currentSwipe.tmdb_id);
   await loadSwipe();
+}
+function toggleContinent(btn, continent) {
+  btn.classList.toggle("active");
+  if (btn.classList.contains("active")) {
+    activeFilters.continents.push(continent);
+  } else {
+    activeFilters.continents = activeFilters.continents.filter((c) => c !== continent);
+  }
 }

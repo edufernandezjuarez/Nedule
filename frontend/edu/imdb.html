@@ -42,6 +42,12 @@
         <div class="filter-wrapper">
           <button class="btn-filter" id="filterBtn" onclick="toggleFilterMenu()">Filter</button>
           <div class="filter-menu hidden" id="filterMenu">
+            <label class="filter-label">Type</label>
+            <div class="filter-type-row">
+              <button class="type-btn active" id="typeAll" onclick="setType('all')">All</button>
+              <button class="type-btn" id="typeMovie" onclick="setType('movie')">Movies</button>
+              <button class="type-btn" id="typeTv" onclick="setType('tv')">Series</button>
+            </div>
             <div class="filter-section">
               <label class="filter-label">Year range</label>
               <div class="filter-year-display">
@@ -75,11 +81,25 @@
               <label class="filter-label">Genre</label>
               <div class="genre-chips" id="genreChips"></div>
             </div>
-            <label class="filter-label">Type</label>
-            <div class="filter-type-row">
-              <button class="type-btn active" id="typeAll" onclick="setType('all')">All</button>
-              <button class="type-btn" id="typeMovie" onclick="setType('movie')">Movies</button>
-              <button class="type-btn" id="typeTv" onclick="setType('tv')">Series</button>
+            <div class="filter-section">
+              <label class="filter-label">Region</label>
+              <div class="continent-chips" id="continentChips">
+                <button class="continent-chip" onclick="toggleContinent(this, 'northamerica')">North America</button>
+                <button class="continent-chip" onclick="toggleContinent(this, 'southamerica')">South America</button>
+                <button class="continent-chip" onclick="toggleContinent(this, 'europe')">Europe</button>
+                <button class="continent-chip" onclick="toggleContinent(this, 'asia')">Asia</button>
+                <button class="continent-chip" onclick="toggleContinent(this, 'middleeast')">Middle East</button>
+                <button class="continent-chip" onclick="toggleContinent(this, 'africa')">Africa</button>
+                <button class="continent-chip" onclick="toggleContinent(this, 'oceania')">Oceania</button>
+              </div>
+              <input
+                type="text"
+                id="countryInput"
+                class="filter-select"
+                placeholder="Specific country (e.g. Argentina)"
+                style="margin-top: 8px"
+                oninput="activeFilters.countryName = this.value"
+              />
             </div>
             <div class="filter-actions">
               <button onclick="clearFilters()">Clear</button>

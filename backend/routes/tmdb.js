@@ -10,7 +10,7 @@ const db = require("../db");
 
 // GET /api/tmdb/search?q=inception por ejemplo
 router.get("/search", async (req, res) => {
-  const { q, page = 1, yearMin, yearMax, genreIds, type } = req.query;
+  const { q, page = 1, yearMin, yearMax, genreIds, type, continents, countryName } = req.query;
   if (!q) return res.status(400).json({ error: "Falta el parámetro q" });
 
   try {
@@ -32,6 +32,7 @@ router.get("/search", async (req, res) => {
       overview: m.overview,
       popularity: m.popularity,
       genre_ids: m.genre_ids,
+      production_countries: m.production_countries ?? [],
       type: "movie",
     }));
 
@@ -44,6 +45,7 @@ router.get("/search", async (req, res) => {
       overview: t.overview,
       popularity: t.popularity,
       genre_ids: t.genre_ids,
+      origin_country: t.origin_country ?? [],
       type: "tv",
     }));
 
@@ -56,6 +58,12 @@ router.get("/search", async (req, res) => {
       };
       movieResults = movieResults.filter(inRange);
       tvResults = tvResults.filter(inRange);
+    }
+
+    if (continents || countryName) {
+      const codes = getCountryCodes(continents, countryName);
+      movieResults = movieResults.filter((m) => m.production_countries?.some((c) => codes.includes(c.iso_3166_1)));
+      tvResults = tvResults.filter((t) => t.origin_country?.some((c) => codes.includes(c)));
     }
 
     if (genreIds) {
@@ -154,7 +162,7 @@ router.get("/genres", async (req, res) => {
 });
 
 router.get("/popular", async (req, res) => {
-  const { page = 1, yearMin, yearMax, genreIds, type } = req.query;
+  const { page = 1, yearMin, yearMax, genreIds, type, continents, countryName } = req.query;
 
   try {
     const movieParams = { api_key: API_KEY, language: "en-US", page };
@@ -220,6 +228,12 @@ router.get("/popular", async (req, res) => {
       };
       movieResults = movieResults.filter(inRange);
       tvResults = tvResults.filter(inRange);
+    }
+
+    if (continents || countryName) {
+      const codes = getCountryCodes(continents, countryName);
+      movieResults = movieResults.filter((m) => m.production_countries?.some((c) => codes.includes(c.iso_3166_1)));
+      tvResults = tvResults.filter((t) => t.origin_country?.some((c) => codes.includes(c)));
     }
 
     let combined;
@@ -323,7 +337,7 @@ router.get("/people/search", async (req, res) => {
 });
 
 router.get("/swipe", async (req, res) => {
-  const { yearMin, yearMax, genreIds, type, exclude, userId } = req.query;
+  const { yearMin, yearMax, genreIds, type, exclude, userId, continents, countryName } = req.query;
   try {
     const randomPage = Math.floor(Math.random() * 10) + 1;
     const movieParams = {
@@ -371,6 +385,12 @@ router.get("/swipe", async (req, res) => {
         const y = parseInt((item.release_date ?? item.first_air_date)?.slice(0, 4));
         return !isNaN(y) && y >= min && y <= max;
       });
+    }
+    if (continents || countryName) {
+      const codes = getCountryCodes(continents, countryName);
+      const countryParam = codes.join("|"); // OR entre países
+      movieParams.with_origin_country = countryParam;
+      tvParams.with_origin_country = countryParam;
     }
 
     pool = pool.filter((item) => item.poster_path);
@@ -423,4 +443,144 @@ async function hideTitle() {
   seenIds.add(currentSwipe.tmdb_id);
   await loadSwipe();
 }
+
+// Mapa de continentes a códigos de país ISO
+const CONTINENT_COUNTRIES = {
+  northamerica: ["US", "CA", "MX"],
+  southamerica: ["AR", "BR", "CL", "CO", "PE", "VE", "UY", "PY", "BO", "EC"],
+  europe: [
+    "GB",
+    "FR",
+    "DE",
+    "IT",
+    "ES",
+    "PT",
+    "RU",
+    "PL",
+    "NL",
+    "BE",
+    "SE",
+    "NO",
+    "DK",
+    "FI",
+    "AT",
+    "CH",
+    "CZ",
+    "HU",
+    "RO",
+    "GR",
+    "TR",
+  ],
+  asia: ["JP", "KR", "CN", "IN", "TH", "TW", "HK", "ID", "PH", "VN", "MY", "SG"],
+  middleeast: ["IL", "IR", "SA", "AE", "EG", "IQ", "LB"],
+  africa: ["ZA", "NG", "ET", "KE", "GH", "MA", "TN", "DZ"],
+  oceania: ["AU", "NZ"],
+};
+
+// Normalizar texto (sin tildes ni mayúsculas)
+function normalize(str) {
+  return str
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "");
+}
+
+// Mapa de nombres de países a códigos ISO
+const COUNTRY_NAME_TO_ISO = {
+  argentina: "AR",
+  brazil: "BR",
+  brasil: "BR",
+  chile: "CL",
+  colombia: "CO",
+  peru: "PE",
+  venezuela: "VE",
+  uruguay: "UY",
+  usa: "US",
+  "united states": "US",
+  "estados unidos": "US",
+  canada: "CA",
+  mexico: "MX",
+  mejico: "MX",
+  uk: "GB",
+  "united kingdom": "GB",
+  "reino unido": "GB",
+  france: "FR",
+  francia: "FR",
+  germany: "DE",
+  alemania: "DE",
+  italy: "IT",
+  italia: "IT",
+  spain: "ES",
+  espana: "ES",
+  portugal: "PT",
+  russia: "RU",
+  rusia: "RU",
+  japan: "JP",
+  japon: "JP",
+  korea: "KR",
+  corea: "KR",
+  "south korea": "KR",
+  "corea del sur": "KR",
+  china: "CN",
+  india: "IN",
+  thailand: "TH",
+  tailandia: "TH",
+  australia: "AU",
+  "new zealand": "NZ",
+  "nueva zelanda": "NZ",
+  sweden: "SE",
+  suecia: "SE",
+  norway: "NO",
+  noruega: "NO",
+  denmark: "DK",
+  dinamarca: "DK",
+  finland: "FI",
+  finlandia: "FI",
+  netherlands: "NL",
+  holanda: "NL",
+  belgium: "BE",
+  belgica: "BE",
+  austria: "AT",
+  switzerland: "CH",
+  suiza: "CH",
+  israel: "IL",
+  iran: "IR",
+  turkey: "TR",
+  turquia: "TR",
+  "south africa": "ZA",
+  sudafrica: "ZA",
+  poland: "PL",
+  polonia: "PL",
+  romania: "RO",
+  rumania: "RO",
+  greece: "GR",
+  grecia: "GR",
+  "czech republic": "CZ",
+  chequia: "CZ",
+  hungary: "HU",
+  hungria: "HU",
+  taiwan: "TW",
+  "hong kong": "HK",
+};
+
+function getCountryCodes(continents, countryName) {
+  const codes = new Set();
+
+  if (continents) {
+    continents.split(",").forEach((c) => {
+      const countries = CONTINENT_COUNTRIES[c.trim().toLowerCase()];
+      if (countries) countries.forEach((code) => codes.add(code));
+    });
+  }
+
+  if (countryName) {
+    const normalized = normalize(countryName.trim());
+    const iso = COUNTRY_NAME_TO_ISO[normalized];
+    if (iso) codes.add(iso);
+    else codes.add(countryName.toUpperCase().trim()); // intentar directo
+  }
+
+  return [...codes];
+}
+
 module.exports = router;
