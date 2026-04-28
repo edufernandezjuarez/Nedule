@@ -785,6 +785,13 @@
   background: var(--bg-secondary);
   color: var(--text-primary);
 }
+.mobile-bottom-sheet-overlay {
+  display: none;
+}
+
+.mobile-bottom-sheet {
+  display: none;
+}
 @media (max-width: 600px) and (pointer: coarse) {
   .folders-grid {
     display: flex;
@@ -815,6 +822,106 @@
 
   .page {
     padding: 1rem 1rem 80px;
+  }
+  .movies-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+  }
+
+  .movie-poster {
+    height: 120px;
+  }
+
+  .movie-info {
+    padding: 6px;
+  }
+
+  .movie-title {
+    font-size: 11px;
+  }
+
+  .movie-year,
+  .movie-rating {
+    font-size: 10px;
+  }
+
+  .add-btn {
+    font-size: 11px;
+    padding: 4px 0;
+  }
+  .filter-menu {
+    display: none !important;
+  }
+  .btn-filter {
+    display: flex;
+  }
+
+  .mobile-bottom-sheet-overlay {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.4);
+    z-index: 400;
+  }
+
+  .mobile-bottom-sheet-overlay.hidden {
+    display: none;
+  }
+
+  .mobile-bottom-sheet {
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    bottom: 64px;
+    left: 0;
+    right: 0;
+    max-height: 80vh;
+    background: var(--bg-primary);
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    z-index: 401;
+    overflow: hidden;
+  }
+
+  .mobile-bottom-sheet.hidden {
+    display: none;
+  }
+
+  .mobile-bottom-sheet-handle {
+    width: 40px;
+    height: 4px;
+    background: var(--border-medium);
+    border-radius: 2px;
+    margin: 12px auto 0;
+    flex-shrink: 0;
+  }
+
+  .mobile-bottom-sheet-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 1.25rem;
+    flex-shrink: 0;
+    border-bottom: 0.5px solid var(--border-light);
+  }
+
+  .mobile-bottom-sheet-header h3 {
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--text-primary);
+  }
+
+  .mobile-bottom-sheet-header button {
+    background: transparent;
+    border: none;
+    font-size: 18px;
+    cursor: pointer;
+    color: var(--text-secondary);
+  }
+
+  .mobile-bottom-sheet-content {
+    overflow-y: auto;
+    padding: 1rem 1.25rem;
+    flex: 1;
   }
 }
 .continent-chips {

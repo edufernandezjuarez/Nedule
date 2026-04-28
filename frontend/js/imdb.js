@@ -473,3 +473,91 @@ function toggleContinent(btn, continent) {
     activeFilters.continents = activeFilters.continents.filter((c) => c !== continent);
   }
 }
+function toggleFilterMenu() {
+  if (isMobile()) {
+    openFilterSheet();
+  } else {
+    document.getElementById("filterMenu").classList.toggle("hidden");
+  }
+}
+
+function openFilterSheet() {
+  if (!document.getElementById("sheetGenreChips").children.length) {
+    loadSheetGenres();
+  }
+  document.getElementById("filterOverlay").classList.remove("hidden");
+  document.getElementById("filterSheet").classList.remove("hidden");
+}
+
+function closeFilterSheet() {
+  document.getElementById("filterOverlay").classList.add("hidden");
+  document.getElementById("filterSheet").classList.add("hidden");
+}
+
+async function loadSheetGenres() {
+  const res = await fetch(`${API}/tmdb/genres`);
+  const genres = await res.json();
+  const chips = document.getElementById("sheetGenreChips");
+  genres.forEach((g) => {
+    const btn = document.createElement("button");
+    btn.className = "genre-chip";
+    btn.textContent = g.name;
+    btn.dataset.id = g.id;
+    btn.onclick = () => {
+      btn.classList.toggle("active");
+      if (btn.classList.contains("active")) activeFilters.genreIds.push(g.id);
+      else activeFilters.genreIds = activeFilters.genreIds.filter((x) => x !== g.id);
+    };
+    chips.appendChild(btn);
+  });
+}
+
+function updateSheetYearFilter() {
+  const min = parseInt(document.getElementById("sheetYearMin").value);
+  const max = parseInt(document.getElementById("sheetYearMax").value);
+  document.getElementById("sheetYearMinDisplay").textContent = min;
+  document.getElementById("sheetYearMaxDisplay").textContent = max;
+  activeFilters.yearMin = String(min);
+  activeFilters.yearMax = String(max);
+}
+
+function toggleSheetContinent(btn, continent) {
+  btn.classList.toggle("active");
+  if (btn.classList.contains("active")) activeFilters.continents.push(continent);
+  else activeFilters.continents = activeFilters.continents.filter((c) => c !== continent);
+}
+
+function applySheetFilters() {
+  const hasFilters =
+    activeFilters.yearMin !== "1900" ||
+    activeFilters.yearMax !== "2026" ||
+    activeFilters.genreIds.length > 0 ||
+    activeFilters.continents.length > 0 ||
+    activeFilters.countryName ||
+    activeFilters.type !== "all";
+  document.getElementById("filterBtn").classList.toggle("filter-active", hasFilters);
+  closeFilterSheet();
+  searchPage = 1;
+  removeInfiniteScroll();
+  document.getElementById("searchResults").innerHTML = "";
+  fetchAndRenderResults(true);
+}
+
+function clearSheetFilters() {
+  activeFilters = { yearMin: null, yearMax: null, genreIds: [], type: "all", continents: [], countryName: "" };
+  document.getElementById("sheetYearMin").value = 1900;
+  document.getElementById("sheetYearMax").value = 2026;
+  document.getElementById("sheetYearMinDisplay").textContent = "1900";
+  document.getElementById("sheetYearMaxDisplay").textContent = "2026";
+  document.querySelectorAll("#sheetGenreChips .genre-chip").forEach((c) => c.classList.remove("active"));
+  document.querySelectorAll("#sheetContinentChips .continent-chip").forEach((c) => c.classList.remove("active"));
+  document.getElementById("sheetCountryInput").value = "";
+  document.querySelectorAll("#filterSheet .type-btn").forEach((b) => b.classList.remove("active"));
+  document.getElementById("sheetTypeAll").classList.add("active");
+  document.getElementById("filterBtn").classList.remove("filter-active");
+  closeFilterSheet();
+  searchPage = 1;
+  removeInfiniteScroll();
+  document.getElementById("searchResults").innerHTML = "";
+  fetchAndRenderResults(true);
+}
