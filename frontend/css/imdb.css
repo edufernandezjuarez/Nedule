@@ -833,9 +833,8 @@
   .search-card {
     display: flex !important;
     flex-direction: row;
-    border-radius: 0;
-    border: none;
-    border-bottom: 0.5px solid var(--border-light);
+    border-radius: var(--radius-lg);
+    border: 0.5px solid var(--border-light);
     background: transparent;
   }
 
