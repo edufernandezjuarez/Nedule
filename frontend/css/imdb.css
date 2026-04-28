@@ -785,11 +785,10 @@
   background: var(--bg-secondary);
   color: var(--text-primary);
 }
-@media not all and (max-width: 600px) and (pointer: coarse) {
-  .mobile-bottom-sheet-overlay,
-  .mobile-bottom-sheet {
-    display: none !important;
-  }
+
+.mobile-bottom-sheet-overlay,
+.mobile-bottom-sheet {
+  display: none !important;
 }
 @media (max-width: 600px) and (pointer: coarse) {
   .folders-grid {
@@ -811,33 +810,6 @@
     flex-shrink: 0;
   }
 
-  .movies-grid {
-    grid-template-columns: repeat(3, 1fr);
-    gap: 8px;
-  }
-
-  .movie-poster {
-    height: 150px;
-  }
-
-  .movie-info {
-    padding: 6px;
-  }
-
-  .movie-title {
-    font-size: 11px;
-  }
-
-  .movie-year,
-  .movie-rating {
-    font-size: 10px;
-  }
-
-  .add-btn {
-    font-size: 11px;
-    padding: 4px 0;
-  }
-
   .page {
     padding: 1rem 1rem 80px;
   }
@@ -845,11 +817,88 @@
   .filter-menu {
     display: none !important;
   }
-
   .btn-filter {
     display: flex;
   }
 
+  /* ── TARJETAS EN LISTA ── */
+  .movies-grid,
+  #searchResults {
+    display: flex !important;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .movie-card,
+  .search-card {
+    display: flex !important;
+    flex-direction: row;
+    border-radius: 0;
+    border: none;
+    border-bottom: 0.5px solid var(--border-light);
+    background: var(--bg-primary);
+  }
+
+  .movie-card:first-child,
+  .search-card:first-child {
+    border-top: 0.5px solid var(--border-light);
+  }
+
+  .movie-poster {
+    width: 80px;
+    min-width: 80px;
+    height: 120px;
+    flex-shrink: 0;
+  }
+
+  .movie-poster img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .movie-info {
+    flex: 1;
+    padding: 10px 12px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 4px;
+  }
+
+  .movie-title {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-primary);
+    margin-bottom: 0;
+  }
+
+  .movie-year {
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin-bottom: 0;
+  }
+
+  .movie-rating {
+    font-size: 12px;
+    color: var(--text-secondary);
+  }
+
+  .add-btn {
+    margin-top: 8px;
+    padding: 6px 12px;
+    width: auto;
+    align-self: flex-start;
+    border-radius: var(--radius-md);
+    font-size: 12px;
+  }
+
+  .delete-x {
+    top: 8px;
+    right: 8px;
+  }
+
+  /* Bottom sheet */
   .mobile-bottom-sheet-overlay {
     display: block;
     position: fixed;
