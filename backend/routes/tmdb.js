@@ -14,14 +14,32 @@ router.get("/search", async (req, res) => {
   if (!q) return res.status(400).json({ error: "Falta el parámetro q" });
 
   try {
-    const [movies, tv] = await Promise.all([
-      axios.get(`${BASE_URL}/search/movie`, {
-        params: { api_key: API_KEY, query: q, language: "en-US", page },
-      }),
-      axios.get(`${BASE_URL}/search/tv`, {
-        params: { api_key: API_KEY, query: q, language: "en-US", page },
-      }),
-    ]);
+    const hasCountryFilter = continents || countryName;
+
+    const movieParams = { api_key: API_KEY, language: "en-US", page };
+    const tvParams = { api_key: API_KEY, language: "en-US", page };
+
+    if (hasCountryFilter) {
+      const codes = getCountryCodes(continents, countryName);
+      const countryParam = codes.join("|");
+      movieParams.with_origin_country = countryParam;
+      tvParams.with_origin_country = countryParam;
+      movieParams.with_text_query = q;
+      tvParams.with_text_query = q;
+    } else {
+      movieParams.query = q;
+      tvParams.query = q;
+    }
+
+    if (genreIds) {
+      movieParams.with_genres = genreIds;
+      tvParams.with_genres = genreIds;
+    }
+
+    const movieEndpoint = hasCountryFilter ? `${BASE_URL}/discover/movie` : `${BASE_URL}/search/movie`;
+    const tvEndpoint = hasCountryFilter ? `${BASE_URL}/discover/tv` : `${BASE_URL}/search/tv`;
+
+    const [movies, tv] = await Promise.all([axios.get(movieEndpoint, { params: movieParams }), axios.get(tvEndpoint, { params: tvParams })]);
 
     let movieResults = movies.data.results.map((m) => ({
       tmdb_id: m.id,
@@ -181,9 +199,16 @@ router.get("/popular", async (req, res) => {
       tvParams.with_genres = genreIds;
     }
 
-    const movieEndpoint = genreIds ? `${BASE_URL}/discover/movie` : `${BASE_URL}/movie/popular`;
-    const tvEndpoint = genreIds ? `${BASE_URL}/discover/tv` : `${BASE_URL}/tv/popular`;
+    if (continents || countryName) {
+      const codes = getCountryCodes(continents, countryName);
+      const countryParam = codes.join("|");
+      movieParams.with_origin_country = countryParam;
+      tvParams.with_origin_country = countryParam;
+    }
 
+    const useDiscover = genreIds || continents || countryName;
+    const movieEndpoint = useDiscover ? `${BASE_URL}/discover/movie` : `${BASE_URL}/movie/popular`;
+    const tvEndpoint = useDiscover ? `${BASE_URL}/discover/tv` : `${BASE_URL}/tv/popular`;
     const requests = [];
     if (type !== "tv") requests.push(axios.get(movieEndpoint, { params: movieParams }));
     if (type !== "movie") requests.push(axios.get(tvEndpoint, { params: tvParams }));
@@ -359,7 +384,12 @@ router.get("/swipe", async (req, res) => {
       movieParams.with_genres = genreIds;
       tvParams.with_genres = genreIds;
     }
-
+    if (continents || countryName) {
+      const codes = getCountryCodes(continents, countryName);
+      const countryParam = codes.join("|"); // OR entre países
+      movieParams.with_origin_country = countryParam;
+      tvParams.with_origin_country = countryParam;
+    }
     const requests = [];
     if (genreIds) {
       if (type !== "tv") requests.push(axios.get(`${BASE_URL}/discover/movie`, { params: movieParams }));
@@ -385,12 +415,6 @@ router.get("/swipe", async (req, res) => {
         const y = parseInt((item.release_date ?? item.first_air_date)?.slice(0, 4));
         return !isNaN(y) && y >= min && y <= max;
       });
-    }
-    if (continents || countryName) {
-      const codes = getCountryCodes(continents, countryName);
-      const countryParam = codes.join("|"); // OR entre países
-      movieParams.with_origin_country = countryParam;
-      tvParams.with_origin_country = countryParam;
     }
 
     pool = pool.filter((item) => item.poster_path);
@@ -448,29 +472,7 @@ async function hideTitle() {
 const CONTINENT_COUNTRIES = {
   northamerica: ["US", "CA", "MX"],
   southamerica: ["AR", "BR", "CL", "CO", "PE", "VE", "UY", "PY", "BO", "EC"],
-  europe: [
-    "GB",
-    "FR",
-    "DE",
-    "IT",
-    "ES",
-    "PT",
-    "RU",
-    "PL",
-    "NL",
-    "BE",
-    "SE",
-    "NO",
-    "DK",
-    "FI",
-    "AT",
-    "CH",
-    "CZ",
-    "HU",
-    "RO",
-    "GR",
-    "TR",
-  ],
+  europe: ["GB", "FR", "DE", "IT", "ES", "PT", "RU", "PL", "NL", "BE", "SE", "NO", "DK", "FI", "AT", "CH", "CZ", "HU", "RO", "GR", "TR"],
   asia: ["JP", "KR", "CN", "IN", "TH", "TW", "HK", "ID", "PH", "VN", "MY", "SG"],
   middleeast: ["IL", "IR", "SA", "AE", "EG", "IQ", "LB"],
   africa: ["ZA", "NG", "ET", "KE", "GH", "MA", "TN", "DZ"],
