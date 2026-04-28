@@ -826,16 +826,15 @@
   #searchResults {
     display: flex !important;
     flex-direction: column;
-    gap: 0;
+    gap: 5px;
   }
 
   .movie-card,
   .search-card {
     display: flex !important;
     flex-direction: row;
-    border-radius: 0;
-    border: none;
-    border-bottom: 0.5px solid var(--border-light);
+    border-radius: var(--radius-lg); /* ← redondear bordes */
+    border: 0.5px solid var(--border-light);
     background: var(--bg-primary);
   }
 
