@@ -234,7 +234,7 @@
 
 .movie-poster {
   width: 100%;
-  height: 140px;
+  height: 180px;
   background: var(--bg-secondary);
 }
 
@@ -847,7 +847,7 @@
   .movie-poster {
     width: 80px;
     min-width: 80px;
-    height: 120px;
+    height: 140px;
     flex-shrink: 0;
   }
 
@@ -863,7 +863,7 @@
     display: flex;
     flex-direction: column;
     justify-content: center;
-    gap: 4px;
+    gap: 8px;
   }
 
   .movie-title {
