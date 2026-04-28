@@ -812,23 +812,12 @@
   }
 
   .movies-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
-  .movie-poster {
-    height: 150px;
-  }
-
-  .page {
-    padding: 1rem 1rem 80px;
-  }
-  .movies-grid {
     grid-template-columns: repeat(3, 1fr);
     gap: 8px;
   }
 
   .movie-poster {
-    height: 120px;
+    height: 150px;
   }
 
   .movie-info {
@@ -848,9 +837,15 @@
     font-size: 11px;
     padding: 4px 0;
   }
+
+  .page {
+    padding: 1rem 1rem 80px;
+  }
+
   .filter-menu {
     display: none !important;
   }
+
   .btn-filter {
     display: flex;
   }
@@ -868,7 +863,7 @@
   }
 
   .mobile-bottom-sheet {
-    display: flex;
+    display: flex !important;
     flex-direction: column;
     position: fixed;
     bottom: 64px;
@@ -882,7 +877,7 @@
   }
 
   .mobile-bottom-sheet.hidden {
-    display: none;
+    display: none !important;
   }
 
   .mobile-bottom-sheet-handle {
