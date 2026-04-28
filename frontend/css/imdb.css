@@ -828,6 +828,7 @@
     flex-direction: column;
     gap: 4px;
     background: transparent !important;
+    border: none;
   }
 
   .movie-card,
