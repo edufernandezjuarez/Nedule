@@ -8,7 +8,9 @@ function getUserId() {
   const name = getActiveUser();
   return name === "Edu" ? 1 : 2;
 }
-
+function isMobile() {
+  return window.matchMedia("(max-width: 600px) and (pointer: coarse)").matches;
+}
 // -- CARGAR LISTAS --
 async function loadLists() {
   const userId = getUserId();
@@ -356,7 +358,11 @@ async function removeMovie(movieId) {
 let activeFilters = { yearMin: null, yearMax: null, genreIds: [], type: "all", continents: [], countryName: "" };
 
 function toggleFilterMenu() {
-  document.getElementById("filterMenu").classList.toggle("hidden");
+  if (isMobile()) {
+    openFilterSheet();
+  } else {
+    document.getElementById("filterMenu").classList.toggle("hidden");
+  }
 }
 
 function updateYearFilter() {
@@ -480,13 +486,6 @@ function toggleContinent(btn, continent) {
     activeFilters.continents.push(continent);
   } else {
     activeFilters.continents = activeFilters.continents.filter((c) => c !== continent);
-  }
-}
-function toggleFilterMenu() {
-  if (isMobile()) {
-    openFilterSheet();
-  } else {
-    document.getElementById("filterMenu").classList.toggle("hidden");
   }
 }
 
