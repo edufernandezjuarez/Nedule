@@ -1,15 +1,11 @@
 const API = "http://146.181.49.255:3000/api";
-
 let selectedUser = null;
 
 function selectUser(name) {
   selectedUser = name;
-  document
-    .querySelectorAll(".login-user-btn")
-    .forEach((b) => b.classList.remove("selected"));
+  document.querySelectorAll(".login-user-btn").forEach((b) => b.classList.remove("selected"));
   event.currentTarget.classList.add("selected");
-  document.getElementById("loginFor").textContent =
-    `Enter password for ${name}`;
+  document.getElementById("loginFor").textContent = `Enter password for ${name}`;
   document.getElementById("passwordSection").classList.remove("hidden");
   document.getElementById("passwordInput").focus();
   document.getElementById("passwordInput").value = "";
@@ -18,6 +14,7 @@ function selectUser(name) {
 async function submitLogin() {
   if (!selectedUser) return;
   const password = document.getElementById("passwordInput").value;
+
   const res = await fetch(`${API}/auth/login`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -30,8 +27,9 @@ async function submitLogin() {
     return;
   }
 
+  // Guardar token para este usuario específico
+  localStorage.setItem(`token_${data.username}`, data.token);
   localStorage.setItem("token", data.token);
   localStorage.setItem("activeUser", data.username);
-  const path = data.username === "Edu" ? "/inicio.html" : "/inicio.html";
-  window.location.href = path;
+  window.location.href = "/inicio.html";
 }
