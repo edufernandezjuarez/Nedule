@@ -86,9 +86,16 @@ function toggleMobileUserMenu() {
 }
 
 function selectMobileUser(name) {
-  localStorage.removeItem("token");
-  localStorage.removeItem("activeUser");
-  window.location.href = "/login.html";
+  const existingToken = localStorage.getItem(`token_${name}`);
+  if (existingToken) {
+    localStorage.setItem("activeUser", name);
+    localStorage.setItem("token", existingToken);
+    window.location.href = "/inicio.html";
+  } else {
+    localStorage.removeItem("token");
+    localStorage.removeItem("activeUser");
+    window.location.href = "/login.html";
+  }
 }
 
 function updateMobileNav(name) {
