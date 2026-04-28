@@ -78,12 +78,6 @@ router.get("/search", async (req, res) => {
       tvResults = tvResults.filter(inRange);
     }
 
-    if (continents || countryName) {
-      const codes = getCountryCodes(continents, countryName);
-      movieResults = movieResults.filter((m) => m.production_countries?.some((c) => codes.includes(c.iso_3166_1)));
-      tvResults = tvResults.filter((t) => t.origin_country?.some((c) => codes.includes(c)));
-    }
-
     if (genreIds) {
       const ids = genreIds.split(",").map(Number);
       movieResults = movieResults.filter((m) => ids.every((id) => m.genre_ids?.includes(id)));
@@ -255,12 +249,6 @@ router.get("/popular", async (req, res) => {
       tvResults = tvResults.filter(inRange);
     }
 
-    if (continents || countryName) {
-      const codes = getCountryCodes(continents, countryName);
-      movieResults = movieResults.filter((m) => m.production_countries?.some((c) => codes.includes(c.iso_3166_1)));
-      tvResults = tvResults.filter((t) => t.origin_country?.some((c) => codes.includes(c)));
-    }
-
     let combined;
     if (type === "movie") combined = movieResults;
     else if (type === "tv") combined = tvResults;
@@ -391,7 +379,7 @@ router.get("/swipe", async (req, res) => {
       tvParams.with_origin_country = countryParam;
     }
     const requests = [];
-    if (genreIds) {
+    if (genreIds || continents || countryName) {
       if (type !== "tv") requests.push(axios.get(`${BASE_URL}/discover/movie`, { params: movieParams }));
       if (type !== "movie") requests.push(axios.get(`${BASE_URL}/discover/tv`, { params: tvParams }));
     } else {
