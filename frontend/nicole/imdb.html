@@ -109,6 +109,81 @@
         </div>
         <button onclick="searchMovies()">Search</button>
       </div>
+      <!-- Bottom sheet mobile -->
+      <div class="mobile-bottom-sheet-overlay hidden" id="filterOverlay" onclick="closeFilterSheet()"></div>
+      <div class="mobile-bottom-sheet hidden" id="filterSheet">
+        <div class="mobile-bottom-sheet-handle"></div>
+        <div class="mobile-bottom-sheet-header">
+          <h3>Filters</h3>
+          <button onclick="closeFilterSheet()">✕</button>
+        </div>
+        <div class="mobile-bottom-sheet-content">
+          <div class="filter-section">
+            <label class="filter-label">Type</label>
+            <div class="filter-type-row">
+              <button class="type-btn active" id="sheetTypeAll" onclick="setType('all')">All</button>
+              <button class="type-btn" id="sheetTypeMovie" onclick="setType('movie')">Movies</button>
+              <button class="type-btn" id="sheetTypeTv" onclick="setType('tv')">Series</button>
+            </div>
+          </div>
+          <div class="filter-section">
+            <label class="filter-label">Year range</label>
+            <div class="filter-year-display">
+              <span id="sheetYearMinDisplay">1900</span> — <span id="sheetYearMaxDisplay">2026</span>
+            </div>
+            <div class="filter-slider-row">
+              <input
+                type="range"
+                id="sheetYearMin"
+                min="1900"
+                max="2026"
+                value="1900"
+                step="1"
+                oninput="updateSheetYearFilter()"
+              />
+            </div>
+            <div class="filter-slider-row">
+              <input
+                type="range"
+                id="sheetYearMax"
+                min="1900"
+                max="2026"
+                value="2026"
+                step="1"
+                oninput="updateSheetYearFilter()"
+              />
+            </div>
+          </div>
+          <div class="filter-section">
+            <label class="filter-label">Genre</label>
+            <div class="genre-chips" id="sheetGenreChips"></div>
+          </div>
+          <div class="filter-section">
+            <label class="filter-label">Region</label>
+            <div class="continent-chips" id="sheetContinentChips">
+              <button class="continent-chip" onclick="toggleSheetContinent(this, 'northamerica')">North America</button>
+              <button class="continent-chip" onclick="toggleSheetContinent(this, 'southamerica')">South America</button>
+              <button class="continent-chip" onclick="toggleSheetContinent(this, 'europe')">Europe</button>
+              <button class="continent-chip" onclick="toggleSheetContinent(this, 'asia')">Asia</button>
+              <button class="continent-chip" onclick="toggleSheetContinent(this, 'middleeast')">Middle East</button>
+              <button class="continent-chip" onclick="toggleSheetContinent(this, 'africa')">Africa</button>
+              <button class="continent-chip" onclick="toggleSheetContinent(this, 'oceania')">Oceania</button>
+            </div>
+            <input
+              type="text"
+              id="sheetCountryInput"
+              class="filter-select"
+              placeholder="Specific country..."
+              style="margin-top: 8px"
+              oninput="activeFilters.countryName = this.value"
+            />
+          </div>
+          <div class="filter-actions">
+            <button onclick="clearSheetFilters()">Clear</button>
+            <button class="btn-primary" onclick="applySheetFilters()">Apply</button>
+          </div>
+        </div>
+      </div>
       <div class="search-results hidden" id="searchResults"></div>
       <!-- Modal elegir lista -->
       <div class="modal-overlay hidden" id="addToListModal">
