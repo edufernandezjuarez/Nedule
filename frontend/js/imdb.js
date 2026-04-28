@@ -436,8 +436,17 @@ function toggleGenre(btn, id) {
 function setType(type) {
   activeFilters.type = type;
   document.querySelectorAll(".type-btn").forEach((b) => b.classList.remove("active"));
-  document.getElementById(type === "all" ? "typeAll" : type === "movie" ? "typeMovie" : "typeTv").classList.add("active");
+  const ids = {
+    all: ["typeAll", "sheetTypeAll"],
+    movie: ["typeMovie", "sheetTypeMovie"],
+    tv: ["typeTv", "sheetTypeTv"],
+  };
+  ids[type].forEach((id) => {
+    const el = document.getElementById(id);
+    if (el) el.classList.add("active");
+  });
 }
+
 //RULETAAAA
 function spinRuleta() {
   const cards = document.querySelectorAll("#moviesGrid .movie-card");
