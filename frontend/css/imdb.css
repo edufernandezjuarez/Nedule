@@ -785,12 +785,11 @@
   background: var(--bg-secondary);
   color: var(--text-primary);
 }
-.mobile-bottom-sheet-overlay {
-  display: none;
-}
-
-.mobile-bottom-sheet {
-  display: none;
+@media not all and (max-width: 600px) and (pointer: coarse) {
+  .mobile-bottom-sheet-overlay,
+  .mobile-bottom-sheet {
+    display: none !important;
+  }
 }
 @media (max-width: 600px) and (pointer: coarse) {
   .folders-grid {
