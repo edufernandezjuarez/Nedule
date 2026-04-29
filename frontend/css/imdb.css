@@ -1017,7 +1017,7 @@
   position: absolute;
   right: 0;
   top: calc(100% + 4px);
-  background: var(--card-bg);
+  background: var(--bg-primary);
   border: 1px solid var(--border);
   border-radius: 8px;
   z-index: 100;
