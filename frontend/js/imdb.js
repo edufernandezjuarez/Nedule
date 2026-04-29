@@ -113,6 +113,7 @@ function renderMovies(movies) {
     card.dataset.type = type;
     card.onclick = (e) => {
       if (e.target.classList.contains("delete-x")) return;
+      if (e.target.classList.contains("add-btn")) return;
       window.location.href = `/movie.html?id=${tmdbId}&type=${type}`;
     };
     card.dataset.originalIndex = movies.indexOf(movie);
@@ -125,7 +126,14 @@ function renderMovies(movies) {
         <div class="movie-title">${movie.title}</div>
         <div class="movie-year">${movie.year}</div>
         <div class="movie-rating">★ ${movie.imdb_rating}</div>
-        <button class="add-btn" onclick="event.stopPropagation(); openAddModal({tmdb_id: '${tmdbId}', title: \`${movie.title.replace(/`/g, "'")}\`, year: ${movie.year}, poster_url: '${movie.poster_url}', rating: ${movie.imdb_rating}, type: '${type}'})">+ Add</button>
+        <button class="add-btn" onclick="openAddModal(${JSON.stringify({
+          tmdb_id: tmdbId,
+          title: movie.title,
+          year: movie.year,
+          poster_url: movie.poster_url,
+          rating: movie.imdb_rating,
+          type: type,
+        }).replace(/"/g, "&quot;")})">+ Add</button>
       </div>
     `;
     grid.appendChild(card);
