@@ -310,7 +310,7 @@ async function createList() {
   const is_shared = document.getElementById("newListShared").checked;
   if (!name) return;
 
-  const userId = getUserId(); // ← asegurate que devuelve un número
+  const userId = getUserId();
 
   await fetch(`${API}/lists`, {
     method: "POST",
@@ -354,7 +354,7 @@ async function removeMovie(movieId) {
   await loadMovies(activeListId);
 }
 
-//-- FILTROS DE BE BUSQUEDA--
+//-- FILTROS DE BUSQUEDA --
 let activeFilters = { yearMin: null, yearMax: null, genreIds: [], type: "all", continents: [], countryName: "" };
 
 function toggleFilterMenu() {
@@ -381,12 +381,16 @@ function updateYearFilter() {
 function applyFilters() {
   activeFilters.yearMin = document.getElementById("yearMin").value;
   activeFilters.yearMax = document.getElementById("yearMax").value;
-  activeFilters.type =
-    document.querySelector(".type-btn.active")?.id.replace("type", "").replace("All", "all").replace("Movie", "movie").replace("Tv", "tv") ?? "all";
 
   document.getElementById("filterMenu").classList.add("hidden");
 
-  const hasFilters = activeFilters.yearMin !== "1900" || activeFilters.yearMax !== "2026" || activeFilters.genreIds.length > 0 || activeFilters.type !== "all";
+  const hasFilters =
+    activeFilters.yearMin !== "1900" ||
+    activeFilters.yearMax !== "2026" ||
+    activeFilters.genreIds.length > 0 ||
+    activeFilters.continents.length > 0 ||
+    activeFilters.countryName ||
+    activeFilters.type !== "all";
   document.getElementById("filterBtn").classList.toggle("filter-active", hasFilters);
 
   searchPage = 1;
@@ -395,19 +399,54 @@ function applyFilters() {
   fetchAndRenderResults(true);
 }
 
+// FIX PRINCIPAL: reasignar la variable global, no crear una nueva con "let"
 function clearFilters() {
-  let activeFilters = { yearMin: null, yearMax: null, genreIds: [], type: "all", continents: [], countryName: "" };
-  document.getElementById("yearMin").value = 1900;
-  document.getElementById("yearMax").value = 2026;
-  document.getElementById("yearMinDisplay").textContent = "1900";
-  document.getElementById("yearMaxDisplay").textContent = "2026";
+  activeFilters = { yearMin: null, yearMax: null, genreIds: [], type: "all", continents: [], countryName: "" };
+
+  // Reset desktop sliders
+  const yearMinEl = document.getElementById("yearMin");
+  const yearMaxEl = document.getElementById("yearMax");
+  if (yearMinEl) {
+    yearMinEl.value = 1900;
+    document.getElementById("yearMinDisplay").textContent = "1900";
+  }
+  if (yearMaxEl) {
+    yearMaxEl.value = 2026;
+    document.getElementById("yearMaxDisplay").textContent = "2026";
+  }
+
+  // Reset sheet sliders también para que queden sincronizados
+  const sheetYearMinEl = document.getElementById("sheetYearMin");
+  const sheetYearMaxEl = document.getElementById("sheetYearMax");
+  if (sheetYearMinEl) {
+    sheetYearMinEl.value = 1900;
+    document.getElementById("sheetYearMinDisplay").textContent = "1900";
+  }
+  if (sheetYearMaxEl) {
+    sheetYearMaxEl.value = 2026;
+    document.getElementById("sheetYearMaxDisplay").textContent = "2026";
+  }
+
+  // Reset todos los chips (desktop + sheet)
   document.querySelectorAll(".genre-chip").forEach((c) => c.classList.remove("active"));
   document.querySelectorAll(".continent-chip").forEach((c) => c.classList.remove("active"));
-  document.getElementById("countryInput").value = "";
+
+  // Reset country inputs
+  const countryInput = document.getElementById("countryInput");
+  const sheetCountryInput = document.getElementById("sheetCountryInput");
+  if (countryInput) countryInput.value = "";
+  if (sheetCountryInput) sheetCountryInput.value = "";
+
+  // Reset type buttons (desktop + sheet)
   document.querySelectorAll(".type-btn").forEach((b) => b.classList.remove("active"));
-  document.getElementById("typeAll").classList.add("active");
+  const typeAll = document.getElementById("typeAll");
+  const sheetTypeAll = document.getElementById("sheetTypeAll");
+  if (typeAll) typeAll.classList.add("active");
+  if (sheetTypeAll) sheetTypeAll.classList.add("active");
+
   document.getElementById("filterBtn").classList.remove("filter-active");
   document.getElementById("filterMenu").classList.add("hidden");
+
   searchPage = 1;
   removeInfiniteScroll();
   document.getElementById("searchResults").innerHTML = "";
@@ -551,17 +590,43 @@ function applySheetFilters() {
   fetchAndRenderResults(true);
 }
 
+// FIX: igual que clearFilters, reasigna global y sincroniza ambos paneles
 function clearSheetFilters() {
   activeFilters = { yearMin: null, yearMax: null, genreIds: [], type: "all", continents: [], countryName: "" };
+
+  // Reset sheet sliders
   document.getElementById("sheetYearMin").value = 1900;
   document.getElementById("sheetYearMax").value = 2026;
   document.getElementById("sheetYearMinDisplay").textContent = "1900";
   document.getElementById("sheetYearMaxDisplay").textContent = "2026";
-  document.querySelectorAll("#sheetGenreChips .genre-chip").forEach((c) => c.classList.remove("active"));
-  document.querySelectorAll("#sheetContinentChips .continent-chip").forEach((c) => c.classList.remove("active"));
+
+  // Reset desktop sliders también para que queden sincronizados
+  const yearMinEl = document.getElementById("yearMin");
+  const yearMaxEl = document.getElementById("yearMax");
+  if (yearMinEl) {
+    yearMinEl.value = 1900;
+    document.getElementById("yearMinDisplay").textContent = "1900";
+  }
+  if (yearMaxEl) {
+    yearMaxEl.value = 2026;
+    document.getElementById("yearMaxDisplay").textContent = "2026";
+  }
+
+  // Reset todos los chips
+  document.querySelectorAll(".genre-chip").forEach((c) => c.classList.remove("active"));
+  document.querySelectorAll(".continent-chip").forEach((c) => c.classList.remove("active"));
+
+  // Reset country inputs
   document.getElementById("sheetCountryInput").value = "";
-  document.querySelectorAll("#filterSheet .type-btn").forEach((b) => b.classList.remove("active"));
+  const countryInput = document.getElementById("countryInput");
+  if (countryInput) countryInput.value = "";
+
+  // Reset type buttons
+  document.querySelectorAll(".type-btn").forEach((b) => b.classList.remove("active"));
   document.getElementById("sheetTypeAll").classList.add("active");
+  const typeAll = document.getElementById("typeAll");
+  if (typeAll) typeAll.classList.add("active");
+
   document.getElementById("filterBtn").classList.remove("filter-active");
   closeFilterSheet();
   searchPage = 1;
