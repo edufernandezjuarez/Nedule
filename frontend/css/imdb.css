@@ -999,3 +999,42 @@
   background: var(--bg-secondary);
   color: var(--text-primary);
 }
+.sort-wrapper {
+  position: relative;
+}
+.btn-sort {
+  padding: 7px 14px;
+  border-radius: var(--radius-md);
+  border: 0.5px var(--border-medium);
+  background: #84ddf8dc;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  color: #ffffff;
+  transition: background 0.15s;
+}
+.sort-menu {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 4px);
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  z-index: 100;
+  min-width: 130px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+.sort-menu button {
+  display: block;
+  width: 100%;
+  padding: 10px 14px;
+  text-align: left;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  color: var(--text);
+}
+.sort-menu button:hover {
+  background: var(--hover);
+}

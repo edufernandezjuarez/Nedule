@@ -78,6 +78,9 @@ async function openList(listId, listName, isShared) {
   document.getElementById("listsView").classList.add("hidden");
   document.getElementById("moviesView").classList.remove("hidden");
 
+  currentSort = { field: null, asc: false };
+  document.getElementById("btnSort").textContent = "Sort";
+
   await loadMovies(listId);
 }
 
@@ -643,4 +646,52 @@ function clearSheetFilters() {
   removeInfiniteScroll();
   document.getElementById("searchResults").innerHTML = "";
   fetchAndRenderResults(true);
+}
+let currentSort = { field: null, asc: false };
+
+function toggleSortMenu() {
+  document.getElementById("sortMenu").classList.toggle("hidden");
+}
+
+function sortMovies(field) {
+  if (currentSort.field === field) {
+    currentSort.asc = !currentSort.asc; // toggle dirección
+  } else {
+    currentSort.field = field;
+    currentSort.asc = false; // default: mayor a menor
+  }
+
+  // Actualizar label del botón
+  const dir = currentSort.asc ? "↑" : "↓";
+  const labels = { popularity: "Popularity", year: "Year", rating: "Rating", alpha: "A-Z" };
+  document.getElementById("btnSort").textContent = `${labels[field]} ${dir}`;
+  document.getElementById("sortMenu").classList.add("hidden");
+
+  const cards = Array.from(document.querySelectorAll("#moviesGrid .movie-card"));
+
+  cards.sort((a, b) => {
+    let valA, valB;
+    if (field === "alpha") {
+      valA = a.querySelector(".movie-title").textContent.toLowerCase();
+      valB = b.querySelector(".movie-title").textContent.toLowerCase();
+      return currentSort.asc ? valA.localeCompare(valB) : valB.localeCompare(valA);
+    }
+    if (field === "year") {
+      valA = parseInt(a.querySelector(".movie-year").textContent) || 0;
+      valB = parseInt(b.querySelector(".movie-year").textContent) || 0;
+    }
+    if (field === "rating") {
+      valA = parseFloat(a.querySelector(".movie-rating").textContent.replace("★", "")) || 0;
+      valB = parseFloat(b.querySelector(".movie-rating").textContent.replace("★", "")) || 0;
+    }
+    if (field === "popularity") {
+      // Las cards ya vienen ordenadas por popularidad del backend, usamos su índice original
+      valA = parseInt(a.dataset.originalIndex) || 0;
+      valB = parseInt(b.dataset.originalIndex) || 0;
+    }
+    return currentSort.asc ? valA - valB : valB - valA;
+  });
+
+  const grid = document.getElementById("moviesGrid");
+  cards.forEach((c) => grid.appendChild(c));
 }
