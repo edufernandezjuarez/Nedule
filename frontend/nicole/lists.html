@@ -137,6 +137,15 @@
       <button class="mobile-user-menu-item" onclick="window.location.href = '/reviews.html'">📋 Review history</button>
       <button class="mobile-user-menu-item" onclick="window.location.href = '/hidden.html'">🚫 Hidden titles</button>
     </div>
+    <div class="modal-overlay hidden" id="addToListModal">
+      <div class="modal">
+        <h3>Add to list</h3>
+        <div id="modalListOptions"></div>
+        <div class="modal-actions">
+          <button onclick="closeAddModal()">Cancel</button>
+        </div>
+      </div>
+    </div>
     <script src="/js/auth.js"></script>
     <script src="/js/user-menu.js"></script>
     <script>
