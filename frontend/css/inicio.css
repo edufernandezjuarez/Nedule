@@ -220,7 +220,16 @@ body {
 .mobile-user-menu {
   display: none;
 }
-
+.nav-btn.logo {
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  padding: 6px 14px;
+  color: var(--text);
+  border: none;
+  background: none;
+  cursor: pointer;
+}
 @media (max-width: 600px) and (pointer: coarse) {
   .navbar {
     display: none;
