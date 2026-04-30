@@ -67,6 +67,9 @@ function goToReviews() {
 function goToHidden() {
   window.location.href = "/hidden.html";
 }
+function goToWatching() {
+  window.location.href = "/watching.html";
+}
 
 document.addEventListener("click", (e) => {
   const infoBtn = document.getElementById("infoBtn");
