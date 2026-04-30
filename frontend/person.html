@@ -47,7 +47,13 @@
           <p class="person-known-for" id="personKnownFor"></p>
         </div>
       </div>
-      <h2 class="section-title" style="margin-top: 2rem">Credits</h2>
+      <div class="credits-header">
+        <h3 class="credits-title">Credits</h3>
+        <div class="tab-btns">
+          <button class="tab-btn active" id="tabMovies" onclick="setTab('movie')">Movies</button>
+          <button class="tab-btn" id="tabSeries" onclick="setTab('tv')">Series</button>
+        </div>
+      </div>
       <div class="movies-grid" id="creditsGrid"></div>
     </main>
     <nav class="mobile-nav" id="mobileNav">

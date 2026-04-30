@@ -59,3 +59,40 @@
   font-size: 11px;
   color: var(--text-tertiary);
 }
+.credits-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 1rem;
+}
+
+.credits-title {
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.tab-btns {
+  display: flex;
+  gap: 6px;
+}
+
+.tab-btn {
+  padding: 5px 14px;
+  border-radius: 20px;
+  border: 0.5px solid var(--border-medium);
+  background: transparent;
+  font-size: 13px;
+  cursor: pointer;
+  color: var(--text-secondary);
+  font-family: inherit;
+  transition:
+    background 0.15s,
+    color 0.15s;
+}
+
+.tab-btn.active {
+  background: var(--text-primary);
+  color: var(--bg-primary);
+  border-color: var(--text-primary);
+}
