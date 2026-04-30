@@ -79,7 +79,8 @@ async function openList(listId, listName, isShared) {
   document.getElementById("moviesView").classList.remove("hidden");
 
   currentSort = { field: null, asc: false };
-  document.getElementById("btnSort").textContent = "Sort";
+  const btnSort = document.getElementById("btnSort");
+  if (btnSort) btnSort.textContent = "Sort";
 
   await loadMovies(listId);
 }
@@ -87,8 +88,10 @@ async function openList(listId, listName, isShared) {
 function goBack() {
   document.getElementById("moviesView").classList.add("hidden");
   document.getElementById("listsView").classList.remove("hidden");
-  document.getElementById("searchResults").classList.add("hidden");
-  document.getElementById("searchInput").value = "";
+  const sr = document.getElementById("searchResults");
+  if (sr) sr.classList.add("hidden");
+  const si = document.getElementById("searchInput");
+  if (si) si.value = "";
 }
 
 // ── PELÍCULAS DE UNA LISTA ──

@@ -51,6 +51,15 @@
         <span class="movies-title" id="listTitle"></span>
         <span id="sharedBadge"></span>
         <div class="btns">
+          <div class="sort-wrapper">
+            <button class="btn-sort" id="btnSort" onclick="toggleSortMenu()">Sort</button>
+            <div class="sort-menu hidden" id="sortMenu">
+              <button onclick="sortMovies('popularity')">Popularity</button>
+              <button onclick="sortMovies('year')">Year</button>
+              <button onclick="sortMovies('rating')">Rating</button>
+              <button onclick="sortMovies('alpha')">A → Z</button>
+            </div>
+          </div>
           <button class="btn-ruleta" id="btnRuleta" onclick="spinRuleta()">🎲</button>
           <button class="btn-delete-mode" id="btnDeleteMode" onclick="toggleDeleteMode()">Remove</button>
           <button class="btn-done hidden" id="btnDone" onclick="toggleDeleteMode()">Done</button>
