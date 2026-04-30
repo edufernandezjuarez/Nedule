@@ -347,3 +347,33 @@ body {
     margin: 4px 0;
   }
 }
+.index-wrapper {
+  display: flex;
+  gap: 16px;
+  padding: 2rem 1.5rem;
+  justify-content: center;
+}
+
+.index-card {
+  width: 150px;
+  height: 200px;
+  border-radius: var(--radius-lg);
+  border: 0.5px solid var(--border-medium);
+  background: var(--bg-primary);
+  font-size: 18px;
+  font-weight: 700;
+  cursor: pointer;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition:
+    background 0.15s,
+    border-color 0.15s;
+  font-family: inherit;
+}
+
+.index-card:hover {
+  background: var(--bg-secondary);
+  border-color: var(--border-medium);
+}

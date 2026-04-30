@@ -34,7 +34,12 @@ function toggleMenu() {
 function selectUser(name) {
   setActiveUser(name);
   document.getElementById("userMenu").classList.remove("open");
-  window.location.href = "/inicio.html";
+  window.location.href = "/inicio.html"; //Nedule
+}
+function selectUserEdule(name) {
+  setActiveUser(name);
+  document.getElementById("userMenu").classList.remove("open");
+  window.location.href = "/inicio2.html"; //Edule
 }
 
 document.addEventListener("DOMContentLoaded", () => {

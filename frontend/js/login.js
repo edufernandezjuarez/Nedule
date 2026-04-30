@@ -31,5 +31,5 @@ async function submitLogin() {
   localStorage.setItem(`token_${data.username}`, data.token);
   localStorage.setItem("token", data.token);
   localStorage.setItem("activeUser", data.username);
-  window.location.href = "/inicio.html";
+  window.location.href = "/index.html";
 }
