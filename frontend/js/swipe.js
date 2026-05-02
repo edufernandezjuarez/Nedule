@@ -1,4 +1,4 @@
-const API = "http://146.181.49.255:3000/api";
+const API = "https://nedule.uk/api";
 
 let currentSwipe = null;
 let activeFilters = { yearMin: null, yearMax: null, genreIds: [], type: "all", continents: [], countryName: "" };

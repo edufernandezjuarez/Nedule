@@ -1,4 +1,5 @@
-const API = "http://146.181.49.255:3000/api";
+const API = "https://nedule.uk/api";
+
 let currentPage = 1;
 let isLoading = false;
 let personId = null;

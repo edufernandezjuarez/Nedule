@@ -1,4 +1,4 @@
-const API = "http://146.181.49.255:3000/api";
+const API = "https://nedule.uk/api";
 
 let pendingMovie = null;
 
@@ -26,17 +26,14 @@ async function loadMovie() {
   document.title = `${movie.title} — Nedule`;
 
   if (movie.backdrop_url) {
-    document.getElementById("movieBackdrop").style.backgroundImage =
-      `url(${movie.backdrop_url})`;
+    document.getElementById("movieBackdrop").style.backgroundImage = `url(${movie.backdrop_url})`;
   }
 
   document.getElementById("moviePoster").src = movie.poster_url ?? "";
   document.getElementById("moviePoster").alt = movie.title;
   document.getElementById("movieTitle").textContent = movie.title;
 
-  document.getElementById("movieGenres").innerHTML = movie.genres
-    .map((g) => `<span class="genre-badge">${g}</span>`)
-    .join("");
+  document.getElementById("movieGenres").innerHTML = movie.genres.map((g) => `<span class="genre-badge">${g}</span>`).join("");
 
   const runtime = movie.runtime ? `${movie.runtime} min` : "";
   document.getElementById("movieMeta").innerHTML = `
@@ -59,12 +56,7 @@ async function loadMovie() {
 
   document.getElementById("movieCast").innerHTML = movie.cast.length
     ? `<span class="crew-label">Cast</span> <span class="crew-value">
-      ${movie.cast
-        .map(
-          (a) =>
-            `<a class="person-link" href="/person.html?name=${encodeURIComponent(a)}">${a}</a>`,
-        )
-        .join(", ")}
+      ${movie.cast.map((a) => `<a class="person-link" href="/person.html?name=${encodeURIComponent(a)}">${a}</a>`).join(", ")}
      </span>`
     : "";
 
@@ -103,8 +95,7 @@ function renderGallery(images) {
 function openAddModal(movie) {
   pendingMovie = movie;
   const container = document.getElementById("modalListOptions");
-  container.innerHTML =
-    '<p style="font-size:13px;color:var(--text-secondary);">Loading...</p>';
+  container.innerHTML = '<p style="font-size:13px;color:var(--text-secondary);">Loading...</p>';
   document.getElementById("addToListModal").classList.remove("hidden");
   loadListOptions();
 }
@@ -123,8 +114,7 @@ async function loadListOptions() {
   container.innerHTML = "";
 
   if (allLists.length === 0) {
-    container.innerHTML =
-      '<p style="font-size:13px;color:var(--text-secondary);">No lists yet</p>';
+    container.innerHTML = '<p style="font-size:13px;color:var(--text-secondary);">No lists yet</p>';
     return;
   }
 
@@ -185,11 +175,7 @@ function renderReviews(reviews) {
         <span class="review-username">${r.username}</span>
         <span class="review-rating">${"★".repeat(r.rating)}${"☆".repeat(10 - r.rating)}</span>
         <span class="review-score">${r.rating}/10</span>
-        ${
-          r.user_id === userId
-            ? `<button class="review-delete-btn" onclick="deleteReview('${tmdbId}', ${r.user_id})">✕</button>`
-            : ""
-        }
+        ${r.user_id === userId ? `<button class="review-delete-btn" onclick="deleteReview('${tmdbId}', ${r.user_id})">✕</button>` : ""}
       </div>
       ${r.comment ? `<p class="review-comment">${r.comment}</p>` : ""}
     `;
@@ -268,9 +254,7 @@ async function loadProgress(tmdbId) {
 
 async function updateCounter(field, delta) {
   progressData[field] = Math.max(1, progressData[field] + delta);
-  document.getElementById(
-    field === "season" ? "seasonCount" : "episodeCount",
-  ).textContent = progressData[field];
+  document.getElementById(field === "season" ? "seasonCount" : "episodeCount").textContent = progressData[field];
   await saveProgress();
 }
 

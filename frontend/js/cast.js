@@ -1,4 +1,4 @@
-const API = "http://146.181.49.255:3000/api";
+const API = "https://nedule.uk/api";
 
 async function searchPeople() {
   const q = document.getElementById("castSearchInput").value.trim();
@@ -8,9 +8,7 @@ async function searchPeople() {
   grid.classList.remove("hidden");
   grid.innerHTML = '<p class="empty-msg">Loading...</p>';
 
-  const res = await fetch(
-    `${API}/tmdb/people/search?q=${encodeURIComponent(q)}`,
-  );
+  const res = await fetch(`${API}/tmdb/people/search?q=${encodeURIComponent(q)}`);
   const data = await res.json();
 
   grid.innerHTML = "";
@@ -25,11 +23,7 @@ async function searchPeople() {
     card.className = "person-card clickable";
     card.innerHTML = `
       <div class="person-card-photo">
-        ${
-          person.photo_url
-            ? `<img src="${person.photo_url}" alt="${person.name}" />`
-            : `<div class="person-card-initials">${person.name[0]}</div>`
-        }
+        ${person.photo_url ? `<img src="${person.photo_url}" alt="${person.name}" />` : `<div class="person-card-initials">${person.name[0]}</div>`}
       </div>
       <div class="person-card-info">
         <div class="person-card-name">${person.name}</div>
@@ -44,9 +38,7 @@ async function searchPeople() {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-  document
-    .getElementById("castSearchInput")
-    .addEventListener("keydown", (e) => {
-      if (e.key === "Enter") searchPeople();
-    });
+  document.getElementById("castSearchInput").addEventListener("keydown", (e) => {
+    if (e.key === "Enter") searchPeople();
+  });
 });
