@@ -1,24 +1,16 @@
 <!doctype html>
 <html>
   <head>
-    <title>Edule</title>
+    <title>Nedule</title>
     <link rel="stylesheet" href="/css/inicio.css" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   </head>
   <body>
     <nav class="navbar">
       <div class="nav-links">
-        <button class="nav-btn logo">❤️ Edule</button>
+        <button class="nav-btn logo">❤️ Nedule</button>
       </div>
       <div class="user-wrapper" style="display: flex; align-items: center; gap: 8px">
-        <div class="info-wrapper">
-          <button class="btn-info" id="infoBtn" onclick="toggleInfoMenu()">Info</button>
-          <div class="info-menu hidden" id="infoMenu">
-            <button onclick="goToReviews()">Review history</button>
-            <button onclick="goToWatching()">Watching</button>
-            <button onclick="goToHidden()">Hidden titles</button>
-          </div>
-        </div>
         <button class="user-badge" id="userBadge" onclick="toggleMenu()">
           <div class="avatar" id="avatarInitial">E</div>
           <span class="username" id="usernameLabel">Edu</span>
@@ -35,8 +27,9 @@
     </nav>
     <main class="page">
       <div class="index-wrapper">
-        <button class="index-card" onclick="window.location.href = '/inicio.html'">❤️ Nedule</button>
-        <button class="index-card" onclick="window.location.href = '/inicio2.html'">❤️ Edule</button>
+        <button class="index-card" onclick="window.location.href = '/inicio.html'">🎬 Pelis</button>
+        <button class="index-card" onclick="window.location.href = '/inicio_j.html'">🎮 Juegos</button>
+        <button class="index-card" onclick="window.location.href = '/inicio_p.html'">🏠 Casa</button>
       </div>
     </main>
     <script src="/js/auth.js"></script>
