@@ -1,1 +1,30 @@
 ssh -i C:\Users\Edu\Documents\nedule_keys\ssh-key-2026-04-25.key ubuntu@146.181.49.255
+
+Seccion juegos
+Seccion recetario
+Seccion reviews de cosas
+Seccion ideas/plan
+Seccion notas
+Seccion fotos/albumes
+
+Implementar datos locales
+
+edufernandezjuarez@gmail.com cloudfare y oracle live
+1502 postgres
+
+PARA AGREGAR NUEVOS USUARIOS:
+1. .env agregar PASSWORD_USUARIO=contraseña
+2. En auth.js agregar el objeto USERS a 
+    const USERS = {
+        Edu: process.env.PASSWORD_EDU,
+        Nicole: process.env.PASSWORD_NICOLE,
+        Usuario: process.env.PASSWORD,
+    };
+3. En PostgreSQL insertar usuario en tabla INSERT INTO users (name) VALUES ('Usuario');
+4. En user-menu.js agrega el objeto Users
+    const USERS = {
+        Edu: { initial: "E", path: "edu" },
+        Nicole: { initial: "N", path: "nicole" },
+        Usuario: { initial: "U", path: "usuario" },
+    };
+5. Crear las carpetas /frontend/usuario/lists.html y /frontend/usuario/imdb.html

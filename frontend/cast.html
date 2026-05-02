@@ -29,8 +29,12 @@
           <span class="username" id="usernameLabel">Edu</span>
         </button>
         <div class="user-menu" id="userMenu">
-          <button class="user-option" onclick="selectUser('Edu', 'E')">Edu</button>
-          <button class="user-option" onclick="selectUser('Nicole', 'N')">Nicole</button>
+          <button class="user-option" onclick="goToProfile()">
+            <div class="avatar">E</div>
+            <span>Edu</span>
+          </button>
+          <hr class="user-menu-divider" />
+          <button class="user-option user-option-logout" onclick="logout()">Log out</button>
         </div>
       </div>
     </nav>

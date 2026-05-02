@@ -133,6 +133,9 @@ body {
 }
 
 .user-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   padding: 7px 14px;
   border-radius: var(--radius-md);
   font-size: 13px;
@@ -376,4 +379,17 @@ body {
 .index-card:hover {
   background: var(--bg-secondary);
   border-color: var(--border-medium);
+}
+.user-menu-divider {
+  border: none;
+  border-top: 0.5px solid var(--border-light);
+  margin: 4px 0;
+}
+
+.user-option-logout {
+  color: #e24b4a;
+}
+
+.mobile-user-menu-logout {
+  color: #e24b4a;
 }

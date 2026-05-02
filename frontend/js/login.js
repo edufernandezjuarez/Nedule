@@ -1,33 +1,27 @@
 const API = "http://146.181.49.255:3000/api";
-let selectedUser = null;
-
-function selectUser(name) {
-  selectedUser = name;
-  document.querySelectorAll(".login-user-btn").forEach((b) => b.classList.remove("selected"));
-  event.currentTarget.classList.add("selected");
-  document.getElementById("loginFor").textContent = `Enter password for ${name}`;
-  document.getElementById("passwordSection").classList.remove("hidden");
-  document.getElementById("passwordInput").focus();
-  document.getElementById("passwordInput").value = "";
-}
 
 async function submitLogin() {
-  if (!selectedUser) return;
+  const username = document.getElementById("usernameInput").value.trim().toLowerCase();
   const password = document.getElementById("passwordInput").value;
+  const errorEl = document.getElementById("loginError");
+  errorEl.classList.add("hidden");
+
+  if (!username || !password) return;
 
   const res = await fetch(`${API}/auth/login`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ username: selectedUser, password }),
+    body: JSON.stringify({ username, password }),
   });
+
   const data = await res.json();
 
   if (!res.ok) {
+    errorEl.classList.remove("hidden");
     document.getElementById("passwordInput").value = "";
     return;
   }
 
-  // Guardar token para este usuario específico
   localStorage.setItem(`token_${data.username}`, data.token);
   localStorage.setItem("token", data.token);
   localStorage.setItem("activeUser", data.username);

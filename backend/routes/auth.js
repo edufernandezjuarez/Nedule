@@ -11,8 +11,8 @@ const USERS = {
 
 // POST /api/auth/login
 router.post("/login", async (req, res) => {
-  const { username, password } = req.body;
-
+  const { username: rawUsername, password } = req.body;
+  const username = rawUsername?.trim().charAt(0).toUpperCase() + rawUsername?.trim().slice(1).toLowerCase();
   if (!USERS[username]) {
     return res.status(401).json({ error: "Usuario no encontrado" });
   }
