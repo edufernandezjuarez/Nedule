@@ -207,20 +207,6 @@ async function fetchAndRenderResults(reset = false, _emptyStreak = 0) {
 
   const res = await fetch(url);
   const data = await res.json();
-  console.log(
-    "movieHasMore:",
-    data.movieHasMore,
-    "tvHasMore:",
-    data.tvHasMore,
-    "moviePage:",
-    moviePage,
-    "tvPage:",
-    tvPage,
-    "skipMovie:",
-    filterParams.skipMovie,
-    "skipTv:",
-    filterParams.skipTv,
-  );
   document.getElementById("searchLoading")?.remove();
 
   let newCount = 0;
@@ -251,8 +237,7 @@ async function fetchAndRenderResults(reset = false, _emptyStreak = 0) {
 
   if (data.movieHasMore !== undefined) movieHasMore = data.movieHasMore;
   if (data.tvHasMore !== undefined) tvHasMore = data.tvHasMore;
-  console.log("AFTER UPDATE - movieHasMore:", movieHasMore, "tvHasMore:", tvHasMore);
-  console.log("scroll condition:", movieHasMore || tvHasMore);
+
   if (movieHasMore || tvHasMore) {
     if (newCount === 0) {
       if (movieHasMore) moviePage++;
