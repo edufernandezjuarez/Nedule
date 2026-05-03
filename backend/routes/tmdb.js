@@ -93,6 +93,13 @@ router.get("/search", async (req, res) => {
       combined = [...movieResults, ...tvResults];
     }
 
+    const seen = new Set();
+    combined = combined.filter((item) => {
+      const key = `${item.tmdb_id}_${item.type}`;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
     combined = combined.sort((a, b) => b.popularity - a.popularity);
 
     res.json({
@@ -256,6 +263,13 @@ router.get("/popular", async (req, res) => {
     else if (type === "tv") combined = tvResults;
     else combined = [...movieResults, ...tvResults];
 
+    const seen = new Set();
+    combined = combined.filter((item) => {
+      const key = `${item.tmdb_id}_${item.type}`;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
     combined = combined.sort((a, b) => b.popularity - a.popularity);
 
     const movieTotalPages = type !== "tv" ? (responses[0]?.data.total_pages ?? 1) : 1;

@@ -207,8 +207,9 @@ async function fetchAndRenderResults(reset = false) {
   document.getElementById("searchLoading")?.remove();
 
   data.results.forEach((item) => {
-    if (renderedIds.has(item.tmdb_id)) return;
-    renderedIds.add(item.tmdb_id);
+    const rid = `${item.tmdb_id}_${item.type}`;
+    if (renderedIds.has(rid)) return;
+    renderedIds.add(rid);
     const card = document.createElement("div");
     card.className = "movie-card search-card clickable";
     card.innerHTML = `
