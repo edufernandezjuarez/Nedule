@@ -127,8 +127,8 @@ router.get("/search", async (req, res) => {
       results: combined,
       moviePage: parseInt(moviePage),
       tvPage: parseInt(tvPage),
-      movieHasMore: shouldFetchMovie && (movies?.data.total_pages ?? 0) > parseInt(moviePage),
-      tvHasMore: shouldFetchTv && (tv?.data.total_pages ?? 0) > parseInt(tvPage),
+      ...(shouldFetchMovie && { movieHasMore: (movies?.data.total_pages ?? 0) > parseInt(moviePage) }),
+      ...(shouldFetchTv && { tvHasMore: (tv?.data.total_pages ?? 0) > parseInt(tvPage) }),
     });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -294,8 +294,8 @@ router.get("/popular", async (req, res) => {
       results: combined,
       moviePage: parseInt(moviePage),
       tvPage: parseInt(tvPage),
-      movieHasMore: shouldFetchMovie && (movieResponse?.data.total_pages ?? 0) > parseInt(moviePage),
-      tvHasMore: shouldFetchTv && (tvResponse?.data.total_pages ?? 0) > parseInt(tvPage),
+      ...(shouldFetchMovie && { movieHasMore: (movieResponse?.data.total_pages ?? 0) > parseInt(moviePage) }),
+      ...(shouldFetchTv && { tvHasMore: (tvResponse?.data.total_pages ?? 0) > parseInt(tvPage) }),
     });
   } catch (err) {
     res.status(500).json({ error: err.message });

@@ -236,8 +236,8 @@ async function fetchAndRenderResults(reset = false, _emptyStreak = 0) {
     container.appendChild(card);
   });
 
-  if (!filterParams.skipMovie) movieHasMore = data.movieHasMore ?? false;
-  if (!filterParams.skipTv) tvHasMore = data.tvHasMore ?? false;
+  if (data.movieHasMore !== undefined) movieHasMore = data.movieHasMore;
+  if (data.tvHasMore !== undefined) tvHasMore = data.tvHasMore;
 
   if (movieHasMore || tvHasMore) {
     setupInfiniteScroll();
