@@ -151,6 +151,7 @@ let moviePage = 1;
 let tvPage = 1;
 let movieHasMore = false;
 let tvHasMore = false;
+let renderedIds = new Set();
 let currentQuery = "";
 let isLoadingMore = false;
 
@@ -160,6 +161,7 @@ async function searchMovies() {
   currentQuery = q;
   moviePage = 1;
   tvPage = 1;
+  renderedIds = new Set();
   isPopularMode = !q;
   removeInfiniteScroll();
 
@@ -205,6 +207,8 @@ async function fetchAndRenderResults(reset = false) {
   document.getElementById("searchLoading")?.remove();
 
   data.results.forEach((item) => {
+    if (renderedIds.has(item.tmdb_id)) return;
+    renderedIds.add(item.tmdb_id);
     const card = document.createElement("div");
     card.className = "movie-card search-card clickable";
     card.innerHTML = `
@@ -420,6 +424,7 @@ function applyFilters() {
 
   moviePage = 1;
   tvPage = 1;
+  renderedIds = new Set();
   removeInfiniteScroll();
   document.getElementById("searchResults").innerHTML = "";
   fetchAndRenderResults(true);
@@ -475,6 +480,7 @@ function clearFilters() {
 
   moviePage = 1;
   tvPage = 1;
+  renderedIds = new Set();
   removeInfiniteScroll();
   document.getElementById("searchResults").innerHTML = "";
   fetchAndRenderResults(true);
@@ -613,6 +619,7 @@ function applySheetFilters() {
   closeFilterSheet();
   moviePage = 1;
   tvPage = 1;
+  renderedIds = new Set();
   removeInfiniteScroll();
   document.getElementById("searchResults").innerHTML = "";
   fetchAndRenderResults(true);
@@ -659,6 +666,7 @@ function clearSheetFilters() {
   closeFilterSheet();
   moviePage = 1;
   tvPage = 1;
+  renderedIds = new Set();
   removeInfiniteScroll();
   document.getElementById("searchResults").innerHTML = "";
   fetchAndRenderResults(true);
