@@ -28,3 +28,5 @@ PARA AGREGAR NUEVOS USUARIOS:
         Usuario: { initial: "U", path: "usuario" },
     };
 5. Crear las carpetas /frontend/usuario/lists.html y /frontend/usuario/imdb.html
+
+
