@@ -10,14 +10,14 @@ const db = require("../db");
 
 // GET /api/tmdb/search?q=inception por ejemplo
 router.get("/search", async (req, res) => {
-  const { q, page = 1, yearMin, yearMax, genreIds, type, continents, countryName } = req.query;
+  const { q, moviePage = 1, tvPage = 1, yearMin, yearMax, genreIds, type, continents, countryName } = req.query;
   if (!q) return res.status(400).json({ error: "Falta el parámetro q" });
 
   try {
     const hasCountryFilter = continents || countryName;
 
-    const movieParams = { api_key: API_KEY, language: "en-US", page };
-    const tvParams = { api_key: API_KEY, language: "en-US", page };
+    const movieParams = { api_key: API_KEY, language: "en-US", page: moviePage };
+    const tvParams = { api_key: API_KEY, language: "en-US", page: tvPage };
 
     if (hasCountryFilter) {
       const codes = getCountryCodes(continents, countryName);
@@ -97,8 +97,10 @@ router.get("/search", async (req, res) => {
 
     res.json({
       results: combined,
-      page: parseInt(page),
-      hasMore: movies.data.total_pages > page || tv.data.total_pages > page,
+      moviePage: parseInt(moviePage),
+      tvPage: parseInt(tvPage),
+      movieHasMore: type !== "tv" && movies.data.total_pages > parseInt(moviePage),
+      tvHasMore: type !== "movie" && tv.data.total_pages > parseInt(tvPage),
     });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -174,11 +176,11 @@ router.get("/genres", async (req, res) => {
 });
 
 router.get("/popular", async (req, res) => {
-  const { page = 1, yearMin, yearMax, genreIds, type, continents, countryName } = req.query;
+  const { moviePage = 1, tvPage = 1, yearMin, yearMax, genreIds, type, continents, countryName } = req.query;
 
   try {
-    const movieParams = { api_key: API_KEY, language: "en-US", page };
-    const tvParams = { api_key: API_KEY, language: "en-US", page };
+    const movieParams = { api_key: API_KEY, language: "en-US", page: moviePage };
+    const tvParams = { api_key: API_KEY, language: "en-US", page: tvPage };
 
     if (yearMin) {
       movieParams["primary_release_date.gte"] = `${yearMin}-01-01`;
@@ -256,11 +258,14 @@ router.get("/popular", async (req, res) => {
 
     combined = combined.sort((a, b) => b.popularity - a.popularity);
 
-    const totalPages = responses[0]?.data.total_pages ?? 1;
+    const movieTotalPages = type !== "tv" ? (responses[0]?.data.total_pages ?? 1) : 1;
+    const tvTotalPages = type !== "movie" ? (responses[type !== "tv" ? 1 : 0]?.data.total_pages ?? 1) : 1;
     res.json({
       results: combined,
-      page: parseInt(page),
-      hasMore: totalPages > page,
+      moviePage: parseInt(moviePage),
+      tvPage: parseInt(tvPage),
+      movieHasMore: type !== "tv" && movieTotalPages > parseInt(moviePage),
+      tvHasMore: type !== "movie" && tvTotalPages > parseInt(tvPage),
     });
   } catch (err) {
     res.status(500).json({ error: err.message });

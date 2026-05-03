@@ -147,7 +147,10 @@ function renderMovies(movies) {
 }
 
 // -- BUSCAR EN TMDB --
-let searchPage = 1;
+let moviePage = 1;
+let tvPage = 1;
+let movieHasMore = false;
+let tvHasMore = false;
 let currentQuery = "";
 let isLoadingMore = false;
 
@@ -155,7 +158,8 @@ async function searchMovies() {
   const q = document.getElementById("searchInput").value.trim();
 
   currentQuery = q;
-  searchPage = 1;
+  moviePage = 1;
+  tvPage = 1;
   isPopularMode = !q;
   removeInfiniteScroll();
 
@@ -178,7 +182,8 @@ async function fetchAndRenderResults(reset = false) {
   container.appendChild(loadingEl);
 
   const filterParams = {
-    page: searchPage,
+    moviePage,
+    tvPage,
     ...(activeFilters.yearMin && { yearMin: activeFilters.yearMin }),
     ...(activeFilters.yearMax && { yearMax: activeFilters.yearMax }),
     ...(activeFilters.genreIds.length > 0 && { genreIds: activeFilters.genreIds.join(",") }),
@@ -220,7 +225,10 @@ async function fetchAndRenderResults(reset = false) {
     container.appendChild(card);
   });
 
-  if (data.hasMore) {
+  movieHasMore = data.movieHasMore ?? false;
+  tvHasMore = data.tvHasMore ?? false;
+
+  if (movieHasMore || tvHasMore) {
     setupInfiniteScroll();
   } else {
     removeInfiniteScroll();
@@ -238,7 +246,8 @@ function setupInfiniteScroll() {
   const observer = new IntersectionObserver(
     (entries) => {
       if (entries[0].isIntersecting && !isLoadingMore) {
-        searchPage++;
+        if (movieHasMore) moviePage++;
+        if (tvHasMore) tvPage++;
         fetchAndRenderResults();
       }
     },
@@ -409,7 +418,8 @@ function applyFilters() {
     activeFilters.type !== "all";
   document.getElementById("filterBtn").classList.toggle("filter-active", hasFilters);
 
-  searchPage = 1;
+  moviePage = 1;
+  tvPage = 1;
   removeInfiniteScroll();
   document.getElementById("searchResults").innerHTML = "";
   fetchAndRenderResults(true);
@@ -463,7 +473,8 @@ function clearFilters() {
   document.getElementById("filterBtn").classList.remove("filter-active");
   document.getElementById("filterMenu").classList.add("hidden");
 
-  searchPage = 1;
+  moviePage = 1;
+  tvPage = 1;
   removeInfiniteScroll();
   document.getElementById("searchResults").innerHTML = "";
   fetchAndRenderResults(true);
@@ -600,7 +611,8 @@ function applySheetFilters() {
     activeFilters.type !== "all";
   document.getElementById("filterBtn").classList.toggle("filter-active", hasFilters);
   closeFilterSheet();
-  searchPage = 1;
+  moviePage = 1;
+  tvPage = 1;
   removeInfiniteScroll();
   document.getElementById("searchResults").innerHTML = "";
   fetchAndRenderResults(true);
@@ -645,7 +657,8 @@ function clearSheetFilters() {
 
   document.getElementById("filterBtn").classList.remove("filter-active");
   closeFilterSheet();
-  searchPage = 1;
+  moviePage = 1;
+  tvPage = 1;
   removeInfiniteScroll();
   document.getElementById("searchResults").innerHTML = "";
   fetchAndRenderResults(true);
