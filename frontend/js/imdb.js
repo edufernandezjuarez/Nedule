@@ -207,7 +207,20 @@ async function fetchAndRenderResults(reset = false, _emptyStreak = 0) {
 
   const res = await fetch(url);
   const data = await res.json();
-
+  console.log(
+    "movieHasMore:",
+    data.movieHasMore,
+    "tvHasMore:",
+    data.tvHasMore,
+    "moviePage:",
+    moviePage,
+    "tvPage:",
+    tvPage,
+    "skipMovie:",
+    filterParams.skipMovie,
+    "skipTv:",
+    filterParams.skipTv,
+  );
   document.getElementById("searchLoading")?.remove();
 
   let newCount = 0;
@@ -238,18 +251,17 @@ async function fetchAndRenderResults(reset = false, _emptyStreak = 0) {
 
   if (data.movieHasMore !== undefined) movieHasMore = data.movieHasMore;
   if (data.tvHasMore !== undefined) tvHasMore = data.tvHasMore;
-
+  console.log("AFTER UPDATE - movieHasMore:", movieHasMore, "tvHasMore:", tvHasMore);
+  console.log("scroll condition:", movieHasMore || tvHasMore);
   if (movieHasMore || tvHasMore) {
-    setupInfiniteScroll();
-    // If this page produced no new visible cards (e.g. filtered out server-side),
-    // auto-advance instead of waiting for a scroll event that won't come.
-    if (newCount === 0 && _emptyStreak < 10) {
+    if (newCount === 0) {
       if (movieHasMore) moviePage++;
       if (tvHasMore) tvPage++;
       isLoadingMore = false;
       fetchAndRenderResults(false, _emptyStreak + 1);
       return;
     }
+    setupInfiniteScroll();
   } else {
     removeInfiniteScroll();
   }
@@ -261,6 +273,7 @@ function setupInfiniteScroll() {
   removeInfiniteScroll();
   const sentinel = document.createElement("div");
   sentinel.id = "scrollSentinel";
+  sentinel.style.height = "1px";
   document.getElementById("searchResults").appendChild(sentinel);
 
   const observer = new IntersectionObserver(
@@ -271,7 +284,7 @@ function setupInfiniteScroll() {
         fetchAndRenderResults();
       }
     },
-    { threshold: 1.0 },
+    { rootMargin: "200px" },
   );
 
   observer.observe(sentinel);

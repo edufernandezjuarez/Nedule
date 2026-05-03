@@ -230,7 +230,7 @@ router.get("/popular", async (req, res) => {
       tvParams.with_origin_country = countryParam;
     }
 
-    const useDiscover = genreIds || continents || countryName;
+    const useDiscover = genreIds || continents || countryName || yearMin || yearMax;
     const movieEndpoint = useDiscover ? `${BASE_URL}/discover/movie` : `${BASE_URL}/movie/popular`;
     const tvEndpoint = useDiscover ? `${BASE_URL}/discover/tv` : `${BASE_URL}/tv/popular`;
 
@@ -264,17 +264,6 @@ router.get("/popular", async (req, res) => {
       genre_ids: t.genre_ids,
       type: "tv",
     }));
-
-    if (yearMin || yearMax) {
-      const min = yearMin ? parseInt(yearMin) : 0;
-      const max = yearMax ? parseInt(yearMax) : 9999;
-      const inRange = (item) => {
-        const y = parseInt(item.year);
-        return !isNaN(y) && y >= min && y <= max;
-      };
-      movieResults = movieResults.filter(inRange);
-      tvResults = tvResults.filter(inRange);
-    }
 
     let combined;
     if (type === "movie") combined = movieResults;
