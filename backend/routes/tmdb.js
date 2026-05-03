@@ -10,7 +10,7 @@ const db = require("../db");
 
 // GET /api/tmdb/search?q=inception por ejemplo
 router.get("/search", async (req, res) => {
-  const { q, moviePage = 1, tvPage = 1, yearMin, yearMax, genreIds, type, continents, countryName } = req.query;
+  const { q, moviePage = 1, tvPage = 1, skipMovie, skipTv, yearMin, yearMax, genreIds, type, continents, countryName } = req.query;
   if (!q) return res.status(400).json({ error: "Falta el parámetro q" });
 
   try {
@@ -39,9 +39,15 @@ router.get("/search", async (req, res) => {
     const movieEndpoint = hasCountryFilter ? `${BASE_URL}/discover/movie` : `${BASE_URL}/search/movie`;
     const tvEndpoint = hasCountryFilter ? `${BASE_URL}/discover/tv` : `${BASE_URL}/search/tv`;
 
-    const [movies, tv] = await Promise.all([axios.get(movieEndpoint, { params: movieParams }), axios.get(tvEndpoint, { params: tvParams })]);
+    const shouldFetchMovie = !skipMovie && type !== "tv";
+    const shouldFetchTv = !skipTv && type !== "movie";
 
-    let movieResults = movies.data.results.map((m) => ({
+    const [movies, tv] = await Promise.all([
+      shouldFetchMovie ? axios.get(movieEndpoint, { params: movieParams }) : Promise.resolve(null),
+      shouldFetchTv ? axios.get(tvEndpoint, { params: tvParams }) : Promise.resolve(null),
+    ]);
+
+    let movieResults = (movies?.data.results ?? []).map((m) => ({
       tmdb_id: m.id,
       title: m.title,
       year: m.release_date?.slice(0, 4) ?? "N/A",
@@ -54,7 +60,7 @@ router.get("/search", async (req, res) => {
       type: "movie",
     }));
 
-    let tvResults = tv.data.results.map((t) => ({
+    let tvResults = (tv?.data.results ?? []).map((t) => ({
       tmdb_id: t.id,
       title: t.name,
       year: t.first_air_date?.slice(0, 4) ?? "N/A",
@@ -106,8 +112,8 @@ router.get("/search", async (req, res) => {
       results: combined,
       moviePage: parseInt(moviePage),
       tvPage: parseInt(tvPage),
-      movieHasMore: type !== "tv" && movies.data.total_pages > parseInt(moviePage),
-      tvHasMore: type !== "movie" && tv.data.total_pages > parseInt(tvPage),
+      movieHasMore: shouldFetchMovie && (movies?.data.total_pages ?? 0) > parseInt(moviePage),
+      tvHasMore: shouldFetchTv && (tv?.data.total_pages ?? 0) > parseInt(tvPage),
     });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -183,7 +189,7 @@ router.get("/genres", async (req, res) => {
 });
 
 router.get("/popular", async (req, res) => {
-  const { moviePage = 1, tvPage = 1, yearMin, yearMax, genreIds, type, continents, countryName } = req.query;
+  const { moviePage = 1, tvPage = 1, skipMovie, skipTv, yearMin, yearMax, genreIds, type, continents, countryName } = req.query;
 
   try {
     const movieParams = { api_key: API_KEY, language: "en-US", page: moviePage };
@@ -212,40 +218,37 @@ router.get("/popular", async (req, res) => {
     const useDiscover = genreIds || continents || countryName;
     const movieEndpoint = useDiscover ? `${BASE_URL}/discover/movie` : `${BASE_URL}/movie/popular`;
     const tvEndpoint = useDiscover ? `${BASE_URL}/discover/tv` : `${BASE_URL}/tv/popular`;
-    const requests = [];
-    if (type !== "tv") requests.push(axios.get(movieEndpoint, { params: movieParams }));
-    if (type !== "movie") requests.push(axios.get(tvEndpoint, { params: tvParams }));
 
-    const responses = await Promise.all(requests);
+    const shouldFetchMovie = !skipMovie && type !== "tv";
+    const shouldFetchTv = !skipTv && type !== "movie";
 
-    let movieResults = [],
-      tvResults = [];
-    if (type !== "tv")
-      movieResults =
-        responses[0]?.data.results.map((m) => ({
-          tmdb_id: m.id,
-          title: m.title,
-          year: m.release_date?.slice(0, 4) ?? "N/A",
-          poster_url: m.poster_path ? `${IMAGE_URL}${m.poster_path}` : null,
-          rating: m.vote_average?.toFixed(1) ?? "N/A",
-          overview: m.overview,
-          popularity: m.popularity,
-          genre_ids: m.genre_ids,
-          type: "movie",
-        })) ?? [];
-    if (type !== "movie")
-      tvResults =
-        responses[type !== "tv" ? 1 : 0]?.data.results.map((t) => ({
-          tmdb_id: t.id,
-          title: t.name,
-          year: t.first_air_date?.slice(0, 4) ?? "N/A",
-          poster_url: t.poster_path ? `${IMAGE_URL}${t.poster_path}` : null,
-          rating: t.vote_average?.toFixed(1) ?? "N/A",
-          overview: t.overview,
-          popularity: t.popularity,
-          genre_ids: t.genre_ids,
-          type: "tv",
-        })) ?? [];
+    const [movieResponse, tvResponse] = await Promise.all([
+      shouldFetchMovie ? axios.get(movieEndpoint, { params: movieParams }) : Promise.resolve(null),
+      shouldFetchTv ? axios.get(tvEndpoint, { params: tvParams }) : Promise.resolve(null),
+    ]);
+
+    let movieResults = (movieResponse?.data.results ?? []).map((m) => ({
+      tmdb_id: m.id,
+      title: m.title,
+      year: m.release_date?.slice(0, 4) ?? "N/A",
+      poster_url: m.poster_path ? `${IMAGE_URL}${m.poster_path}` : null,
+      rating: m.vote_average?.toFixed(1) ?? "N/A",
+      overview: m.overview,
+      popularity: m.popularity,
+      genre_ids: m.genre_ids,
+      type: "movie",
+    }));
+    let tvResults = (tvResponse?.data.results ?? []).map((t) => ({
+      tmdb_id: t.id,
+      title: t.name,
+      year: t.first_air_date?.slice(0, 4) ?? "N/A",
+      poster_url: t.poster_path ? `${IMAGE_URL}${t.poster_path}` : null,
+      rating: t.vote_average?.toFixed(1) ?? "N/A",
+      overview: t.overview,
+      popularity: t.popularity,
+      genre_ids: t.genre_ids,
+      type: "tv",
+    }));
 
     if (yearMin || yearMax) {
       const min = yearMin ? parseInt(yearMin) : 0;
@@ -272,14 +275,12 @@ router.get("/popular", async (req, res) => {
     });
     combined = combined.sort((a, b) => b.popularity - a.popularity);
 
-    const movieTotalPages = type !== "tv" ? (responses[0]?.data.total_pages ?? 1) : 1;
-    const tvTotalPages = type !== "movie" ? (responses[type !== "tv" ? 1 : 0]?.data.total_pages ?? 1) : 1;
     res.json({
       results: combined,
       moviePage: parseInt(moviePage),
       tvPage: parseInt(tvPage),
-      movieHasMore: type !== "tv" && movieTotalPages > parseInt(moviePage),
-      tvHasMore: type !== "movie" && tvTotalPages > parseInt(tvPage),
+      movieHasMore: shouldFetchMovie && (movieResponse?.data.total_pages ?? 0) > parseInt(moviePage),
+      tvHasMore: shouldFetchTv && (tvResponse?.data.total_pages ?? 0) > parseInt(tvPage),
     });
   } catch (err) {
     res.status(500).json({ error: err.message });

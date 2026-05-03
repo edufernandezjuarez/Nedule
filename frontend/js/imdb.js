@@ -149,8 +149,8 @@ function renderMovies(movies) {
 // -- BUSCAR EN TMDB --
 let moviePage = 1;
 let tvPage = 1;
-let movieHasMore = false;
-let tvHasMore = false;
+let movieHasMore = null;
+let tvHasMore = null;
 let renderedIds = new Set();
 let currentQuery = "";
 let isLoadingMore = false;
@@ -161,6 +161,8 @@ async function searchMovies() {
   currentQuery = q;
   moviePage = 1;
   tvPage = 1;
+  movieHasMore = null;
+  tvHasMore = null;
   renderedIds = new Set();
   isPopularMode = !q;
   removeInfiniteScroll();
@@ -186,6 +188,8 @@ async function fetchAndRenderResults(reset = false) {
   const filterParams = {
     moviePage,
     tvPage,
+    ...(movieHasMore === false && { skipMovie: true }),
+    ...(tvHasMore === false && { skipTv: true }),
     ...(activeFilters.yearMin && { yearMin: activeFilters.yearMin }),
     ...(activeFilters.yearMax && { yearMax: activeFilters.yearMax }),
     ...(activeFilters.genreIds.length > 0 && { genreIds: activeFilters.genreIds.join(",") }),
@@ -425,6 +429,8 @@ function applyFilters() {
 
   moviePage = 1;
   tvPage = 1;
+  movieHasMore = null;
+  tvHasMore = null;
   renderedIds = new Set();
   removeInfiniteScroll();
   document.getElementById("searchResults").innerHTML = "";
@@ -481,6 +487,8 @@ function clearFilters() {
 
   moviePage = 1;
   tvPage = 1;
+  movieHasMore = null;
+  tvHasMore = null;
   renderedIds = new Set();
   removeInfiniteScroll();
   document.getElementById("searchResults").innerHTML = "";
@@ -620,6 +628,8 @@ function applySheetFilters() {
   closeFilterSheet();
   moviePage = 1;
   tvPage = 1;
+  movieHasMore = null;
+  tvHasMore = null;
   renderedIds = new Set();
   removeInfiniteScroll();
   document.getElementById("searchResults").innerHTML = "";
@@ -667,6 +677,8 @@ function clearSheetFilters() {
   closeFilterSheet();
   moviePage = 1;
   tvPage = 1;
+  movieHasMore = null;
+  tvHasMore = null;
   renderedIds = new Set();
   removeInfiniteScroll();
   document.getElementById("searchResults").innerHTML = "";
