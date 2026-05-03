@@ -174,7 +174,7 @@ async function searchMovies() {
   await fetchAndRenderResults(true);
 }
 
-async function fetchAndRenderResults(reset = false) {
+async function fetchAndRenderResults(reset = false, _emptyStreak = 0) {
   if (isLoadingMore) return;
   isLoadingMore = true;
 
@@ -210,10 +210,12 @@ async function fetchAndRenderResults(reset = false) {
 
   document.getElementById("searchLoading")?.remove();
 
+  let newCount = 0;
   data.results.forEach((item) => {
     const rid = `${item.tmdb_id}_${item.type}`;
     if (renderedIds.has(rid)) return;
     renderedIds.add(rid);
+    newCount++;
     const card = document.createElement("div");
     card.className = "movie-card search-card clickable";
     card.innerHTML = `
@@ -239,6 +241,15 @@ async function fetchAndRenderResults(reset = false) {
 
   if (movieHasMore || tvHasMore) {
     setupInfiniteScroll();
+    // If this page produced no new visible cards (e.g. filtered out server-side),
+    // auto-advance instead of waiting for a scroll event that won't come.
+    if (newCount === 0 && _emptyStreak < 10) {
+      if (movieHasMore) moviePage++;
+      if (tvHasMore) tvPage++;
+      isLoadingMore = false;
+      fetchAndRenderResults(false, _emptyStreak + 1);
+      return;
+    }
   } else {
     removeInfiniteScroll();
   }

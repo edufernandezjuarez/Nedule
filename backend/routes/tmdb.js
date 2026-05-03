@@ -15,15 +15,14 @@ router.get("/search", async (req, res) => {
 
   try {
     const hasCountryFilter = continents || countryName;
+    // discover supports with_genres, with_origin_country, with_text_query;
+    // search/movie only supports query — use discover whenever any filter requires it
+    const useDiscover = hasCountryFilter || genreIds;
 
     const movieParams = { api_key: API_KEY, language: "en-US", page: moviePage };
     const tvParams = { api_key: API_KEY, language: "en-US", page: tvPage };
 
-    if (hasCountryFilter) {
-      const codes = getCountryCodes(continents, countryName);
-      const countryParam = codes.join("|");
-      movieParams.with_origin_country = countryParam;
-      tvParams.with_origin_country = countryParam;
+    if (useDiscover) {
       movieParams.with_text_query = q;
       tvParams.with_text_query = q;
     } else {
@@ -31,13 +30,29 @@ router.get("/search", async (req, res) => {
       tvParams.query = q;
     }
 
+    if (hasCountryFilter) {
+      const codes = getCountryCodes(continents, countryName);
+      const countryParam = codes.join("|");
+      movieParams.with_origin_country = countryParam;
+      tvParams.with_origin_country = countryParam;
+    }
+
     if (genreIds) {
       movieParams.with_genres = genreIds;
       tvParams.with_genres = genreIds;
     }
 
-    const movieEndpoint = hasCountryFilter ? `${BASE_URL}/discover/movie` : `${BASE_URL}/search/movie`;
-    const tvEndpoint = hasCountryFilter ? `${BASE_URL}/discover/tv` : `${BASE_URL}/search/tv`;
+    if (yearMin) {
+      movieParams["primary_release_date.gte"] = `${yearMin}-01-01`;
+      tvParams["first_air_date.gte"] = `${yearMin}-01-01`;
+    }
+    if (yearMax) {
+      movieParams["primary_release_date.lte"] = `${yearMax}-12-31`;
+      tvParams["first_air_date.lte"] = `${yearMax}-12-31`;
+    }
+
+    const movieEndpoint = useDiscover ? `${BASE_URL}/discover/movie` : `${BASE_URL}/search/movie`;
+    const tvEndpoint = useDiscover ? `${BASE_URL}/discover/tv` : `${BASE_URL}/search/tv`;
 
     const shouldFetchMovie = !skipMovie && type !== "tv";
     const shouldFetchTv = !skipTv && type !== "movie";
