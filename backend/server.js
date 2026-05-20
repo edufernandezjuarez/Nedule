@@ -1,6 +1,6 @@
 const express = require("express");
 const cors = require("cors");
-require("dotenv").config();
+require("dotenv").config({ path: require("path").join(__dirname, ".env") });
 
 const listsRouter = require("./routes/lists");
 const moviesRouter = require("./routes/movies");
@@ -16,9 +16,7 @@ app.use("/api/lists", listsRouter);
 app.use("/api/movies", moviesRouter);
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, "0.0.0.0", () =>
-  console.log(`Servidor corriendo en http://localhost:${PORT}`),
-);
+app.listen(PORT, "0.0.0.0", () => console.log(`Servidor corriendo en http://localhost:${PORT}`));
 
 const tmdbRouter = require("./routes/tmdb");
 app.use("/api/tmdb", tmdbRouter);

@@ -47,10 +47,7 @@ router.post("/:listId", async (req, res) => {
 router.delete("/:listId/:movieId", async (req, res) => {
   const { listId, movieId } = req.params;
   try {
-    await pool.query(
-      "DELETE FROM list_movies WHERE list_id = $1 AND movie_id = $2",
-      [listId, movieId],
-    );
+    await pool.query("DELETE FROM list_movies WHERE list_id = $1 AND movie_id = $2", [listId, movieId]);
 
     // Limpiar la película si ya no tiene lista, review ni progreso
     await pool.query(

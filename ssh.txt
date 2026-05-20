@@ -12,21 +12,11 @@ Implementar datos locales
 edufernandezjuarez@gmail.com cloudfare y oracle live
 1502 postgres
 
-PARA AGREGAR NUEVOS USUARIOS:
-1. .env agregar PASSWORD_USUARIO=contraseña
-2. En auth.js agregar el objeto USERS a 
-    const USERS = {
-        Edu: process.env.PASSWORD_EDU,
-        Nicole: process.env.PASSWORD_NICOLE,
-        Usuario: process.env.PASSWORD,
-    };
-3. En PostgreSQL insertar usuario en tabla INSERT INTO users (name) VALUES ('Usuario');
-4. En user-menu.js agrega el objeto Users
-    const USERS = {
-        Edu: { initial: "E", path: "edu" },
-        Nicole: { initial: "N", path: "nicole" },
-        Usuario: { initial: "U", path: "usuario" },
-    };
-5. Crear las carpetas /frontend/usuario/lists.html y /frontend/usuario/imdb.html
+
+cd C:\Users\Edu\Desktop\vite+react\Nedule\frontend
+npm run dev
+
+cd C:\Users\Edu\Desktop\vite+react\Nedule\backend
+node server.js
 
 

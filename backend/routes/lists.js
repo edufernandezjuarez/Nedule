@@ -33,10 +33,7 @@ router.get("/:userId", async (req, res) => {
 router.post("/", async (req, res) => {
   const { name, owner_id, is_shared } = req.body;
   try {
-    const result = await pool.query(
-      `INSERT INTO lists (name, owner_id, is_shared) VALUES ($1, $2, $3) RETURNING *`,
-      [name, owner_id, is_shared ?? false],
-    );
+    const result = await pool.query(`INSERT INTO lists (name, owner_id, is_shared) VALUES ($1, $2, $3) RETURNING *`, [name, owner_id, is_shared ?? false]);
     res.status(201).json(result.rows[0]);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -53,5 +50,14 @@ router.delete("/:listId", async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
-
+router.patch("/:listId", async (req, res) => {
+  const { listId } = req.params;
+  const { name } = req.body;
+  try {
+    const result = await pool.query("UPDATE lists SET name = $1 WHERE id = $2 RETURNING *", [name, listId]);
+    res.json(result.rows[0]);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
 module.exports = router;
