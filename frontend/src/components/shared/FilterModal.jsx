@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 
 const C = {
   bg: "#151c2e",
@@ -40,16 +40,67 @@ function Chip({ label, active, onClick }) {
   );
 }
 
+// ── Year stepper row ──────────────────────────────────────────────────────────
+function YearStepper({ label, value, min, max, onChange }) {
+  return (
+    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+      <span style={{ color: C.gray, fontSize: 12, fontWeight: 600, width: 32, ...MP }}>{label}</span>
+      <button
+        onClick={() => onChange(Math.max(min, value - 1))}
+        style={{
+          width: 28,
+          height: 28,
+          borderRadius: 8,
+          border: "1px solid rgba(255,255,255,0.12)",
+          background: "rgba(255,255,255,0.06)",
+          color: C.white,
+          fontSize: 16,
+          cursor: "pointer",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          flexShrink: 0,
+        }}
+      >
+        −
+      </button>
+      <input
+        type="number"
+        min={min}
+        max={max}
+        value={value}
+        onChange={(e) => {
+          const n = parseInt(e.target.value);
+          if (!isNaN(n)) onChange(Math.max(min, Math.min(max, n)));
+        }}
+        className="text-center rounded-lg px-2 py-1.5 text-sm outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+        style={{ width: 68, background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.12)", color: C.white, ...MP }}
+      />
+      <button
+        onClick={() => onChange(Math.min(max, value + 1))}
+        style={{
+          width: 28,
+          height: 28,
+          borderRadius: 8,
+          border: "1px solid rgba(255,255,255,0.12)",
+          background: "rgba(255,255,255,0.06)",
+          color: C.white,
+          fontSize: 16,
+          cursor: "pointer",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          flexShrink: 0,
+        }}
+      >
+        +
+      </button>
+      <input type="range" min={min} max={max} value={value} onChange={(e) => onChange(parseInt(e.target.value))} style={{ flex: 1, accentColor: C.yellow }} />
+    </div>
+  );
+}
+
 function FilterContent({ local, setLocal, genres, onApply, onReset }) {
-  // Year input handlers
-  function setYearMin(val) {
-    const n = Math.max(1900, Math.min(parseInt(val) || 1900, local.yearMax));
-    setLocal((f) => ({ ...f, yearMin: n }));
-  }
-  function setYearMax(val) {
-    const n = Math.min(CURRENT_YEAR, Math.max(parseInt(val) || CURRENT_YEAR, local.yearMin));
-    setLocal((f) => ({ ...f, yearMax: n }));
-  }
   function toggleType(t) {
     setLocal((f) => ({ ...f, type: f.type === t ? "all" : t }));
   }
@@ -96,48 +147,9 @@ function FilterContent({ local, setLocal, genres, onApply, onReset }) {
         <p className="text-sm font-semibold mb-2" style={{ color: C.gray, fontWeight: 600 }}>
           Año
         </p>
-        {/* Manual inputs */}
-        <div className="flex items-center gap-2 mb-3">
-          <input
-            type="number"
-            min={1900}
-            max={CURRENT_YEAR}
-            value={local.yearMin}
-            onChange={(e) => setYearMin(e.target.value)}
-            className="w-20 text-center rounded-lg px-2 py-1.5 text-sm outline-none"
-            style={{ background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.12)", color: C.white, ...MP }}
-          />
-          <span style={{ color: C.gray }}>–</span>
-          <input
-            type="number"
-            min={1900}
-            max={CURRENT_YEAR}
-            value={local.yearMax}
-            onChange={(e) => setYearMax(e.target.value)}
-            className="w-20 text-center rounded-lg px-2 py-1.5 text-sm outline-none"
-            style={{ background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.12)", color: C.white, ...MP }}
-          />
-        </div>
-        {/* Sliders */}
-        <div className="flex flex-col gap-1.5">
-          <input
-            type="range"
-            min={1900}
-            max={CURRENT_YEAR}
-            value={local.yearMin}
-            onChange={(e) => setYearMin(e.target.value)}
-            className="w-full"
-            style={{ accentColor: C.yellow }}
-          />
-          <input
-            type="range"
-            min={1900}
-            max={CURRENT_YEAR}
-            value={local.yearMax}
-            onChange={(e) => setYearMax(e.target.value)}
-            className="w-full"
-            style={{ accentColor: C.yellow }}
-          />
+        <div className="flex flex-col gap-2.5">
+          <YearStepper label="Min" value={local.yearMin} min={1900} max={local.yearMax} onChange={(v) => setLocal((f) => ({ ...f, yearMin: v }))} />
+          <YearStepper label="Max" value={local.yearMax} min={local.yearMin} max={CURRENT_YEAR} onChange={(v) => setLocal((f) => ({ ...f, yearMax: v }))} />
         </div>
       </div>
 
@@ -178,12 +190,82 @@ function FilterContent({ local, setLocal, genres, onApply, onReset }) {
   );
 }
 
+// ── Swipe-to-dismiss sheet (mobile) ───────────────────────────────────────────
+function BottomSheet({ onDismiss, children }) {
+  const sheetRef = useRef(null);
+  const gesture = useRef({ active: false, startY: 0, dy: 0 });
+
+  function applyTranslate(dy, animated) {
+    const el = sheetRef.current;
+    if (!el) return;
+    const clamped = Math.max(0, dy); // only allow dragging down
+    el.style.transition = animated ? "transform 0.3s ease" : "none";
+    el.style.transform = `translateY(${clamped}px)`;
+  }
+
+  function onTouchStart(e) {
+    gesture.current = { active: true, startY: e.touches[0].clientY, dy: 0 };
+    applyTranslate(0, false);
+  }
+
+  function onTouchMove(e) {
+    if (!gesture.current.active) return;
+    const dy = e.touches[0].clientY - gesture.current.startY;
+    gesture.current.dy = dy;
+    applyTranslate(dy, false);
+  }
+
+  function onTouchEnd() {
+    if (!gesture.current.active) return;
+    gesture.current.active = false;
+    const dy = gesture.current.dy;
+    if (dy > 80) {
+      // fly out then dismiss
+      const el = sheetRef.current;
+      if (el) {
+        el.style.transition = "transform 0.25s ease";
+        el.style.transform = `translateY(100%)`;
+      }
+      setTimeout(onDismiss, 250);
+    } else {
+      applyTranslate(0, true);
+    }
+  }
+
+  function onTouchCancel() {
+    gesture.current.active = false;
+    applyTranslate(0, true);
+  }
+
+  return (
+    <div
+      ref={sheetRef}
+      className="fixed z-50 flex flex-col shadow-2xl bottom-0 left-0 right-0 rounded-t-3xl max-h-[88vh]"
+      style={{ background: C.bg, ...MP, willChange: "transform" }}
+      onClick={(e) => e.stopPropagation()}
+    >
+      {/* Draggable handle area */}
+      <div
+        onTouchStart={onTouchStart}
+        onTouchMove={onTouchMove}
+        onTouchEnd={onTouchEnd}
+        onTouchCancel={onTouchCancel}
+        style={{ touchAction: "none", cursor: "grab" }}
+      >
+        <div className="flex justify-center pt-3 pb-1">
+          <div className="w-10 h-1 rounded-full" style={{ background: "rgba(255,255,255,0.2)" }} />
+        </div>
+        <div className="flex items-center justify-between px-5 py-4" style={{ borderBottom: "1px solid rgba(255,255,255,0.07)" }}>
+          <span style={{ color: C.yellow, fontWeight: 800, fontSize: "1.3rem" }}>Filtros</span>
+        </div>
+      </div>
+
+      <div className="overflow-y-auto flex-1 px-5 py-5">{children}</div>
+    </div>
+  );
+}
+
 // ── Main export ───────────────────────────────────────────────────────────────
-// Props:
-//   filters       — estado actual de filtros
-//   genres        — array de { id, name }
-//   onApply(f)    — callback con los nuevos filtros
-//   onClose()     — cerrar el modal
 export default function FilterModal({ filters, genres, onApply, onClose }) {
   const DEFAULT = {
     yearMin: 1900,
@@ -196,7 +278,6 @@ export default function FilterModal({ filters, genres, onApply, onClose }) {
 
   const [local, setLocal] = useState({ ...filters });
 
-  // Sync si cambian los filtros externos
   useEffect(() => {
     setLocal({ ...filters });
   }, [filters]);
@@ -205,42 +286,43 @@ export default function FilterModal({ filters, genres, onApply, onClose }) {
     onApply(f);
     onClose();
   }
-
   function handleReset() {
     setLocal({ ...DEFAULT });
     onApply({ ...DEFAULT });
     onClose();
   }
 
+  const content = <FilterContent local={local} setLocal={setLocal} genres={genres} onApply={handleApply} onReset={handleReset} />;
+
   return (
     <>
       {/* Backdrop */}
       <div className="fixed inset-0 z-40 bg-black/50" onClick={onClose} />
 
-      {/* Desktop: modal centrado / Mobile: sheet desde abajo */}
+      {/* Mobile: swipeable bottom sheet */}
+      <div className="sm:hidden">
+        <BottomSheet
+          onDismiss={() => {
+            handleApply(local);
+          }}
+        >
+          {content}
+        </BottomSheet>
+      </div>
+
+      {/* Desktop: centered modal */}
       <div
-        className="fixed z-50 flex flex-col shadow-2xl
-          bottom-0 left-0 right-0 rounded-t-3xl max-h-[88vh]
+        className="hidden sm:flex fixed z-50 flex-col shadow-2xl
           sm:bottom-auto sm:left-1/2 sm:top-1/2 sm:right-auto
           sm:-translate-x-1/2 sm:-translate-y-1/2
           sm:w-[480px] sm:max-h-[85vh] sm:rounded-2xl"
         style={{ background: C.bg, ...MP }}
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Handle (mobile) */}
-        <div className="flex justify-center pt-3 pb-1 sm:hidden">
-          <div className="w-10 h-1 rounded-full" style={{ background: "rgba(255,255,255,0.2)" }} />
-        </div>
-
-        {/* Header */}
         <div className="flex items-center justify-between px-5 py-4" style={{ borderBottom: "1px solid rgba(255,255,255,0.07)" }}>
           <span style={{ color: C.yellow, fontWeight: 800, fontSize: "1.3rem" }}>Filtros</span>
         </div>
-
-        {/* Content */}
-        <div className="overflow-y-auto flex-1 px-5 py-5">
-          <FilterContent local={local} setLocal={setLocal} genres={genres} onApply={handleApply} onReset={handleReset} />
-        </div>
+        <div className="overflow-y-auto flex-1 px-5 py-5">{content}</div>
       </div>
     </>
   );
