@@ -438,6 +438,7 @@ router.get("/person/:personId", async (req, res) => {
       rating: c.vote_average?.toFixed(1) ?? "N/A",
       type: c.media_type,
       role: c.character ?? c.job ?? "",
+      popularity: c.popularity ?? 0,
     }));
 
     res.json({
@@ -527,12 +528,14 @@ router.get("/swipe", async (req, res) => {
     pool = pool.filter((i) => i.poster_path);
 
     const excludeIds = exclude ? exclude.split(",").map(Number) : [];
-    let hiddenIds = [];
+
+    /*let hiddenIds = [];
     if (userId) {
       const hidden = await db.query("SELECT tmdb_id FROM hidden_titles WHERE user_id = $1", [userId]);
       hiddenIds = hidden.rows.map((r) => r.tmdb_id);
     }
-    pool = pool.filter((i) => ![...excludeIds, ...hiddenIds].includes(i.id));
+    pool = pool.filter((i) => ![...excludeIds, ...hiddenIds].includes(i.id));*/
+
     if (!pool.length) return res.json(null);
 
     const pick = pool[Math.floor(Math.random() * pool.length)];

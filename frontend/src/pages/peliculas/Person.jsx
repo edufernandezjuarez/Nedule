@@ -218,6 +218,9 @@ export default function Person() {
   const [activeTab, setActiveTab] = useState("movie");
   const [isLoading, setIsLoading] = useState(false);
   const [pendingMovie, setPendingMovie] = useState(null);
+  const [sort, setSort] = useState({ field: null, asc: false });
+  const [showSort, setShowSort] = useState(false);
+  const sortMenuRef = useRef(null);
 
   const personIdRef = useRef(personIdParam);
   const pageRef = useRef(1);
@@ -295,6 +298,8 @@ export default function Person() {
   }
 
   async function handleTabSwitch(tab) {
+    setActiveTab(tab);
+    setSort({ field: null, asc: false });
     if (hasMoreRef.current) {
       removeSentinel();
       let currentPage = pageRef.current;
@@ -304,11 +309,10 @@ export default function Person() {
         const data = await fetchPerson(personIdRef.current, currentPage);
         credits = [...credits, ...data.credits];
         hasMoreRef.current = data.hasMore;
+        setAllCredits([...credits]); // ← actualizar en cada página para que se vea progresivamente
       }
       pageRef.current = currentPage;
-      setAllCredits(credits);
     }
-    setActiveTab(tab);
   }
 
   function buildPendingMovie(item) {
@@ -322,8 +326,41 @@ export default function Person() {
     };
   }
 
-  const filteredCredits = allCredits.filter((c) => c.type === activeTab);
-
+  const filteredCredits = allCredits
+    .filter((c) => c.type === activeTab)
+    .sort((a, b) => {
+      if (!sort.field) return 0;
+      const dir = sort.asc ? 1 : -1;
+      if (sort.field === "alpha") return dir * a.title.localeCompare(b.title);
+      if (sort.field === "year") return dir * ((parseInt(a.year) || 0) - (parseInt(b.year) || 0));
+      if (sort.field === "rating") return dir * ((parseFloat(a.rating) || 0) - (parseFloat(b.rating) || 0));
+      if (sort.field === "popularity") return dir * ((parseFloat(a.popularity) || 0) - (parseFloat(b.popularity) || 0));
+      return 0;
+    });
+  useEffect(() => {
+    function h(e) {
+      if (sortMenuRef.current && !sortMenuRef.current.contains(e.target)) setShowSort(false);
+    }
+    document.addEventListener("mousedown", h);
+    return () => document.removeEventListener("mousedown", h);
+  }, []);
+  useEffect(() => {
+    // Si después de cargar no hay resultados en el tab activo
+    // pero hay más páginas, cargar todo en background
+    if (!isLoading && person && filteredCredits.length === 0 && hasMoreRef.current) {
+      async function loadRest() {
+        let credits = [...allCredits];
+        while (hasMoreRef.current) {
+          pageRef.current++;
+          const data = await fetchPerson(personIdRef.current, pageRef.current);
+          credits = [...credits, ...data.credits];
+          hasMoreRef.current = data.hasMore;
+          setAllCredits([...credits]);
+        }
+      }
+      loadRest();
+    }
+  }, [isLoading, person, filteredCredits.length]);
   if (!person) {
     return (
       <div style={{ minHeight: "100vh", background: C.bg, display: "flex", alignItems: "center", justifyContent: "center" }}>
@@ -398,22 +435,62 @@ export default function Person() {
           >
             Series
           </button>
-          <button
-            style={{
-              marginLeft: "auto",
-              padding: "6px 16px",
-              borderRadius: 20,
-              border: "none",
-              cursor: "pointer",
-              fontSize: 13,
-              fontWeight: 700,
-              background: C.yellow,
-              color: "#000",
-              ...MP,
-            }}
-          >
-            Sort
-          </button>
+          <div style={{ marginLeft: "auto", position: "relative" }} ref={sortMenuRef}>
+            <button
+              onClick={() => setShowSort((v) => !v)}
+              style={{
+                padding: "6px 16px",
+                borderRadius: 20,
+                border: "none",
+                cursor: "pointer",
+                fontSize: 13,
+                fontWeight: 700,
+                background: C.yellow,
+                color: "#000",
+                ...MP,
+              }}
+            >
+              Sort
+            </button>
+            {showSort && (
+              <div
+                style={{
+                  position: "absolute",
+                  right: 0,
+                  top: 36,
+                  zIndex: 50,
+                  background: "#181818",
+                  border: "1px solid rgba(255,255,255,0.08)",
+                  borderRadius: 12,
+                  minWidth: 180,
+                  boxShadow: "0 8px 32px rgba(0,0,0,0.5)",
+                  overflow: "hidden",
+                }}
+              >
+                {[
+                  { key: "popularity", label: "Popularidad" },
+                  { key: "year", label: "Año" },
+                  { key: "rating", label: "Rating" },
+                  { key: "alpha", label: "Alfabético" },
+                ].map(({ key, label }) => (
+                  <button
+                    key={key}
+                    onClick={() => {
+                      setSort((prev) => ({ field: key, asc: prev.field === key ? !prev.asc : false }));
+                      setShowSort(false);
+                    }}
+                    className="w-full flex items-center justify-between px-4 py-2.5 text-sm hover:bg-white/5 transition-colors"
+                    style={{ color: sort.field === key ? C.yellow : C.white, ...MP, fontWeight: 500 }}
+                  >
+                    <span>{label}</span>
+                    <span style={{ color: sort.field === key ? C.yellow : C.gray }}>
+                      {sort.field === key ? (sort.asc ? (key === "alpha" ? "↓" : "↑") : key === "alpha" ? "↑" : "↓") : "↓↑"}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
         <div style={{ height: 14 }} />
       </div>

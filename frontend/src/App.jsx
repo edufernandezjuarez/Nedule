@@ -48,9 +48,16 @@ export default function App() {
             <Route path="season/:season/episode/:ep" element={<Episode />} />
           </Route>
 
+          {/* Swipe */}
+          <Route path="/peliculas/swipe" element={<Swipe />}>
+            <Route path="movie/:id" element={<Movie />} />
+            <Route path="tv/:id" element={<Serie />}>
+              <Route path="season/:season/episode/:ep" element={<Episode />} />
+            </Route>
+          </Route>
+
           <Route path="/peliculas/person" element={<Person />} />
           <Route path="/peliculas/cast" element={<Cast />} />
-          <Route path="/peliculas/swipe" element={<Swipe />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/reviews" element={<Reviews />} />
           <Route path="/watching" element={<Watching />} />
