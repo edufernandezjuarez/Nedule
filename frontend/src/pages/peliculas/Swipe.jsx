@@ -3,7 +3,7 @@ import { fetchTmdbSwipe, postHidden, fetchGenres, getUserId, fetchLists, createL
 import { useAuth } from "../../hooks/useAuth";
 import { useIsMobile } from "../../hooks/useIsMobile";
 import AddToListModal from "../../components/shared/AddToListModal";
-import { useNavigate, Outlet, useMatches } from "react-router-dom";
+import { useNavigate, Outlet, useLocation } from "react-router-dom";
 
 const CURRENT_YEAR = new Date().getFullYear();
 
@@ -507,8 +507,8 @@ export default function Swipe() {
   const navigate = useNavigate();
 
   // Detect if a child route (movie/serie) is active
-  const matches = useMatches();
-  const hasChildRoute = matches.some((m) => m.pathname.includes("/peliculas/swipe/movie/") || m.pathname.includes("/peliculas/swipe/tv/"));
+  const { pathname } = useLocation();
+  const hasChildRoute = pathname.includes("/peliculas/swipe/movie/") || pathname.includes("/peliculas/swipe/tv/");
 
   const [current, setCurrent] = useState(null);
   const [loading, setLoading] = useState(true);
