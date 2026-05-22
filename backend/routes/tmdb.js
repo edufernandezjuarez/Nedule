@@ -179,6 +179,26 @@ router.get("/detail/:tmdbId", async (req, res) => {
     const m = detail;
     const director = m.credits?.crew?.find((p) => p.job === "Director")?.name ?? "N/A";
     const cast = m.credits?.cast?.slice(0, 5).map((a) => a.name) ?? [];
+    const fullCast = [
+      ...(m.credits?.cast ?? []).map((a) => ({
+        id: a.id,
+        name: a.name,
+        role: "acting",
+        character: a.character ?? "",
+        photo_url: a.profile_path ? `https://image.tmdb.org/t/p/w185${a.profile_path}` : null,
+        order: a.order,
+      })),
+      ...(m.credits?.crew ?? [])
+        .filter((c) => c.job === "Director")
+        .map((c) => ({
+          id: c.id,
+          name: c.name,
+          role: "directing",
+          character: "",
+          photo_url: c.profile_path ? `https://image.tmdb.org/t/p/w185${c.profile_path}` : null,
+          order: -1,
+        })),
+    ].sort((a, b) => a.order - b.order);
     const gallery = (images.backdrops ?? []).slice(0, 12).map((img) => `https://image.tmdb.org/t/p/w780${img.file_path}`);
 
     res.json({
@@ -193,16 +213,88 @@ router.get("/detail/:tmdbId", async (req, res) => {
       genre_ids: m.genres?.map((g) => g.id) ?? [],
       origin_country: m.production_countries?.[0]?.iso_3166_1 ?? "",
       runtime: m.runtime ?? m.episode_run_time?.[0] ?? null,
+      number_of_seasons: m.number_of_seasons ?? null,
+      number_of_episodes: m.number_of_episodes ?? null,
       type: type ?? "movie",
       director,
       cast,
       gallery,
+      fullCast,
     });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
+// GET /api/tmdb/tv/:tvId/season/:season
+router.get("/tv/:tvId/season/:season", async (req, res) => {
+  const { tvId, season } = req.params;
+  try {
+    const data = await tmdb(`/tv/${tvId}/season/${season}`);
+    const episodes = (data.episodes ?? []).map((ep) => ({
+      episode_number: ep.episode_number,
+      name: ep.name,
+      overview: ep.overview,
+      still_url: ep.still_path ? `https://image.tmdb.org/t/p/w300${ep.still_path}` : null,
+      air_date: ep.air_date,
+      runtime: ep.runtime ?? null,
+      rating: ep.vote_average?.toFixed(1) ?? "N/A",
+    }));
+    res.json({ season: parseInt(season), episodes });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+// GET /api/tmdb/tv/:tvId/season/:season/episode/:ep
+router.get("/tv/:tvId/season/:season/episode/:ep", async (req, res) => {
+  const { tvId, season, ep } = req.params;
+  try {
+    const [detail, images] = await Promise.all([
+      tmdb(`/tv/${tvId}/season/${season}/episode/${ep}`, { append_to_response: "credits" }),
+      tmdb(`/tv/${tvId}/season/${season}/episode/${ep}/images`),
+    ]);
 
+    const director = detail.credits?.crew?.find((p) => p.job === "Director")?.name ?? "N/A";
+    const cast = detail.credits?.cast?.slice(0, 5).map((a) => a.name) ?? [];
+    const gallery = (images.stills ?? []).slice(0, 12).map((s) => `https://image.tmdb.org/t/p/w780${s.file_path}`);
+    const fullCast = [
+      ...(detail.credits?.cast ?? []).map((a) => ({
+        id: a.id,
+        name: a.name,
+        role: "acting",
+        character: a.character ?? "",
+        photo_url: a.profile_path ? `https://image.tmdb.org/t/p/w185${a.profile_path}` : null,
+        order: a.order,
+      })),
+      ...(detail.credits?.crew ?? [])
+        .filter((c) => c.job === "Director")
+        .map((c) => ({
+          id: c.id,
+          name: c.name,
+          role: "directing",
+          character: "",
+          photo_url: c.profile_path ? `https://image.tmdb.org/t/p/w185${c.profile_path}` : null,
+          order: -1,
+        })),
+    ].sort((a, b) => a.order - b.order);
+
+    res.json({
+      episode_number: detail.episode_number,
+      season_number: detail.season_number,
+      name: detail.name,
+      overview: detail.overview,
+      air_date: detail.air_date,
+      runtime: detail.runtime ?? null,
+      rating: detail.vote_average?.toFixed(1) ?? "N/A",
+      still_url: detail.still_path ? `https://image.tmdb.org/t/p/w780${detail.still_path}` : null,
+      director,
+      cast,
+      gallery,
+      fullCast,
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
 // ── GET /api/tmdb/genres ──────────────────────────────────────────────────────
 router.get("/genres", async (req, res) => {
   try {

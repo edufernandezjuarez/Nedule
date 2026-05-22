@@ -1,4 +1,4 @@
-const API = '/api';
+const API = "/api";
 
 export const USER_IDS = { Edu: 1, Nicole: 2 };
 export const getUserId = (username) => USER_IDS[username] ?? 1;
@@ -12,15 +12,15 @@ export async function fetchLists(userId) {
 
 export async function createList(name, owner_id, is_shared) {
   const res = await fetch(`${API}/lists`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ name, owner_id, is_shared }),
   });
   return res.json();
 }
 
 export async function deleteList(listId) {
-  await fetch(`${API}/lists/${listId}`, { method: 'DELETE' });
+  await fetch(`${API}/lists/${listId}`, { method: "DELETE" });
 }
 
 // ── Movies in list ─────────────────────────────────────────────────────────
@@ -32,14 +32,14 @@ export async function fetchMoviesInList(listId) {
 
 export async function addMovieToList(listId, movie, userId) {
   await fetch(`${API}/movies/${listId}`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ ...movie, added_by: userId }),
   });
 }
 
 export async function removeMovieFromList(listId, movieId) {
-  await fetch(`${API}/movies/${listId}/${movieId}`, { method: 'DELETE' });
+  await fetch(`${API}/movies/${listId}/${movieId}`, { method: "DELETE" });
 }
 
 // ── TMDB ───────────────────────────────────────────────────────────────────
@@ -50,9 +50,7 @@ export async function fetchTmdbPopular(params) {
 }
 
 export async function fetchTmdbSearch(q, params) {
-  const res = await fetch(
-    `${API}/tmdb/search?${new URLSearchParams({ q, ...params })}`,
-  );
+  const res = await fetch(`${API}/tmdb/search?${new URLSearchParams({ q, ...params })}`);
   return res.json();
 }
 
@@ -72,38 +70,39 @@ export async function fetchPerson(personId, page = 1) {
 }
 
 export async function searchPersonByName(name) {
-  const res = await fetch(
-    `${API}/tmdb/person/search/${encodeURIComponent(name)}`,
-  );
+  const res = await fetch(`${API}/tmdb/person/search/${encodeURIComponent(name)}`);
   return res.json();
 }
 
 export async function searchPeople(q) {
-  const res = await fetch(
-    `${API}/tmdb/people/search?q=${encodeURIComponent(q)}`,
-  );
+  const res = await fetch(`${API}/tmdb/people/search?q=${encodeURIComponent(q)}`);
   return res.json();
 }
 
 // ── Reviews ────────────────────────────────────────────────────────────────
 
-export async function fetchReviews(tmdbId) {
-  const res = await fetch(`${API}/reviews/${tmdbId}`);
+export async function fetchReviews(tmdbId, season = null) {
+  const url = season !== null ? `${API}/reviews/${tmdbId}?season=${season}` : `${API}/reviews/${tmdbId}`;
+  const res = await fetch(url);
   return res.json();
 }
 
 export async function submitReview(tmdbId, payload) {
   await fetch(`${API}/reviews/${tmdbId}`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload),
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload), // payload puede incluir season
   });
 }
 
-export async function deleteReview(tmdbId, userId) {
-  await fetch(`${API}/reviews/${tmdbId}/${userId}`, { method: 'DELETE' });
+export async function deleteReview(tmdbId, userId, season = null) {
+  const url = season !== null ? `${API}/reviews/${tmdbId}/${userId}?season=${season}` : `${API}/reviews/${tmdbId}/${userId}`;
+  await fetch(url, { method: "DELETE" });
 }
-
+export async function fetchTvSeason(tvId, season) {
+  const res = await fetch(`${API}/tmdb/tv/${tvId}/season/${season}`);
+  return res.json();
+}
 export async function fetchUserReviews(userId) {
   const res = await fetch(`${API}/reviews/user/${userId}`);
   return res.json();
@@ -118,21 +117,24 @@ export async function fetchProgress(tmdbId, userId) {
 
 export async function saveProgress(tmdbId, payload) {
   await fetch(`${API}/progress/${tmdbId}`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload),
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload), // payload incluye season y episode
   });
 }
 
 export async function deleteProgress(movieId, userId) {
-  await fetch(`${API}/progress/${movieId}/user/${userId}`, { method: 'DELETE' });
+  await fetch(`${API}/progress/${movieId}/user/${userId}`, { method: "DELETE" });
 }
 
 export async function fetchWatching(userId) {
   const res = await fetch(`${API}/progress/user/${userId}`);
   return res.json();
 }
-
+export async function fetchTvEpisode(tvId, season, ep) {
+  const res = await fetch(`${API}/tmdb/tv/${tvId}/season/${season}/episode/${ep}`);
+  return res.json();
+}
 // ── Hidden ─────────────────────────────────────────────────────────────────
 
 export async function fetchHidden(userId) {
@@ -141,13 +143,13 @@ export async function fetchHidden(userId) {
 }
 
 export async function unhideTitle(userId, tmdbId) {
-  await fetch(`${API}/hidden/${userId}/${tmdbId}`, { method: 'DELETE' });
+  await fetch(`${API}/hidden/${userId}/${tmdbId}`, { method: "DELETE" });
 }
 
 export async function postHidden(payload) {
   await fetch(`${API}/hidden`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload),
   });
 }

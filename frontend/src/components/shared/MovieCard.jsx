@@ -91,7 +91,7 @@ function DesktopCard({ movie, onAdd, onDelete, onBeforeNavigate }) {
       style={{ background: C.card, borderRadius: 12, ...MP }}
       onClick={() => {
         onBeforeNavigate?.();
-        navigate(`/peliculas/movie/${tmdbId}?type=${type}`);
+        navigate(type === "tv" ? `/peliculas/tv/${tmdbId}` : `/peliculas/movie/${tmdbId}`);
       }}
     >
       <div className="relative rounded-xl overflow-hidden mx-1" style={{ aspectRatio: "2/3", background: "#1a1a2e" }}>
@@ -174,7 +174,7 @@ function MobileCard({ movie, onAdd, onDelete, onBeforeNavigate }) {
       style={{ background: C.card, padding: "0 12px 0 0", ...MP, overflow: "hidden" }}
       onClick={() => {
         onBeforeNavigate?.();
-        navigate(`/peliculas/movie/${tmdbId}?type=${type}`);
+        navigate(type === "tv" ? `/peliculas/tv/${tmdbId}` : `/peliculas/movie/${tmdbId}`);
       }}
     >
       <div className="flex-shrink-0 overflow-hidden" style={{ width: 80, background: "#0d0f14", borderRadius: "12px 0 0 12px" }}>

@@ -249,7 +249,50 @@ export default function Movie() {
       </div>
     );
   }
-
+  function CastSection({ fullCast, navigate }) {
+    if (!fullCast?.length) return null;
+    return (
+      <div style={{ marginTop: 28 }}>
+        <h2 style={{ color: C.white, fontWeight: 800, fontSize: "1.5rem", marginBottom: 12, padding: "0 16px" }}>Cast completo</h2>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(90px, 1fr))", gap: 12, padding: "0 16px" }}>
+          {fullCast.map((p) => (
+            <div
+              key={`${p.role}-${p.id}`}
+              onClick={() => navigate(`/peliculas/person?name=${encodeURIComponent(p.name)}`)}
+              style={{ cursor: "pointer", textAlign: "center" }}
+            >
+              {p.photo_url ? (
+                <img
+                  src={p.photo_url}
+                  alt={p.name}
+                  loading="lazy"
+                  style={{ width: "100%", aspectRatio: "2/3", objectFit: "cover", borderRadius: 10, display: "block" }}
+                />
+              ) : (
+                <div
+                  style={{
+                    width: "100%",
+                    aspectRatio: "2/3",
+                    borderRadius: 10,
+                    background: "rgba(255,255,255,0.06)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    color: C.gray,
+                    fontSize: 22,
+                  }}
+                >
+                  ?
+                </div>
+              )}
+              <p style={{ color: C.white, fontSize: 11, fontWeight: 700, margin: "6px 0 2px", lineHeight: 1.3 }}>{p.name}</p>
+              <p style={{ color: C.gray, fontSize: 10, margin: 0, lineHeight: 1.3 }}>{p.role === "directing" ? "Director" : p.character || "Acting"}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
   return (
     <div style={{ minHeight: "100vh", background: C.bg, ...MP }}>
       {/* ── Backdrop ── */}
@@ -304,66 +347,64 @@ export default function Movie() {
       {/* ── Main content ── */}
       <div style={{ maxWidth: 900, margin: "0 auto", padding: "0 16px 80px" }}>
         {/* ── Hero: poster + info ── */}
-        <div className="flex gap-5" style={{ marginTop: movie.backdrop_url ? -60 : 16, position: "relative" }}>
-          {/* Poster */}
-          {movie.poster_url && (
-            <img
-              src={movie.poster_url}
-              alt={movie.title}
-              style={{ width: 120, flexShrink: 0, borderRadius: 14, boxShadow: "0 8px 32px rgba(0,0,0,0.6)", objectFit: "cover", alignSelf: "flex-start" }}
-              className="sm:w-44"
-            />
-          )}
-
-          {/* Info */}
-          <div style={{ flex: 1, minWidth: 0, paddingTop: movie.backdrop_url ? 70 : 0 }}>
-            {/* Title + options */}
-            <div style={{ display: "flex", alignItems: "flex-start", gap: 8, marginBottom: 6 }}>
-              <h1 style={{ color: C.white, fontWeight: 800, fontSize: "clamp(1.3rem, 4vw, 2rem)", lineHeight: 1.2, margin: 0, flex: 1 }}>{movie.title}</h1>
-              {/* ... options button */}
-              <div style={{ position: "relative", flexShrink: 0, marginTop: 4 }}>
-                <button
-                  onClick={() => setShowOptions((v) => !v)}
-                  style={{
-                    background: "rgba(255,255,255,0.08)",
-                    border: "none",
-                    borderRadius: 8,
-                    width: 32,
-                    height: 32,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    cursor: "pointer",
-                    color: C.white,
-                    fontSize: 16,
-                    fontWeight: 700,
-                  }}
-                >
-                  ···
-                </button>
-                {showOptions && <OptionsMenu onReview={() => setShowReviewModal(true)} onClose={() => setShowOptions(false)} />}
+        <div style={{ marginTop: movie.backdrop_url ? -60 : 16, position: "relative" }}>
+          {/* Fila: poster + título + meta */}
+          <div style={{ display: "flex", gap: 16, marginBottom: 0 }}>
+            {movie.poster_url && (
+              <img
+                src={movie.poster_url}
+                alt={movie.title}
+                style={{ width: 100, flexShrink: 0, borderRadius: 14, boxShadow: "0 8px 32px rgba(0,0,0,0.6)", objectFit: "cover", alignSelf: "flex-start" }}
+                className="sm:w-44"
+              />
+            )}
+            <div style={{ flex: 1, minWidth: 0, paddingTop: movie.backdrop_url ? 70 : 0 }}>
+              {/* Title + options */}
+              <div style={{ display: "flex", alignItems: "flex-start", gap: 8, marginBottom: 6 }}>
+                <h1 style={{ color: C.white, fontWeight: 800, fontSize: "clamp(1.1rem, 4vw, 2rem)", lineHeight: 1.2, margin: 0, flex: 1 }}>{movie.title}</h1>
+                <div style={{ position: "relative", flexShrink: 0, marginTop: 4 }}>
+                  <button
+                    onClick={() => setShowOptions((v) => !v)}
+                    style={{
+                      background: "rgba(255,255,255,0.08)",
+                      border: "none",
+                      borderRadius: 8,
+                      width: 32,
+                      height: 32,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      cursor: "pointer",
+                      color: C.white,
+                      fontSize: 16,
+                      fontWeight: 700,
+                    }}
+                  >
+                    ···
+                  </button>
+                  {showOptions && <OptionsMenu onReview={() => setShowReviewModal(true)} onClose={() => setShowOptions(false)} />}
+                </div>
               </div>
+              {/* Meta */}
+              <p style={{ color: C.gray, fontSize: 13, margin: 0, display: "flex", gap: 6, flexWrap: "wrap", alignItems: "center" }}>
+                <span>{type === "tv" ? "Serie" : "Movie"}</span>
+                {movie.runtime && (
+                  <>
+                    <span>•</span>
+                    <span>{movie.runtime} min</span>
+                  </>
+                )}
+                <span>•</span>
+                <span>{movie.year}</span>
+                <span>•</span>
+                <span style={{ color: C.white }}>★ {movie.rating}</span>
+              </p>
             </div>
+          </div>
 
-            {/* Meta */}
-            <p style={{ color: C.gray, fontSize: 13, margin: "0 0 8px", display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
-              <span>{type === "tv" ? "Serie" : "Movie"}</span>
-              {movie.runtime && (
-                <>
-                  <span>•</span>
-                  <span>{movie.runtime} min</span>
-                </>
-              )}
-              <span>•</span>
-              <span>{movie.year}</span>
-              <span>•</span>
-              <span style={{ color: C.white }}>★ {movie.rating}</span>
-            </p>
-
-            {/* Overview */}
+          {/* Bloque inferior mobile: overview, géneros, cast, botón — ancho completo */}
+          <div className="sm:hidden" style={{ marginTop: 14 }}>
             {movie.overview && <p style={{ color: C.white, fontSize: 13, lineHeight: 1.6, margin: "0 0 10px" }}>{movie.overview}</p>}
-
-            {/* Genres */}
             <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 10 }}>
               {movie.genres.map((g) => (
                 <span
@@ -374,8 +415,6 @@ export default function Movie() {
                 </span>
               ))}
             </div>
-
-            {/* Director + Cast */}
             <div style={{ display: "flex", flexDirection: "column", gap: 4, marginBottom: 14 }}>
               {movie.director !== "N/A" && (
                 <p style={{ fontSize: 13, color: C.white, margin: 0 }}>
@@ -399,8 +438,6 @@ export default function Movie() {
                 </p>
               )}
             </div>
-
-            {/* Lista + button */}
             <button
               onClick={() =>
                 setPendingMovie({ tmdb_id: movie.tmdb_id, title: movie.title, year: movie.year, poster_url: movie.poster_url, rating: movie.rating, type })
@@ -419,6 +456,64 @@ export default function Movie() {
             >
               Lista +
             </button>
+          </div>
+
+          {/* Bloque desktop: overview, géneros, cast, botón — a la derecha del poster */}
+          <div className="hidden sm:block" style={{ marginTop: 12 }}>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              {movie.overview && <p style={{ color: C.white, fontSize: 13, lineHeight: 1.6, margin: "0 0 10px" }}>{movie.overview}</p>}
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 10 }}>
+                {movie.genres.map((g) => (
+                  <span
+                    key={g}
+                    style={{ background: "rgba(255,255,255,0.08)", color: C.gray, fontSize: 11, fontWeight: 600, padding: "3px 10px", borderRadius: 20 }}
+                  >
+                    {g}
+                  </span>
+                ))}
+              </div>
+              <div style={{ display: "flex", flexDirection: "column", gap: 4, marginBottom: 14 }}>
+                {movie.director !== "N/A" && (
+                  <p style={{ fontSize: 13, color: C.white, margin: 0 }}>
+                    <span style={{ fontWeight: 700 }}>Director: </span>
+                    <Link to={`/peliculas/person?name=${encodeURIComponent(movie.director)}`} style={{ color: C.blue, textDecoration: "none" }}>
+                      {movie.director}
+                    </Link>
+                  </p>
+                )}
+                {movie.cast?.length > 0 && (
+                  <p style={{ fontSize: 13, color: C.white, margin: 0 }}>
+                    <span style={{ fontWeight: 700 }}>Cast: </span>
+                    {movie.cast.map((a, i) => (
+                      <span key={a}>
+                        <Link to={`/peliculas/person?name=${encodeURIComponent(a)}`} style={{ color: C.blue, textDecoration: "none" }}>
+                          {a}
+                        </Link>
+                        {i < movie.cast.length - 1 && ", "}
+                      </span>
+                    ))}
+                  </p>
+                )}
+              </div>
+              <button
+                onClick={() =>
+                  setPendingMovie({ tmdb_id: movie.tmdb_id, title: movie.title, year: movie.year, poster_url: movie.poster_url, rating: movie.rating, type })
+                }
+                style={{
+                  background: C.blue,
+                  color: C.white,
+                  border: "none",
+                  borderRadius: 10,
+                  padding: "8px 18px",
+                  fontSize: 13,
+                  fontWeight: 700,
+                  cursor: "pointer",
+                  ...MP,
+                }}
+              >
+                Lista +
+              </button>
+            </div>
           </div>
         </div>
 
@@ -533,7 +628,8 @@ export default function Movie() {
           </div>
         )}
       </div>
-
+      {/* ── Full Cast ── */}
+      <CastSection fullCast={movie.fullCast} navigate={navigate} />
       {/* ── Modals ── */}
       {pendingMovie && <AddToListModal movie={pendingMovie} onClose={() => setPendingMovie(null)} />}
 

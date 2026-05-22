@@ -12,7 +12,6 @@ CREATE TABLE lists (
   is_shared  BOOLEAN DEFAULT FALSE,
   created_at TIMESTAMP DEFAULT NOW()
 );
-
 CREATE TABLE movies (
   id          SERIAL PRIMARY KEY,
   imdb_id     VARCHAR(20) UNIQUE NOT NULL,
@@ -22,7 +21,6 @@ CREATE TABLE movies (
   imdb_rating VARCHAR(10),
   media_type VARCHAR(10) DEFAULT 'movie'
 );
-
 CREATE TABLE list_movies (
   list_id    INTEGER REFERENCES lists(id) ON DELETE CASCADE,
   movie_id   INTEGER REFERENCES movies(id) ON DELETE CASCADE,
@@ -36,17 +34,18 @@ CREATE TABLE reviews (
   user_id    INTEGER REFERENCES users(id),
   rating     INTEGER CHECK (rating >= 1 AND rating <= 10),
   comment    TEXT,
+  season     INTEGER DEFAULT NULL,
   created_at TIMESTAMP DEFAULT NOW(),
-  UNIQUE (movie_id, user_id)
+  UNIQUE (movie_id, user_id, season)
 );
 CREATE TABLE series_progress (
   id         SERIAL PRIMARY KEY,
   movie_id   INTEGER REFERENCES movies(id) ON DELETE CASCADE,
   user_id    INTEGER REFERENCES users(id),
   season     INTEGER DEFAULT 1,
-  episode    INTEGER DEFAULT 1,
+  episode    INTEGER DEFAULT 0,
   updated_at TIMESTAMP DEFAULT NOW(),
-  UNIQUE (movie_id, user_id)
+  UNIQUE (movie_id, user_id, season)
 );
 CREATE TABLE hidden_titles (
   id         SERIAL PRIMARY KEY,

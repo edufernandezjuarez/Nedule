@@ -23,7 +23,6 @@ const SORT_OPTIONS = [
   { key: "year_asc", label: "Año", dir: "↑" },
 ];
 
-// Agrupa pares para mostrar en el menú
 const SORT_GROUPS = [
   { label: "Popularidad", desc: "popularity_desc", asc: "popularity_asc" },
   { label: "Rating", desc: "rating_desc", asc: "rating_asc" },
@@ -41,7 +40,7 @@ function DesktopSearchCard({ movie, onAdd }) {
     <div
       className="flex flex-col cursor-pointer rounded-xl overflow-hidden"
       style={{ background: C.card, ...MP }}
-      onClick={() => navigate(`/peliculas/search/movie/${tmdbId}?type=${type}`)}
+      onClick={() => navigate(type === "tv" ? `/peliculas/search/tv/${tmdbId}` : `/peliculas/search/movie/${tmdbId}`)}
     >
       <div style={{ aspectRatio: "2/3", background: "#0a1020", flexShrink: 0 }}>
         {movie.poster_url ? (
@@ -93,7 +92,7 @@ function MobileSearchCard({ movie, onAdd }) {
     <div
       className="flex w-full cursor-pointer overflow-hidden"
       style={{ background: C.card, boxSizing: "border-box", ...MP }}
-      onClick={() => navigate(`/peliculas/search/movie/${tmdbId}?type=${type}`)}
+      onClick={() => navigate(type === "tv" ? `/peliculas/search/tv/${tmdbId}` : `/peliculas/search/movie/${tmdbId}`)}
     >
       <div style={{ width: 90, minHeight: 120, flexShrink: 0, background: "#0a1020" }}>
         {movie.poster_url ? (
@@ -154,7 +153,6 @@ function MobileSearchCard({ movie, onAdd }) {
 // ── Sort menu ─────────────────────────────────────────────────────────────────
 function SortMenu({ current, onChange, onClose }) {
   const menuRef = useRef(null);
-
   useEffect(() => {
     function h(e) {
       if (menuRef.current && !menuRef.current.contains(e.target)) onClose();
@@ -218,15 +216,16 @@ function SortMenu({ current, onChange, onClose }) {
 
 // ── Main ──────────────────────────────────────────────────────────────────────
 export default function IMDB() {
-  const [query, setQuery] = useState("");
   const navigate = useNavigate();
+
+  const [query, setQuery] = useState("");
   const [results, setResults] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [pendingMovie, setPendingMovie] = useState(null);
   const [filters, setFilters] = useState(DEFAULT_FILTERS);
   const [showFilter, setShowFilter] = useState(false);
   const [showSortMenu, setShowSortMenu] = useState(false);
-  const [sortBy, setSortBy] = useState(null); // e.g. "popularity_desc"
+  const [sortBy, setSortBy] = useState(null);
   const [genres, setGenres] = useState([]);
   const [hasActiveFilters, setHasActiveFilters] = useState(false);
 
@@ -244,7 +243,11 @@ export default function IMDB() {
   const sortBtnRef = useRef(null);
   const voteCountLevel = useRef(0);
 
+  // Ocultar buscador cuando hay película/serie abierta
   const isMovieOpen = useMatch("/peliculas/search/movie/:id");
+  const isSerieOpen = useMatch("/peliculas/search/tv/:id");
+  const isEpisodeOpen = useMatch("/peliculas/search/tv/:id/season/:season/episode/:ep");
+  const isContentOpen = isMovieOpen || isSerieOpen || isEpisodeOpen;
 
   useEffect(() => {
     activeFiltersRef.current = filters;
@@ -252,22 +255,6 @@ export default function IMDB() {
   useEffect(() => {
     fetchGenres().then(setGenres);
     triggerSearch(true);
-  }, []);
-  // Restaurar estado guardado al volver
-  useEffect(() => {
-    const saved = sessionStorage.getItem("imdb_state");
-    if (saved) {
-      const s = JSON.parse(saved);
-      setQuery(s.query ?? "");
-      setFilters(s.filters ?? DEFAULT_FILTERS);
-      setSortBy(s.sortBy ?? null);
-      currentQuery.current = s.query ?? "";
-      currentSortBy.current = s.sortBy ?? null;
-      activeFiltersRef.current = s.filters ?? DEFAULT_FILTERS;
-      setHasActiveFilters(checkHasFilters(s.filters ?? DEFAULT_FILTERS));
-      sessionStorage.removeItem("imdb_state");
-      // El fetch y scroll se hacen después de que los resultados se restauren
-    }
   }, []);
 
   function checkHasFilters(f) {
@@ -287,9 +274,7 @@ export default function IMDB() {
     if (f.countryName) p.countryName = f.countryName;
     if (f.type !== "all") p.type = f.type;
     if (currentSortBy.current) p.sortBy = currentSortBy.current;
-    if (currentSortBy.current?.startsWith("rating")) {
-      p.voteCountLevel = voteCountLevel.current;
-    }
+    if (currentSortBy.current?.startsWith("rating")) p.voteCountLevel = voteCountLevel.current;
     return p;
   }
 
@@ -373,9 +358,9 @@ export default function IMDB() {
     movieHasMore.current = null;
     tvHasMore.current = null;
     renderedIds.current = new Set();
+    voteCountLevel.current = 0;
     removeSentinel();
     setResults([]);
-    voteCountLevel.current = 0;
   }
 
   function triggerSearch(initial = false) {
@@ -400,26 +385,14 @@ export default function IMDB() {
     fetchPage();
   }
 
-  function saveState() {
-    sessionStorage.setItem(
-      "imdb_state",
-      JSON.stringify({
-        query,
-        filters,
-        sortBy,
-      }),
-    );
-  }
-
-  // Label del botón sort
   const sortOption = SORT_OPTIONS.find((o) => o.key === sortBy);
   const sortLabel = sortOption ? `${sortOption.label} ${sortOption.dir}` : "Sort";
   const sortActive = !!sortBy;
 
   return (
     <div style={{ minHeight: "100vh", background: C.bg, ...MP, width: "100%", boxSizing: "border-box" }}>
-      {/* Contenido del buscador — se oculta cuando hay película abierta */}
-      <div style={{ display: isMovieOpen ? "none" : "block" }}>
+      {/* Buscador — oculto cuando hay contenido abierto */}
+      <div style={{ display: isContentOpen ? "none" : "block" }}>
         {/* Search bar */}
         <div
           style={{
@@ -543,12 +516,12 @@ export default function IMDB() {
             <>
               <div className="flex flex-col sm:hidden" style={{ gap: 8, width: "100%", boxSizing: "border-box" }}>
                 {results.map((item) => (
-                  <MobileSearchCard key={`${item.tmdb_id}_${item.type}`} movie={item} onAdd={() => setPendingMovie(item)} onBeforeNavigate={saveState} />
+                  <MobileSearchCard key={`${item.tmdb_id}_${item.type}`} movie={item} onAdd={() => setPendingMovie(item)} />
                 ))}
               </div>
               <div className="hidden sm:grid" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(130px, 1fr))", gap: 12 }}>
                 {results.map((item) => (
-                  <DesktopSearchCard key={`${item.tmdb_id}_${item.type}`} movie={item} onAdd={() => setPendingMovie(item)} onBeforeNavigate={saveState} />
+                  <DesktopSearchCard key={`${item.tmdb_id}_${item.type}`} movie={item} onAdd={() => setPendingMovie(item)} />
                 ))}
               </div>
             </>
@@ -561,7 +534,7 @@ export default function IMDB() {
         {pendingMovie && <AddToListModal movie={pendingMovie} onClose={() => setPendingMovie(null)} />}
       </div>
 
-      {/* Película se renderiza acá encima */}
+      {/* Contenido (película o serie) se renderiza acá */}
       <Outlet />
     </div>
   );
