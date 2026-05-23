@@ -205,6 +205,10 @@ export default function Movie() {
   const myReview = reviews.find((r) => r.user_id === userId) ?? null;
 
   useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
+  useEffect(() => {
     load();
   }, [tmdbId, type]);
 

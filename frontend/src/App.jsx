@@ -4,7 +4,7 @@ import PersonalRoute from "./components/shared/PersonalRoute";
 import PeliculasLayout from "./components/shared/PeliculasLayout";
 
 import Login from "./pages/auth/Login";
-import Profile from "./pages/Profile";
+import Profile from "./pages/peliculas/Profile";
 
 import PeliculasIndex from "./pages/peliculas/PeliculasIndex";
 import Lists from "./pages/peliculas/Lists";
@@ -56,10 +56,10 @@ export default function App() {
             </Route>
           </Route>
 
+          <Route path="/peliculas/profile" element={<Profile />} />
           <Route path="/peliculas/person" element={<Person />} />
           <Route path="/peliculas/cast" element={<Cast />} />
-          <Route path="/profile" element={<Profile />} />
-          <Route path="/reviews" element={<Reviews />} />
+          <Route path="/peliculas/reviews" element={<Reviews />} />
           <Route path="/watching" element={<Watching />} />
           <Route path="/hidden" element={<Hidden />} />
         </Route>

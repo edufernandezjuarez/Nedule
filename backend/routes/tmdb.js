@@ -667,4 +667,19 @@ function getCountryCodes(continents, countryName) {
   return [...codes];
 }
 
+// GET /api/tmdb/season-thumb/:tmdbId/:season
+router.get("/season-thumb/:tmdbId/:season", async (req, res) => {
+  const { tmdbId, season } = req.params;
+  try {
+    const url = `https://api.themoviedb.org/3/tv/${tmdbId}/season/${season}?api_key=${process.env.TMDB_API_KEY}&language=es`;
+    const response = await fetch(url);
+    const data = await response.json();
+    const ep1 = data.episodes?.[0];
+    const thumb = ep1?.still_path ? `https://image.tmdb.org/t/p/w300${ep1.still_path}` : null;
+    res.json({ thumb });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 module.exports = router;

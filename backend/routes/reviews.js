@@ -2,6 +2,25 @@ const express = require("express");
 const router = express.Router();
 const pool = require("../db");
 
+// GET /api/reviews/user/:userId
+// Trae todas las reviews (serie general + temporadas)
+router.get("/user/:userId", async (req, res) => {
+  const { userId } = req.params;
+  try {
+    const result = await pool.query(
+      `SELECT r.*, m.title, m.year, m.poster_url, m.imdb_id, m.media_type
+       FROM reviews r
+       JOIN movies m ON r.movie_id = m.id
+       WHERE r.user_id = $1
+       ORDER BY r.created_at DESC`,
+      [userId],
+    );
+    res.json(result.rows);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // GET /api/reviews/:tmdbId
 // ?season=N  → reviews de esa temporada
 // sin season → reviews de la serie/peli en general (season IS NULL)
@@ -42,11 +61,13 @@ router.post("/:tmdbId", async (req, res) => {
   const { user_id, rating, comment, title, year, poster_url, season } = req.body;
   try {
     const movie = await pool.query(
-      `INSERT INTO movies (imdb_id, title, year, poster_url)
-       VALUES ($1, $2, $3, $4)
-       ON CONFLICT (imdb_id) DO UPDATE SET title = EXCLUDED.title
-       RETURNING *`,
-      [`tmdb_${tmdbId}`, title, year, poster_url],
+      `INSERT INTO movies (imdb_id, title, year, poster_url, media_type)
+   VALUES ($1, $2, $3, $4, $5)
+   ON CONFLICT (imdb_id) DO UPDATE 
+     SET title = EXCLUDED.title,
+         media_type = EXCLUDED.media_type
+   RETURNING *`,
+      [`tmdb_${tmdbId}`, title, year, poster_url, req.body.media_type ?? null],
     );
     const seasonVal = season ?? null;
     const result = await pool.query(
@@ -86,25 +107,6 @@ router.delete("/:tmdbId/:userId", async (req, res) => {
       );
     }
     res.json({ success: true });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// GET /api/reviews/user/:userId
-// Solo reviews generales (season IS NULL) para el historial
-router.get("/user/:userId", async (req, res) => {
-  const { userId } = req.params;
-  try {
-    const result = await pool.query(
-      `SELECT r.*, m.title, m.year, m.poster_url, m.imdb_id, m.media_type
-       FROM reviews r
-       JOIN movies m ON r.movie_id = m.id
-       WHERE r.user_id = $1 AND r.season IS NULL
-       ORDER BY r.created_at DESC`,
-      [userId],
-    );
-    res.json(result.rows);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

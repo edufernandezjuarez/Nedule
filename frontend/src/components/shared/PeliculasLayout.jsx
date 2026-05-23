@@ -61,11 +61,19 @@ export default function PeliculasLayout() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [showUserMenu, setShowUserMenu] = useState(false);
-  const menuRef = useRef(null);
+
+  // FIX: un solo ref que cubre tanto el botón como el dropdown en desktop
+  const desktopMenuRef = useRef(null);
+  // FIX: ref separado para mobile que cubre botón + dropdown
+  const mobileMenuRef = useRef(null);
 
   useEffect(() => {
     function handler(e) {
-      if (menuRef.current && !menuRef.current.contains(e.target)) setShowUserMenu(false);
+      const inDesktop = desktopMenuRef.current?.contains(e.target);
+      const inMobile = mobileMenuRef.current?.contains(e.target);
+      if (!inDesktop && !inMobile) {
+        setShowUserMenu(false);
+      }
     }
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
@@ -75,6 +83,27 @@ export default function PeliculasLayout() {
     logout();
     navigate("/login");
   }
+
+  function handleProfile() {
+    navigate("/peliculas/profile");
+    setShowUserMenu(false);
+  }
+
+  function handleReviews() {
+    navigate("/peliculas/reviews");
+    setShowUserMenu(false);
+  }
+
+  function handleWatching() {
+    navigate("/watching");
+    setShowUserMenu(false);
+  }
+
+  function handleHidden() {
+    navigate("/hidden");
+    setShowUserMenu(false);
+  }
+
   const initial = user?.[0]?.toUpperCase() ?? "?";
 
   return (
@@ -114,8 +143,8 @@ export default function PeliculasLayout() {
           ))}
         </nav>
 
-        {/* User button */}
-        <div className="relative ml-auto flex-shrink-0" ref={menuRef}>
+        {/* FIX: ref cubre el botón Y el dropdown juntos */}
+        <div className="relative ml-auto flex-shrink-0" ref={desktopMenuRef}>
           <button
             onClick={() => setShowUserMenu((v) => !v)}
             className="flex items-center gap-2 px-3 py-1.5 rounded-full hover:opacity-90 transition-opacity"
@@ -136,40 +165,28 @@ export default function PeliculasLayout() {
               style={{ background: "#151c2e", border: "1px solid rgba(255,255,255,0.08)" }}
             >
               <button
-                onClick={() => {
-                  navigate("/profile");
-                  setShowUserMenu(false);
-                }}
+                onClick={handleProfile}
                 className="w-full text-left px-4 py-2.5 text-sm hover:bg-white/5 transition-colors"
                 style={{ color: C.white, fontWeight: 600, ...MP }}
               >
                 {user}
               </button>
               <button
-                onClick={() => {
-                  navigate("/reviews");
-                  setShowUserMenu(false);
-                }}
+                onClick={handleReviews}
                 className="w-full text-left px-4 py-2.5 text-sm hover:bg-white/5 transition-colors"
                 style={{ color: C.gray, ...MP }}
               >
                 Historial reviews
               </button>
               <button
-                onClick={() => {
-                  navigate("/watching");
-                  setShowUserMenu(false);
-                }}
+                onClick={handleWatching}
                 className="w-full text-left px-4 py-2.5 text-sm hover:bg-white/5 transition-colors"
                 style={{ color: C.gray, ...MP }}
               >
                 Mirando
               </button>
               <button
-                onClick={() => {
-                  navigate("/hidden");
-                  setShowUserMenu(false);
-                }}
+                onClick={handleHidden}
                 className="w-full text-left px-4 py-2.5 text-sm hover:bg-white/5 transition-colors"
                 style={{ color: C.gray, ...MP }}
               >
@@ -194,7 +211,12 @@ export default function PeliculasLayout() {
       </main>
 
       {/* ── Mobile Bottom Nav ── */}
-      <nav className="sm:hidden fixed bottom-0 left-0 right-0 z-40" style={{ background: C.navbar, borderTop: "1px solid rgba(255,255,255,0.06)" }}>
+      {/* FIX: ref cubre toda la nav incluyendo el botón de usuario y el dropdown */}
+      <nav
+        className="sm:hidden fixed bottom-0 left-0 right-0 z-40"
+        style={{ background: C.navbar, borderTop: "1px solid rgba(255,255,255,0.06)" }}
+        ref={mobileMenuRef}
+      >
         <div className="flex items-center justify-around px-2 py-2">
           {[
             { to: "/peliculas", label: "Home", Icon: HomeIcon, end: true },
@@ -237,51 +259,22 @@ export default function PeliculasLayout() {
           </button>
         </div>
 
-        {/* Mobile user menu */}
+        {/* Mobile user menu — dentro del mismo ref */}
         {showUserMenu && (
           <div
             className="absolute bottom-full left-0 right-0 rounded-t-2xl shadow-2xl py-2"
             style={{ background: "#151c2e", borderTop: "1px solid rgba(255,255,255,0.08)" }}
-            ref={menuRef}
           >
-            <button
-              onClick={() => {
-                navigate("/profile");
-                setShowUserMenu(false);
-              }}
-              className="w-full text-left px-5 py-3 text-sm font-semibold hover:bg-white/5"
-              style={{ color: C.white, ...MP }}
-            >
+            <button onClick={handleProfile} className="w-full text-left px-5 py-3 text-sm font-semibold hover:bg-white/5" style={{ color: C.white, ...MP }}>
               {user}
             </button>
-            <button
-              onClick={() => {
-                navigate("/reviews");
-                setShowUserMenu(false);
-              }}
-              className="w-full text-left px-5 py-3 text-sm hover:bg-white/5"
-              style={{ color: C.gray, ...MP }}
-            >
+            <button onClick={handleReviews} className="w-full text-left px-5 py-3 text-sm hover:bg-white/5" style={{ color: C.gray, ...MP }}>
               Historial reviews
             </button>
-            <button
-              onClick={() => {
-                navigate("/watching");
-                setShowUserMenu(false);
-              }}
-              className="w-full text-left px-5 py-3 text-sm hover:bg-white/5"
-              style={{ color: C.gray, ...MP }}
-            >
+            <button onClick={handleWatching} className="w-full text-left px-5 py-3 text-sm hover:bg-white/5" style={{ color: C.gray, ...MP }}>
               Mirando
             </button>
-            <button
-              onClick={() => {
-                navigate("/hidden");
-                setShowUserMenu(false);
-              }}
-              className="w-full text-left px-5 py-3 text-sm hover:bg-white/5"
-              style={{ color: C.gray, ...MP }}
-            >
+            <button onClick={handleHidden} className="w-full text-left px-5 py-3 text-sm hover:bg-white/5" style={{ color: C.gray, ...MP }}>
               Hidden
             </button>
             <div className="h-px my-1" style={{ background: "rgba(255,255,255,0.06)" }} />

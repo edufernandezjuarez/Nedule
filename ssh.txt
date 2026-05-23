@@ -19,4 +19,8 @@ npm run dev
 cd C:\Users\Edu\Desktop\vite+react\Nedule\backend
 node server.js
 
-
+//limpieza de base de datos
+DELETE FROM movies
+WHERE id NOT IN (SELECT DISTINCT movie_id FROM list_movies)
+  AND id NOT IN (SELECT DISTINCT movie_id FROM reviews)
+  AND id NOT IN (SELECT DISTINCT movie_id FROM series_progress);

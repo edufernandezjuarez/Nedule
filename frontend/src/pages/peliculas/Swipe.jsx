@@ -618,6 +618,10 @@ export default function Swipe() {
     navigate(item.type === "tv" ? `/peliculas/swipe/tv/${item.tmdb_id}` : `/peliculas/swipe/movie/${item.tmdb_id}`);
   }
 
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
   async function fetchNext() {
     setLoading(true);
     setCurrent(null);

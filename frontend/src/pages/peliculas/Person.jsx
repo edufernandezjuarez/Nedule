@@ -230,6 +230,10 @@ export default function Person() {
   const sentinelRef = useRef(null);
 
   useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
+  useEffect(() => {
     init();
   }, [personIdParam, personName]);
 

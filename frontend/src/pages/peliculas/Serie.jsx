@@ -207,7 +207,7 @@ function OptionsMenu({ onReview, onClose }) {
 
 function ReviewCard({ r, userId, onDelete }) {
   return (
-    <div style={{ background: C.card, borderRadius: 14, padding: "14px 16px" }}>
+    <div style={{ background: C.card, borderRadius: 14, padding: "14px 16px", overflow: "hidden", minWidth: 0 }}>
       <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
         <span
           style={{
@@ -255,7 +255,7 @@ function ReviewCard({ r, userId, onDelete }) {
         <Stars rating={r.rating} />
         <span style={{ color: C.gray, fontSize: 12 }}>{r.rating}/10</span>
       </div>
-      {r.comment && <p style={{ color: C.white, fontSize: 13, margin: 0, lineHeight: 1.5 }}>{r.comment}</p>}
+      {r.comment && <p style={{ color: C.white, fontSize: 13, margin: 0, lineHeight: 1.5, wordBreak: "break-word", overflowWrap: "anywhere" }}>{r.comment}</p>}
     </div>
   );
 }
@@ -404,8 +404,13 @@ export default function Serie() {
   const isEpisodeOpen = isEpisodeOpenSearch || isEpisodeOpenDirect;
 
   useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
+  useEffect(() => {
     loadSerie();
   }, [tmdbId]);
+
   useEffect(() => {
     if (serie) loadSeason(selectedSeason);
   }, [selectedSeason, serie]);
@@ -469,7 +474,7 @@ export default function Serie() {
   const watchedInSelectedSeason = progressMap[selectedSeason] ?? 0;
 
   async function handleSubmitSerieReview(rating, comment) {
-    await submitReview(tmdbId, { user_id: userId, rating, comment, title: serie.title, year: serie.year, poster_url: serie.poster_url });
+    await submitReview(tmdbId, { user_id: userId, rating, comment, title: serie.title, year: serie.year, poster_url: serie.poster_url, media_type: "tv" });
     setShowSerieReview(false);
     setSerieReviews(await fetchReviews(tmdbId));
   }
@@ -486,6 +491,7 @@ export default function Serie() {
       title: serie.title,
       year: serie.year,
       poster_url: serie.poster_url,
+      media_type: "tv",
     });
     setShowSeasonReview(false);
     setSeasonReviews(await fetchReviews(tmdbId, selectedSeason));
