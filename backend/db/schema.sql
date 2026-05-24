@@ -57,3 +57,11 @@ CREATE TABLE hidden_titles (
   hidden_at  TIMESTAMP DEFAULT NOW(),
   UNIQUE (user_id, tmdb_id)
 );
+CREATE TABLE watched (
+  id         SERIAL PRIMARY KEY,
+  user_id    INTEGER REFERENCES users(id),
+  movie_id   INTEGER REFERENCES movies(id) ON DELETE CASCADE,
+  watched_at TIMESTAMP DEFAULT NOW(),
+  genre_ids INTEGER[] DEFAULT '{}';
+  UNIQUE (user_id, movie_id)
+);

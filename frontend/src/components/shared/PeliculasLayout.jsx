@@ -104,6 +104,10 @@ export default function PeliculasLayout() {
     setShowUserMenu(false);
   }
 
+  function handleWatched() {
+    navigate("/peliculas/watched");
+    setShowUserMenu(false);
+  }
   const initial = user?.[0]?.toUpperCase() ?? "?";
 
   return (
@@ -177,6 +181,13 @@ export default function PeliculasLayout() {
                 style={{ color: C.gray, ...MP }}
               >
                 Historial reviews
+              </button>
+              <button
+                onClick={handleWatched}
+                className="w-full text-left px-4 py-2.5 text-sm hover:bg-white/5 transition-colors"
+                style={{ color: C.gray, ...MP }}
+              >
+                Vistos
               </button>
               <button
                 onClick={handleWatching}
@@ -270,6 +281,9 @@ export default function PeliculasLayout() {
             </button>
             <button onClick={handleReviews} className="w-full text-left px-5 py-3 text-sm hover:bg-white/5" style={{ color: C.gray, ...MP }}>
               Historial reviews
+            </button>
+            <button onClick={handleWatched} className="w-full text-left px-5 py-3 text-sm hover:bg-white/5" style={{ color: C.gray, ...MP }}>
+              Vistos
             </button>
             <button onClick={handleWatching} className="w-full text-left px-5 py-3 text-sm hover:bg-white/5" style={{ color: C.gray, ...MP }}>
               Mirando

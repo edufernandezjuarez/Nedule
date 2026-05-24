@@ -1,7 +1,18 @@
 import { useState, useEffect, useRef } from "react";
 import { useParams, useSearchParams, useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
-import { fetchTmdbDetail, fetchReviews, submitReview, deleteReview as apiDeleteReview, fetchProgress, saveProgress, getUserId } from "../../api/index";
+import {
+  fetchTmdbDetail,
+  fetchReviews,
+  submitReview,
+  deleteReview as apiDeleteReview,
+  fetchProgress,
+  saveProgress,
+  getUserId,
+  markWatched,
+  unmarkWatched,
+  checkWatched,
+} from "../../api/index";
 import AddToListModal from "../../components/shared/AddToListModal";
 
 const C = {
@@ -127,7 +138,7 @@ function ReviewModal({ existingReview, onSubmit, onClose }) {
 }
 
 // ── Options dropdown ──────────────────────────────────────────────────────────
-function OptionsMenu({ onReview, onClose }) {
+function OptionsMenu({ onReview, onToggleWatched, isWatched, onClose }) {
   const ref = useRef(null);
   useEffect(() => {
     function h(e) {
@@ -180,7 +191,7 @@ function OptionsMenu({ onReview, onClose }) {
       }}
     >
       {btn("Review", C.white, onReview)}
-      {btn("Agregar a vistos", C.white, () => {})}
+      {btn(isWatched ? "Quitar de vistos" : "Agregar a vistos", C.white, onToggleWatched)}
       {btn("Hide", "#e05c5c", () => {})}
     </div>
   );
@@ -201,6 +212,7 @@ export default function Movie() {
   const [pendingMovie, setPendingMovie] = useState(null);
   const [showReviewModal, setShowReviewModal] = useState(false);
   const [showOptions, setShowOptions] = useState(false);
+  const [isWatched, setIsWatched] = useState(false);
 
   const myReview = reviews.find((r) => r.user_id === userId) ?? null;
 
@@ -220,6 +232,9 @@ export default function Movie() {
       const prog = await fetchProgress(tmdbId, userId);
       if (prog) setProgress({ season: prog.season, episode: prog.episode });
     }
+    // AGREGAR:
+    const { watched } = await checkWatched(userId, tmdbId);
+    setIsWatched(watched);
   }
 
   async function handleSubmitReview(rating, comment) {
@@ -244,6 +259,24 @@ export default function Movie() {
     const next = { ...progress, [field]: Math.max(1, progress[field] + delta) };
     setProgress(next);
     await saveProgress(tmdbId, { user_id: userId, ...next, title: movie.title, year: movie.year, poster_url: movie.poster_url });
+  }
+
+  async function handleToggleWatched() {
+    if (isWatched) {
+      await unmarkWatched(userId, tmdbId);
+      setIsWatched(false);
+    } else {
+      await markWatched({
+        user_id: userId,
+        tmdb_id: tmdbId,
+        title: movie.title,
+        year: movie.year,
+        poster_url: movie.poster_url,
+        media_type: type,
+        genre_ids: movie.genre_ids ?? [],
+      });
+      setIsWatched(true);
+    }
   }
 
   if (!movie) {
@@ -366,6 +399,12 @@ export default function Movie() {
               {/* Title + options */}
               <div style={{ display: "flex", alignItems: "flex-start", gap: 8, marginBottom: 6 }}>
                 <h1 style={{ color: C.white, fontWeight: 800, fontSize: "clamp(1.1rem, 4vw, 2rem)", lineHeight: 1.2, margin: 0, flex: 1 }}>{movie.title}</h1>
+                {isWatched && (
+                  <svg viewBox="0 0 24 24" fill="none" width={22} height={22} stroke={C.yellow} strokeWidth={2} style={{ flexShrink: 0 }}>
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                    <circle cx="12" cy="12" r="3" />
+                  </svg>
+                )}
                 <div style={{ position: "relative", flexShrink: 0, marginTop: 4 }}>
                   <button
                     onClick={() => setShowOptions((v) => !v)}
@@ -386,7 +425,14 @@ export default function Movie() {
                   >
                     ···
                   </button>
-                  {showOptions && <OptionsMenu onReview={() => setShowReviewModal(true)} onClose={() => setShowOptions(false)} />}
+                  {showOptions && (
+                    <OptionsMenu
+                      onReview={() => setShowReviewModal(true)}
+                      onToggleWatched={handleToggleWatched}
+                      isWatched={isWatched}
+                      onClose={() => setShowOptions(false)}
+                    />
+                  )}
                 </div>
               </div>
               {/* Meta */}

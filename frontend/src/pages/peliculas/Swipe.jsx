@@ -1,5 +1,17 @@
 import { useState, useEffect, useRef } from "react";
-import { fetchTmdbSwipe, postHidden, fetchGenres, getUserId, fetchLists, createList, addMovieToList } from "../../api/index";
+import {
+  fetchTmdbSwipe,
+  postHidden,
+  fetchGenres,
+  getUserId,
+  fetchLists,
+  createList,
+  addMovieToList,
+  markWatched,
+  markSeriesComplete,
+  fetchTmdbDetail,
+  fetchTvSeason,
+} from "../../api/index";
 import { useAuth } from "../../hooks/useAuth";
 import { useIsMobile } from "../../hooks/useIsMobile";
 import AddToListModal from "../../components/shared/AddToListModal";
@@ -37,7 +49,6 @@ const DEFAULT_FILTERS = {
   countryName: "",
 };
 
-// ── Year Stepper ──────────────────────────────────────────────────────────────
 function YearStepper({ label, value, min, max, onChange }) {
   const btnStyle = {
     width: 26,
@@ -93,7 +104,6 @@ function YearStepper({ label, value, min, max, onChange }) {
   );
 }
 
-// ── Filter Panel ──────────────────────────────────────────────────────────────
 function FilterPanel({ local, setLocal, onApply, onClear, genres }) {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 20, ...MP }}>
@@ -244,7 +254,6 @@ function FilterPanel({ local, setLocal, onApply, onClear, genres }) {
   );
 }
 
-// ── Mobile Filter Sheet with swipe-to-dismiss ─────────────────────────────────
 function FilterSheet({ localFilters, setLocalFilters, onApply, onClear, onDismiss, genres }) {
   const sheetRef = useRef(null);
   const sheetGesture = useRef({ active: false, startY: 0, dy: 0 });
@@ -252,28 +261,24 @@ function FilterSheet({ localFilters, setLocalFilters, onApply, onClear, onDismis
   function applySheetTranslate(dy, animated) {
     const el = sheetRef.current;
     if (!el) return;
-    const clamped = Math.max(0, dy);
     el.style.transition = animated ? "transform 0.3s ease" : "none";
-    el.style.transform = `translateY(${clamped}px)`;
+    el.style.transform = `translateY(${Math.max(0, dy)}px)`;
   }
 
   function onHandleTouchStart(e) {
     sheetGesture.current = { active: true, startY: e.touches[0].clientY, dy: 0 };
     applySheetTranslate(0, false);
   }
-
   function onHandleTouchMove(e) {
     if (!sheetGesture.current.active) return;
     const dy = e.touches[0].clientY - sheetGesture.current.startY;
     sheetGesture.current.dy = dy;
     applySheetTranslate(dy, false);
   }
-
   function onHandleTouchEnd() {
     if (!sheetGesture.current.active) return;
     sheetGesture.current.active = false;
-    const dy = sheetGesture.current.dy;
-    if (dy > 80) {
+    if (sheetGesture.current.dy > 80) {
       const el = sheetRef.current;
       if (el) {
         el.style.transition = "transform 0.25s ease";
@@ -284,7 +289,6 @@ function FilterSheet({ localFilters, setLocalFilters, onApply, onClear, onDismis
       applySheetTranslate(0, true);
     }
   }
-
   function onHandleTouchCancel() {
     sheetGesture.current.active = false;
     applySheetTranslate(0, true);
@@ -310,7 +314,6 @@ function FilterSheet({ localFilters, setLocalFilters, onApply, onClear, onDismis
           willChange: "transform",
         }}
       >
-        {/* Draggable handle zone */}
         <div
           onTouchStart={onHandleTouchStart}
           onTouchMove={onHandleTouchMove}
@@ -322,8 +325,6 @@ function FilterSheet({ localFilters, setLocalFilters, onApply, onClear, onDismis
             <div style={{ width: 40, height: 4, borderRadius: 2, background: "rgba(255,255,255,0.15)" }} />
           </div>
         </div>
-
-        {/* Scrollable content */}
         <div style={{ overflowY: "auto", flex: 1, padding: "8px 20px 32px" }}>
           <FilterPanel local={localFilters} setLocal={setLocalFilters} onApply={onApply} onClear={onClear} genres={genres} />
         </div>
@@ -332,12 +333,13 @@ function FilterSheet({ localFilters, setLocalFilters, onApply, onClear, onDismis
   );
 }
 
-// ── Swipeable Card ─────────────────────────────────────────────────────────────
-function SwipeCard({ current, loading, onSwipeRight, onSwipeLeft, onAddClick, onTitleClick }) {
+function SwipeCard({ current, loading, onSwipeRight, onSwipeLeft, onMarkWatched, onTitleClick }) {
   const cardRef = useRef(null);
   const gesture = useRef({ active: false, startX: 0, startY: 0, dx: 0, isHorizontal: null });
   const THRESHOLD = 80;
   const SCREEN_W = window.innerWidth;
+  const labelRightRef = useRef(null);
+  const labelLeftRef = useRef(null);
 
   function applyTransform(dx, animated) {
     const el = cardRef.current;
@@ -346,7 +348,6 @@ function SwipeCard({ current, loading, onSwipeRight, onSwipeLeft, onAddClick, on
     el.style.transform = `translateX(${dx}px) rotate(${dx * 0.06}deg)`;
     el.style.opacity = 1 - Math.min(Math.abs(dx) / (SCREEN_W * 0.8), 0.5);
   }
-
   function resetCard(animated) {
     const el = cardRef.current;
     if (!el) return;
@@ -354,7 +355,6 @@ function SwipeCard({ current, loading, onSwipeRight, onSwipeLeft, onAddClick, on
     el.style.transform = "translateX(0px) rotate(0deg)";
     el.style.opacity = "1";
   }
-
   function flyOut(direction) {
     const el = cardRef.current;
     if (!el) return;
@@ -362,10 +362,6 @@ function SwipeCard({ current, loading, onSwipeRight, onSwipeLeft, onAddClick, on
     el.style.transform = `translateX(${direction * SCREEN_W * 1.5}px) rotate(${direction * 30}deg)`;
     el.style.opacity = "0";
   }
-
-  const labelRightRef = useRef(null);
-  const labelLeftRef = useRef(null);
-
   function updateLabels(dx) {
     if (labelRightRef.current) labelRightRef.current.style.opacity = dx > 30 ? Math.min((dx - 30) / 80, 1) : 0;
     if (labelLeftRef.current) labelLeftRef.current.style.opacity = dx < -30 ? Math.min((-dx - 30) / 80, 1) : 0;
@@ -377,7 +373,6 @@ function SwipeCard({ current, loading, onSwipeRight, onSwipeLeft, onAddClick, on
     gesture.current = { active: true, startX: t.clientX, startY: t.clientY, dx: 0, isHorizontal: null };
     applyTransform(0, false);
   }
-
   function onTouchMove(e) {
     if (!gesture.current.active) return;
     const dx = e.touches[0].clientX - gesture.current.startX;
@@ -392,7 +387,6 @@ function SwipeCard({ current, loading, onSwipeRight, onSwipeLeft, onAddClick, on
     applyTransform(dx, false);
     updateLabels(dx);
   }
-
   function onTouchEnd() {
     if (!gesture.current.active) return;
     gesture.current.active = false;
@@ -409,7 +403,6 @@ function SwipeCard({ current, loading, onSwipeRight, onSwipeLeft, onAddClick, on
       updateLabels(0);
     }
   }
-
   function onTouchCancel() {
     gesture.current.active = false;
     resetCard(true);
@@ -512,7 +505,6 @@ function SwipeCard({ current, loading, onSwipeRight, onSwipeLeft, onAddClick, on
       >
         SKIP ✕
       </div>
-
       <div style={{ aspectRatio: "2/3", overflow: "hidden", background: "#1a1a2e" }}>
         {current.poster_url ? (
           <img src={current.poster_url} alt={current.title} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} draggable={false} />
@@ -533,7 +525,6 @@ function SwipeCard({ current, loading, onSwipeRight, onSwipeLeft, onAddClick, on
           </div>
         )}
       </div>
-
       <div style={{ padding: "14px 16px 16px" }}>
         <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 8, marginBottom: 6 }}>
           <h2
@@ -543,7 +534,7 @@ function SwipeCard({ current, loading, onSwipeRight, onSwipeLeft, onAddClick, on
             {current.title}
           </h2>
           <button
-            onClick={() => onAddClick(current)}
+            onClick={() => onMarkWatched(current)}
             style={{
               flexShrink: 0,
               padding: "6px 16px",
@@ -587,7 +578,6 @@ function SwipeCard({ current, loading, onSwipeRight, onSwipeLeft, onAddClick, on
   );
 }
 
-// ── Main ──────────────────────────────────────────────────────────────────────
 export default function Swipe() {
   const { user } = useAuth();
   const isMobile = useIsMobile();
@@ -647,6 +637,42 @@ export default function Swipe() {
     setLoading(false);
   }
 
+  async function handleMarkWatched(item) {
+    const userId = getUserId(user);
+
+    // Avanzar inmediatamente sin esperar
+    fetchNext();
+
+    // Lógica en background — no await
+    if (item.type === "movie") {
+      markWatched({
+        user_id: userId,
+        tmdb_id: item.tmdb_id,
+        title: item.title,
+        year: item.year,
+        poster_url: item.poster_url,
+        media_type: "movie",
+        genre_ids: item.genre_ids ?? [],
+      });
+    } else {
+      fetchTmdbDetail(item.tmdb_id, "tv").then(async (detail) => {
+        const seasonPromises = Array.from({ length: detail.number_of_seasons }, (_, i) => fetchTvSeason(item.tmdb_id, i + 1));
+        const seasons = await Promise.all(seasonPromises);
+        const season_episode_counts = {};
+        seasons.forEach((s, i) => {
+          season_episode_counts[i + 1] = s.episodes?.length ?? 0;
+        });
+        await markSeriesComplete(userId, item.tmdb_id, {
+          title: item.title,
+          year: item.year,
+          poster_url: item.poster_url,
+          season_episode_counts,
+          genre_ids: item.genre_ids ?? [],
+        });
+      });
+    }
+  }
+
   async function addToSwipeList() {
     if (!current) return;
     const userId = getUserId(user);
@@ -659,6 +685,13 @@ export default function Swipe() {
       { tmdb_id: current.tmdb_id, title: current.title, year: current.year, poster_url: current.poster_url, rating: current.rating, type: current.type },
       userId,
     );
+    fetchNext();
+  }
+
+  async function handleHide() {
+    if (!current) return;
+    const userId = getUserId(user);
+    await postHidden({ user_id: userId, tmdb_id: current.tmdb_id, title: current.title, poster_url: current.poster_url, media_type: current.type });
     fetchNext();
   }
 
@@ -679,16 +712,8 @@ export default function Swipe() {
     seenIds.current = new Set();
     fetchNext();
   }
-
   function clearFilters() {
     applyFilters({ ...DEFAULT_FILTERS });
-  }
-
-  async function handleHide() {
-    if (!current) return;
-    const userId = getUserId(user);
-    await postHidden({ user_id: userId, tmdb_id: current.tmdb_id, title: current.title, poster_url: current.poster_url, media_type: current.type });
-    fetchNext();
   }
 
   const childOverlay = hasChildRoute ? (
@@ -697,7 +722,6 @@ export default function Swipe() {
     </div>
   ) : null;
 
-  // ── Desktop card content ────────────────────────────────────────────────────
   function DesktopCardContent() {
     if (loading)
       return (
@@ -773,7 +797,7 @@ export default function Swipe() {
               {current.title}
             </h2>
             <button
-              onClick={() => setPendingAdd(current)}
+              onClick={() => handleMarkWatched(current)}
               style={{
                 flexShrink: 0,
                 padding: "6px 16px",
@@ -817,7 +841,6 @@ export default function Swipe() {
     );
   }
 
-  // ── Mobile layout ───────────────────────────────────────────────────────────
   if (isMobile) {
     return (
       <>
@@ -896,18 +919,16 @@ export default function Swipe() {
               </button>
             </div>
           </div>
-
           <div style={{ padding: "0 48px 16px" }}>
             <SwipeCard
               current={current}
               loading={loading}
               onSwipeRight={addToSwipeList}
               onSwipeLeft={fetchNext}
-              onAddClick={setPendingAdd}
+              onMarkWatched={handleMarkWatched}
               onTitleClick={handleTitleClick}
             />
           </div>
-
           {showFilterSheet && (
             <FilterSheet
               localFilters={localFilters}
@@ -918,7 +939,6 @@ export default function Swipe() {
               genres={genres}
             />
           )}
-
           {pendingAdd && <AddToListModal movie={pendingAdd} onClose={() => setPendingAdd(null)} />}
         </div>
         {childOverlay}
@@ -926,14 +946,12 @@ export default function Swipe() {
     );
   }
 
-  // ── Desktop layout ──────────────────────────────────────────────────────────
   return (
     <>
       <div style={{ minHeight: "100vh", background: C.bg, display: "flex", ...MP }}>
         <div style={{ width: 400, flexShrink: 0, borderRight: "1px solid rgba(255,255,255,0.07)", padding: "24px 20px", overflowY: "auto", background: C.bg }}>
           <FilterPanel local={localFilters} setLocal={setLocalFilters} onApply={applyFilters} onClear={clearFilters} genres={genres} />
         </div>
-
         <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "32px 24px", gap: 24 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 32, width: "100%", maxWidth: 800 }}>
             <button
@@ -995,7 +1013,6 @@ export default function Swipe() {
             Hide
           </button>
         </div>
-
         {pendingAdd && <AddToListModal movie={pendingAdd} onClose={() => setPendingAdd(null)} />}
       </div>
       {childOverlay}

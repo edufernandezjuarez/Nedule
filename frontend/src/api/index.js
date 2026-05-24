@@ -160,3 +160,43 @@ export async function fetchTmdbSwipe(params) {
   const res = await fetch(`${API}/tmdb/swipe?${new URLSearchParams(params)}`);
   return res.json();
 }
+
+// ── Watched ────────────────────────────────────────────────────────────────
+
+export async function fetchWatched(userId) {
+  const res = await fetch(`${API}/watched/${userId}`);
+  return res.json();
+}
+
+export async function markWatched(payload) {
+  const res = await fetch(`${API}/watched`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  return res.json();
+}
+
+export async function unmarkWatched(userId, tmdbId) {
+  await fetch(`${API}/watched/${userId}/${tmdbId}`, { method: "DELETE" });
+}
+
+export async function checkWatched(userId, tmdbId) {
+  const res = await fetch(`${API}/watched/${userId}/check/${tmdbId}`);
+  return res.json();
+}
+export async function markSeriesComplete(userId, tmdbId, { title, year, poster_url, season_episode_counts, genre_ids }) {
+  const res = await fetch(`${API}/watched/series/complete`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ user_id: userId, tmdb_id: tmdbId, title, year, poster_url, season_episode_counts, genre_ids }),
+  });
+  return res.json();
+}
+
+export async function unmarkSeriesComplete(userId, tmdbId) {
+  const res = await fetch(`${API}/watched/series/complete/${userId}/${tmdbId}`, {
+    method: "DELETE",
+  });
+  return res.json();
+}

@@ -32,3 +32,5 @@ app.use("/api/auth", authRouter);
 
 const hiddenRouter = require("./routes/hidden");
 app.use("/api/hidden", hiddenRouter);
+
+app.use("/api/watched", require("./routes/watched"));

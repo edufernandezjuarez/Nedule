@@ -21,6 +21,12 @@ node server.js
 
 //limpieza de base de datos
 DELETE FROM movies
-WHERE id NOT IN (SELECT DISTINCT movie_id FROM list_movies)
-  AND id NOT IN (SELECT DISTINCT movie_id FROM reviews)
-  AND id NOT IN (SELECT DISTINCT movie_id FROM series_progress);
+WHERE id NOT IN (
+  SELECT movie_id FROM list_movies
+  UNION
+  SELECT movie_id FROM reviews
+  UNION
+  SELECT movie_id FROM series_progress
+  UNION
+  SELECT movie_id FROM watched
+);

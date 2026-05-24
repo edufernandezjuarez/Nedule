@@ -10,6 +10,11 @@ import {
   saveProgress,
   getUserId,
   fetchTvSeason,
+  markWatched,
+  unmarkWatched,
+  deleteProgress,
+  markSeriesComplete,
+  unmarkSeriesComplete,
 } from "../../api/index";
 import AddToListModal from "../../components/shared/AddToListModal";
 
@@ -145,7 +150,7 @@ function ReviewModal({ existingReview, onSubmit, onClose }) {
   );
 }
 
-function OptionsMenu({ onReview, onClose }) {
+function OptionsMenu({ onReview, onToggleWatched, isWatched, onClose }) {
   const ref = useRef(null);
   useEffect(() => {
     function h(e) {
@@ -172,7 +177,7 @@ function OptionsMenu({ onReview, onClose }) {
     >
       {[
         { label: "Review", color: C.white, onClick: onReview },
-        { label: "Agregar a vistos", color: C.white, onClick: () => {} },
+        { label: isWatched ? "Quitar de vistos" : "Agregar a vistos", color: C.white, onClick: onToggleWatched },
         { label: "Hide", color: "#e05c5c", onClick: () => {} },
       ].map(({ label, color, onClick }) => (
         <button
@@ -395,6 +400,7 @@ export default function Serie() {
   const [showSerieReview, setShowSerieReview] = useState(false);
   const [showSeasonReview, setShowSeasonReview] = useState(false);
   const [showOptions, setShowOptions] = useState(false);
+  const [isWatched, setIsWatched] = useState(false);
 
   const mySerieReview = serieReviews.find((r) => r.user_id === userId) ?? null;
   const mySeasonReview = seasonReviews.find((r) => r.user_id === userId) ?? null;
@@ -431,6 +437,18 @@ export default function Serie() {
       setTrackerEpisode(latest.episode);
       setSelectedSeason(latest.season);
     }
+
+    if (serieData?.number_of_seasons) {
+      const seasonPromises = Array.from({ length: serieData.number_of_seasons }, (_, i) => fetchTvSeason(tmdbId, i + 1));
+      const seasons = await Promise.all(seasonPromises);
+      seasons.forEach((s, i) => {
+        episodeCountRef.current[i + 1] = s.episodes?.length ?? 0;
+      });
+    }
+
+    const totalEps = Object.values(episodeCountRef.current).reduce((a, b) => a + b, 0);
+    const watchedEps = (progressRows ?? []).reduce((a, r) => a + Number(r.episode), 0);
+    setIsWatched(totalEps > 0 && watchedEps >= totalEps);
   }
 
   async function loadSeason(season) {
@@ -447,7 +465,6 @@ export default function Serie() {
     if (field === "season") {
       const newSeason = Math.max(1, Math.min(trackerSeason + delta, maxSeason));
       if (newSeason === trackerSeason) return;
-      await persistProgress(trackerSeason, trackerEpisode);
       setTrackerSeason(newSeason);
     } else {
       const maxEp = episodeCountRef.current[trackerSeason] ?? 999;
@@ -465,7 +482,35 @@ export default function Serie() {
       else next[season] = episode;
       return next;
     });
-    await saveProgress(tmdbId, { user_id: userId, season, episode, title: serie.title, year: serie.year, poster_url: serie.poster_url });
+    await saveProgress(tmdbId, {
+      user_id: userId,
+      season,
+      episode,
+      title: serie.title,
+      year: serie.year,
+      poster_url: serie.poster_url,
+      media_type: "tv",
+      season_episode_counts: episodeCountRef.current,
+    });
+  }
+
+  async function handleToggleWatched() {
+    if (isWatched) {
+      await unmarkSeriesComplete(userId, tmdbId);
+      setProgressMap({});
+      setTrackerEpisode(0);
+      setIsWatched(false);
+    } else {
+      await markSeriesComplete(userId, tmdbId, {
+        title: serie.title,
+        year: serie.year,
+        poster_url: serie.poster_url,
+        season_episode_counts: episodeCountRef.current,
+        genre_ids: serie.genre_ids ?? [],
+      });
+      setProgressMap({ ...episodeCountRef.current });
+      setIsWatched(true);
+    }
   }
 
   const totalEpisodes = serie?.number_of_episodes ?? 0;
@@ -555,6 +600,7 @@ export default function Serie() {
       </div>
     );
   }
+
   return (
     <div style={{ minHeight: "100vh", background: C.bg, ...MP }}>
       <div style={{ display: isEpisodeOpen ? "none" : "block" }}>
@@ -614,6 +660,12 @@ export default function Serie() {
                 {/* Title + options */}
                 <div style={{ display: "flex", alignItems: "flex-start", gap: 8, marginBottom: 6 }}>
                   <h1 style={{ color: C.white, fontWeight: 800, fontSize: "clamp(1.1rem, 4vw, 2rem)", lineHeight: 1.2, margin: 0, flex: 1 }}>{serie.title}</h1>
+                  {isWatched && (
+                    <svg viewBox="0 0 24 24" fill="none" width={22} height={22} stroke={C.yellow} strokeWidth={2} style={{ flexShrink: 0 }}>
+                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                      <circle cx="12" cy="12" r="3" />
+                    </svg>
+                  )}
                   <div style={{ position: "relative", flexShrink: 0, marginTop: 4 }}>
                     <button
                       onClick={() => setShowOptions((v) => !v)}
@@ -634,7 +686,14 @@ export default function Serie() {
                     >
                       ···
                     </button>
-                    {showOptions && <OptionsMenu onReview={() => setShowSerieReview(true)} onClose={() => setShowOptions(false)} />}
+                    {showOptions && (
+                      <OptionsMenu
+                        onReview={() => setShowSerieReview(true)}
+                        onToggleWatched={handleToggleWatched}
+                        isWatched={isWatched}
+                        onClose={() => setShowOptions(false)}
+                      />
+                    )}
                   </div>
                 </div>
                 {/* Meta */}
@@ -656,7 +715,7 @@ export default function Serie() {
               </div>
             </div>
 
-            {/* Bloque inferior — ancho completo en mobile, a la derecha del poster en desktop */}
+            {/* Bloque inferior mobile */}
             <div className="sm:hidden" style={{ marginTop: 14 }}>
               {serie.overview && <p style={{ color: C.white, fontSize: 13, lineHeight: 1.6, margin: "0 0 10px" }}>{serie.overview}</p>}
               <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 10 }}>
@@ -829,9 +888,8 @@ export default function Serie() {
               </div>
             </div>
 
-            {/* Desktop: overview, genres, cast, lista+, tracker — a la derecha del poster */}
+            {/* Desktop */}
             <div className="hidden sm:block" style={{ marginTop: 12 }}>
-              {/* Para desktop seguimos con layout original de 2 col */}
               <div style={{ flex: 1, minWidth: 0 }}>
                 {serie.overview && <p style={{ color: C.white, fontSize: 13, lineHeight: 1.6, margin: "0 0 10px" }}>{serie.overview}</p>}
                 <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 10 }}>
@@ -1015,7 +1073,6 @@ export default function Serie() {
               <p style={{ color: C.gray, fontSize: 13, textAlign: "center", padding: "16px 0" }}>Cargando episodios…</p>
             ) : (
               <>
-                {/* Mobile: scroll horizontal */}
                 <div className="flex sm:hidden" style={{ gap: 8, overflowX: "auto", margin: "0 -16px", padding: "0 16px 8px", scrollbarWidth: "none" }}>
                   {episodes.map((ep) => (
                     <EpisodeCard
@@ -1027,7 +1084,6 @@ export default function Serie() {
                     />
                   ))}
                 </div>
-                {/* Desktop: columna */}
                 <div className="hidden sm:flex flex-col" style={{ gap: 10 }}>
                   {episodes.map((ep) => (
                     <EpisodeCard
@@ -1109,6 +1165,7 @@ export default function Serie() {
             </div>
           )}
         </div>
+
         {/* ── Full Cast ── */}
         <CastSection fullCast={serie.fullCast} navigate={navigate} />
         {pendingMovie && <AddToListModal movie={pendingMovie} onClose={() => setPendingMovie(null)} />}

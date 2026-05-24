@@ -16,7 +16,7 @@ import Person from "./pages/peliculas/Person";
 import Cast from "./pages/peliculas/Cast";
 import Swipe from "./pages/peliculas/Swipe";
 import Reviews from "./pages/peliculas/Reviews";
-import Watching from "./pages/peliculas/Watching";
+import Watched from "./pages/peliculas/Watched";
 import Hidden from "./pages/peliculas/Hidden";
 
 import Juegos from "./pages/juegos/index";
@@ -60,7 +60,7 @@ export default function App() {
           <Route path="/peliculas/person" element={<Person />} />
           <Route path="/peliculas/cast" element={<Cast />} />
           <Route path="/peliculas/reviews" element={<Reviews />} />
-          <Route path="/watching" element={<Watching />} />
+          <Route path="/peliculas/watched" element={<Watched />} />
           <Route path="/hidden" element={<Hidden />} />
         </Route>
 

@@ -1,7 +1,7 @@
 import { useAuth } from "../../hooks/useAuth";
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
-import { fetchUserReviews, getUserId } from "../../api/index";
+import { fetchUserReviews, getUserId, fetchWatched, fetchGenres } from "../../api/index";
 
 const C = {
   bg: "#0d0f14",
@@ -13,8 +13,6 @@ const C = {
   blue: "#3b6fd4",
   red: "#e05c5c",
 };
-
-// ─── Subcomponentes ──────────────────────────────────────────────────────────
 
 function Avatar({ name, size = 72 }) {
   const letter = name?.charAt(0).toUpperCase() ?? "?";
@@ -41,16 +39,7 @@ function Avatar({ name, size = 72 }) {
 
 function StatPill({ value, label }) {
   return (
-    <div
-      style={{
-        background: C.bg,
-        borderRadius: 20,
-        padding: "6px 14px",
-        display: "flex",
-        alignItems: "center",
-        gap: 6,
-      }}
-    >
+    <div style={{ background: C.bg, borderRadius: 20, padding: "6px 14px", display: "flex", alignItems: "center", gap: 6 }}>
       <span style={{ fontSize: 16, fontWeight: 700, color: C.yellow }}>{value}</span>
       <span style={{ fontSize: 12, color: C.gray }}>{label}</span>
     </div>
@@ -59,34 +48,11 @@ function StatPill({ value, label }) {
 
 function SectionCard({ title, linkText, onLink, children }) {
   return (
-    <div
-      style={{
-        background: C.card,
-        borderRadius: 12,
-        padding: 20,
-      }}
-    >
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          marginBottom: 16,
-        }}
-      >
+    <div style={{ background: C.card, borderRadius: 12, padding: 20 }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
         <span style={{ fontSize: 20, fontWeight: 700, color: C.white }}>{title}</span>
         {linkText && (
-          <button
-            onClick={onLink}
-            style={{
-              background: "none",
-              border: "none",
-              color: C.blue,
-              fontSize: 13,
-              cursor: "pointer",
-              padding: 0,
-            }}
-          >
+          <button onClick={onLink} style={{ background: "none", border: "none", color: C.blue, fontSize: 13, cursor: "pointer", padding: 0 }}>
             {linkText}
           </button>
         )}
@@ -100,18 +66,7 @@ function PlaceholderRows({ count = 2, right = null }) {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
       {Array.from({ length: count }).map((_, i) => (
-        <div
-          key={i}
-          style={{
-            background: C.bg,
-            borderRadius: 8,
-            height: 72,
-            display: "flex",
-            alignItems: "center",
-            gap: 12,
-            padding: "0 14px",
-          }}
-        >
+        <div key={i} style={{ background: C.bg, borderRadius: 8, height: 72, display: "flex", alignItems: "center", gap: 12, padding: "0 14px" }}>
           <div style={{ width: 44, height: 60, borderRadius: 4, background: "#1e2a4a", flexShrink: 0 }} />
           <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 6 }}>
             <div style={{ height: 10, borderRadius: 4, background: "#1e2a4a", width: "60%" }} />
@@ -124,58 +79,9 @@ function PlaceholderRows({ count = 2, right = null }) {
   );
 }
 
-function PlaceholderCards({ count = 3 }) {
-  return (
-    <div style={{ display: "grid", gridTemplateColumns: `repeat(${count}, 1fr)`, gap: 8 }}>
-      {Array.from({ length: count }).map((_, i) => (
-        <div
-          key={i}
-          style={{
-            background: C.bg,
-            borderRadius: 8,
-            aspectRatio: "2/3",
-            display: "flex",
-            alignItems: "flex-end",
-            padding: 8,
-          }}
-        >
-          <div style={{ height: 8, borderRadius: 3, background: "#1e2a4a", width: "70%" }} />
-        </div>
-      ))}
-    </div>
-  );
-}
-
-function TopGenres() {
-  const genres = [
-    { name: "Drama", pct: 80, color: C.blue },
-    { name: "Acción", pct: 60, color: C.yellow },
-    { name: "Thriller", pct: 45, color: C.red },
-  ];
-  return (
-    <div style={{ background: C.card, borderRadius: 12, padding: 16 }}>
-      <p style={{ fontSize: 15, fontWeight: 700, color: C.white, marginBottom: 12 }}>Géneros más vistos</p>
-      <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-        {genres.map((g) => (
-          <div key={g.name} style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <div style={{ width: 10, height: 10, borderRadius: "50%", background: g.color, flexShrink: 0 }} />
-            <span style={{ fontSize: 13, color: C.white, flex: 1 }}>{g.name}</span>
-            <div style={{ flex: 2, height: 5, background: C.bg, borderRadius: 3 }}>
-              <div style={{ width: `${g.pct}%`, height: "100%", background: g.color, borderRadius: 3 }} />
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
 function RatingOverview({ reviews }) {
-  // Contar cuántas reviews hay por cada rating 1-10
-  const counts = Array.from({ length: 10 }, (_, i) => {
-    return reviews.filter((r) => r.rating === i + 1).length;
-  });
-  const max = Math.max(...counts, 1); // mínimo 1 para evitar división por cero
-
+  const counts = Array.from({ length: 10 }, (_, i) => reviews.filter((r) => r.rating === i + 1).length);
+  const max = Math.max(...counts, 1);
   return (
     <div style={{ background: C.card, borderRadius: 12, padding: 16 }}>
       <p style={{ fontSize: 15, fontWeight: 700, color: C.white, marginBottom: 12 }}>Rating overview</p>
@@ -202,16 +108,59 @@ function RatingOverview({ reviews }) {
   );
 }
 
-// ─── Página principal ─────────────────────────────────────────────────────────
+function TopGenres({ watched, genreMap }) {
+  // Contar frecuencia de cada genre_id en todos los vistos
+  const counts = {};
+  watched.forEach((item) => {
+    (item.genre_ids ?? []).forEach((id) => {
+      counts[id] = (counts[id] ?? 0) + 1;
+    });
+  });
+
+  const top3 = Object.entries(counts)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 3)
+    .map(([id, count]) => ({ id: Number(id), name: genreMap[id] ?? `Genre ${id}`, count }));
+
+  const maxCount = top3[0]?.count ?? 1;
+  const COLORS = [C.blue, C.yellow, C.red];
+
+  if (top3.length === 0) {
+    return (
+      <div style={{ background: C.card, borderRadius: 12, padding: 16 }}>
+        <p style={{ fontSize: 15, fontWeight: 700, color: C.white, marginBottom: 12 }}>Géneros más vistos</p>
+        <p style={{ fontSize: 13, color: C.gray }}>Sin datos todavía</p>
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ background: C.card, borderRadius: 12, padding: 16 }}>
+      <p style={{ fontSize: 15, fontWeight: 700, color: C.white, marginBottom: 12 }}>Géneros más vistos</p>
+      <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+        {top3.map((g, i) => (
+          <div key={g.id} style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <div style={{ width: 10, height: 10, borderRadius: "50%", background: COLORS[i], flexShrink: 0 }} />
+            <span style={{ fontSize: 13, color: C.white, flex: 1 }}>{g.name}</span>
+            <div style={{ flex: 2, height: 5, background: C.bg, borderRadius: 3 }}>
+              <div style={{ width: `${(g.count / maxCount) * 100}%`, height: "100%", background: COLORS[i], borderRadius: 3 }} />
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 export default function Profile() {
-  // FIX: user es un string ("Edu", "Nicole"), no un objeto con .name
   const { user } = useAuth();
   const navigate = useNavigate();
 
-  const stats = { movies: 142, series: 38, reviews: 27 };
-  const otherUsers = user === "Edu" ? [{ id: 2, name: "Nicole" }] : user === "Nicole" ? [{ id: 1, name: "Edu" }] : [];
   const [reviews, setReviews] = useState([]);
+  const [watched, setWatched] = useState([]);
+  const [genreMap, setGenreMap] = useState({});
+
+  const otherUsers = user === "Edu" ? [{ id: 2, name: "Nicole" }] : user === "Nicole" ? [{ id: 1, name: "Edu" }] : [];
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -219,42 +168,41 @@ export default function Profile() {
 
   useEffect(() => {
     const userId = getUserId(user);
+
     fetchUserReviews(userId).then((data) => {
-      // Solo reviews generales (sin temporadas) para el preview
-      const generals = data.filter((r) => r.season === null || r.season === undefined);
-      setReviews(generals);
+      setReviews(data.filter((r) => r.season === null || r.season === undefined));
+    });
+
+    fetchWatched(userId).then(setWatched);
+
+    fetchGenres().then((genres) => {
+      const map = {};
+      genres.forEach((g) => {
+        map[g.id] = g.name;
+      });
+      setGenreMap(map);
     });
   }, [user]);
 
+  const watchedMovies = watched.filter((i) => (i.media_type ?? "movie") === "movie").length;
+  const watchedSeries = watched.filter((i) => i.media_type === "tv").length;
+  const recentWatched = watched.slice(0, 10);
+
   return (
-    <div
-      style={{
-        minHeight: "100vh",
-        background: C.bg,
-        color: C.white,
-        fontFamily: "system-ui, sans-serif",
-        paddingBottom: 80,
-      }}
-    >
-      {/* ── Header ── */}
+    <div style={{ minHeight: "100vh", background: C.bg, color: C.white, fontFamily: "system-ui, sans-serif", paddingBottom: 80 }}>
+      {/* Header */}
       <div style={{ background: C.card, padding: "28px 24px 24px" }}>
-        {/* Avatar + nombre */}
         <div style={{ display: "flex", alignItems: "center", gap: 20, marginBottom: 20 }}>
-          {/* FIX: se pasa user directamente (string) en vez de user?.name */}
           <Avatar name={user} size={72} />
           <div>
             <h1 style={{ fontSize: 32, fontWeight: 700, color: C.white, lineHeight: 1.1 }}>{user ?? "Usuario"}</h1>
-            {/* nedule.uk removido */}
           </div>
         </div>
-
-        {/* Stats */}
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 16 }}>
-          <StatPill value={stats.movies} label="Películas" />
-          <StatPill value={stats.series} label="Series" />
-          <StatPill value={stats.reviews} label="Reviews" />
+          <StatPill value={watchedMovies} label="Películas" />
+          <StatPill value={watchedSeries} label="Series" />
+          <StatPill value={reviews.length} label="Reviews" />
         </div>
-
         {otherUsers.length > 0 && (
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
             <span style={{ fontSize: 13, color: C.gray }}>Visitar</span>
@@ -284,17 +232,9 @@ export default function Profile() {
         )}
       </div>
 
-      {/* ── Contenido ── */}
-      <div
-        style={{
-          padding: "20px 16px",
-          display: "flex",
-          flexDirection: "column",
-          gap: 16,
-          maxWidth: 900,
-          margin: "0 auto",
-        }}
-      >
+      {/* Contenido */}
+      <div style={{ padding: "20px 16px", display: "flex", flexDirection: "column", gap: 16, maxWidth: 900, margin: "0 auto" }}>
+        {/* Reviews */}
         <SectionCard title="Reviews" linkText="Ver todas..." onLink={() => navigate("/peliculas/reviews")}>
           {reviews.length === 0 ? (
             <PlaceholderRows count={2} />
@@ -307,15 +247,7 @@ export default function Profile() {
                   <div
                     key={r.id}
                     onClick={() => navigate(`/peliculas/${type === "tv" ? "tv" : "movie"}/${tmdbId}`)}
-                    style={{
-                      background: C.bg,
-                      borderRadius: 8,
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 12,
-                      padding: "8px 12px",
-                      cursor: "pointer",
-                    }}
+                    style={{ background: C.bg, borderRadius: 8, display: "flex", alignItems: "center", gap: 12, padding: "8px 12px", cursor: "pointer" }}
                   >
                     <img
                       src={r.poster_url ?? ""}
@@ -352,15 +284,53 @@ export default function Profile() {
           )}
         </SectionCard>
 
+        {/* Rating + Géneros */}
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 16 }}>
           <RatingOverview reviews={reviews} />
-          <TopGenres />
+          <TopGenres watched={watched} genreMap={genreMap} />
         </div>
 
-        <SectionCard title="Vistos" linkText="Ver todos..." onLink={() => navigate("/peliculas/watching")}>
-          <PlaceholderCards count={3} />
+        {/* Vistos */}
+        <SectionCard title="Vistos recientes" linkText="Ver todos..." onLink={() => navigate("/peliculas/watched")}>
+          {recentWatched.length === 0 ? (
+            <p style={{ color: C.gray, fontSize: 13, textAlign: "center", padding: "16px 0" }}>No hay títulos vistos todavía</p>
+          ) : (
+            <div style={{ display: "flex", gap: 10, overflowX: "auto", margin: "0 -20px", padding: "0 20px 12px", scrollbarWidth: "thin" }}>
+              {recentWatched.map((item) => {
+                const tmdbId = item.imdb_id.replace("tmdb_", "");
+                const type = item.media_type ?? "movie";
+                return (
+                  <div
+                    key={item.movie_id}
+                    onClick={() => navigate(`/peliculas/${type === "tv" ? "tv" : "movie"}/${tmdbId}`)}
+                    style={{ cursor: "pointer", flexShrink: 0, width: 110 }}
+                  >
+                    <img
+                      src={item.poster_url ?? ""}
+                      alt={item.title}
+                      style={{ width: "100%", aspectRatio: "2/3", objectFit: "cover", borderRadius: 10, display: "block", background: "#1e2a4a" }}
+                    />
+                    <p
+                      style={{
+                        color: C.white,
+                        fontSize: 11,
+                        fontWeight: 600,
+                        margin: "4px 0 0",
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        whiteSpace: "nowrap",
+                      }}
+                    >
+                      {item.title}
+                    </p>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </SectionCard>
 
+        {/* Mirando */}
         <SectionCard title="Mirando" linkText="Ver todos..." onLink={() => navigate("/peliculas/watching")}>
           <PlaceholderRows count={2} right="T1 · E3" />
         </SectionCard>

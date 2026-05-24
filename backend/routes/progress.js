@@ -43,12 +43,17 @@ router.get("/:tmdbId/:userId", async (req, res) => {
 
 // POST /api/progress/:tmdbId — guardar o actualizar progreso de UNA temporada
 // Si episode = 0, borrar el registro de esa temporada (optimización)
+// POST /api/progress/:tmdbId
 router.post("/:tmdbId", async (req, res) => {
   const { tmdbId } = req.params;
-  const { user_id, season, episode, title, year, poster_url } = req.body;
+  const { user_id, season, episode, title, year, poster_url, season_episode_counts } = req.body;
+
+  const client = await pool.connect();
   try {
-    // Asegurar que la serie existe en movies
-    const movie = await pool.query(
+    await client.query("BEGIN");
+
+    // Upsert movies
+    const movie = await client.query(
       `INSERT INTO movies (imdb_id, title, year, poster_url, media_type)
        VALUES ($1, $2, $3, $4, 'tv')
        ON CONFLICT (imdb_id) DO UPDATE SET title = EXCLUDED.title
@@ -57,28 +62,59 @@ router.post("/:tmdbId", async (req, res) => {
     );
     const movieId = movie.rows[0].id;
 
+    // Guardar/borrar progreso de esa temporada
     if (episode === 0 || episode === null) {
-      // Sin episodios vistos en esta temporada → borrar registro
-      await pool.query(
+      await client.query(
         `DELETE FROM series_progress
          WHERE movie_id = $1 AND user_id = $2 AND season = $3`,
         [movieId, user_id, season],
       );
-      res.status(200).json({ deleted: true, season });
     } else {
-      // Guardar o actualizar
-      const result = await pool.query(
+      await client.query(
         `INSERT INTO series_progress (movie_id, user_id, season, episode)
          VALUES ($1, $2, $3, $4)
          ON CONFLICT (movie_id, user_id, season)
-         DO UPDATE SET episode = $4, updated_at = NOW()
-         RETURNING *`,
+         DO UPDATE SET episode = $4, updated_at = NOW()`,
         [movieId, user_id, season, episode],
       );
-      res.status(201).json(result.rows[0]);
     }
+
+    // Auto-watch: calcular si llegó al 100%
+    let isComplete = false;
+    if (season_episode_counts && Object.keys(season_episode_counts).length > 0) {
+      const progressRes = await client.query(
+        `SELECT season, episode FROM series_progress
+         WHERE movie_id = $1 AND user_id = $2`,
+        [movieId, user_id],
+      );
+      const progressMap = {};
+      progressRes.rows.forEach((r) => {
+        progressMap[String(r.season)] = Number(r.episode);
+      });
+
+      isComplete = Object.entries(season_episode_counts).every(([s, total]) => {
+        return total > 0 && (progressMap[s] ?? 0) >= total;
+      });
+    }
+
+    if (isComplete) {
+      await client.query(
+        `INSERT INTO watched (user_id, movie_id)
+         VALUES ($1, $2)
+         ON CONFLICT (user_id, movie_id) DO NOTHING`,
+        [user_id, movieId],
+      );
+    } else {
+      await client.query(`DELETE FROM watched WHERE user_id = $1 AND movie_id = $2`, [user_id, movieId]);
+    }
+
+    await client.query("COMMIT");
+    res.status(201).json({ success: true, complete: isComplete });
   } catch (err) {
+    await client.query("ROLLBACK");
     res.status(500).json({ error: err.message });
+  } finally {
+    client.release();
   }
 });
 

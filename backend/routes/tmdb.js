@@ -529,12 +529,12 @@ router.get("/swipe", async (req, res) => {
 
     const excludeIds = exclude ? exclude.split(",").map(Number) : [];
 
-    /*let hiddenIds = [];
+    let watchedIds = [];
     if (userId) {
-      const hidden = await db.query("SELECT tmdb_id FROM hidden_titles WHERE user_id = $1", [userId]);
-      hiddenIds = hidden.rows.map((r) => r.tmdb_id);
+      const watched = await db.query(`SELECT m.imdb_id FROM watched w JOIN movies m ON w.movie_id = m.id WHERE w.user_id = $1`, [userId]);
+      watchedIds = watched.rows.map((r) => parseInt(r.imdb_id.replace("tmdb_", "")));
     }
-    pool = pool.filter((i) => ![...excludeIds, ...hiddenIds].includes(i.id));*/
+    pool = pool.filter((i) => ![...excludeIds, ...watchedIds].includes(i.id));
 
     if (!pool.length) return res.json(null);
 
