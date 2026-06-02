@@ -15,6 +15,9 @@ import {
   deleteProgress,
   markSeriesComplete,
   unmarkSeriesComplete,
+  checkHidden,
+  postHidden,
+  unhideTitle,
 } from "../../api/index";
 import AddToListModal from "../../components/shared/AddToListModal";
 
@@ -150,7 +153,7 @@ function ReviewModal({ existingReview, onSubmit, onClose }) {
   );
 }
 
-function OptionsMenu({ onReview, onToggleWatched, isWatched, onClose }) {
+function OptionsMenu({ onReview, onToggleWatched, isWatched, onToggleHidden, isHidden, onClose }) {
   const ref = useRef(null);
   useEffect(() => {
     function h(e) {
@@ -178,7 +181,7 @@ function OptionsMenu({ onReview, onToggleWatched, isWatched, onClose }) {
       {[
         { label: "Review", color: C.white, onClick: onReview },
         { label: isWatched ? "Quitar de vistos" : "Agregar a vistos", color: C.white, onClick: onToggleWatched },
-        { label: "Hide", color: "#e05c5c", onClick: () => {} },
+        { label: isHidden ? "Unhide" : "Hide", color: "#e05c5c", onClick: onToggleHidden },
       ].map(({ label, color, onClick }) => (
         <button
           key={label}
@@ -401,6 +404,7 @@ export default function Serie() {
   const [showSeasonReview, setShowSeasonReview] = useState(false);
   const [showOptions, setShowOptions] = useState(false);
   const [isWatched, setIsWatched] = useState(false);
+  const [isHidden, setIsHidden] = useState(false);
 
   const mySerieReview = serieReviews.find((r) => r.user_id === userId) ?? null;
   const mySeasonReview = seasonReviews.find((r) => r.user_id === userId) ?? null;
@@ -449,6 +453,9 @@ export default function Serie() {
     const totalEps = Object.values(episodeCountRef.current).reduce((a, b) => a + b, 0);
     const watchedEps = (progressRows ?? []).reduce((a, r) => a + Number(r.episode), 0);
     setIsWatched(totalEps > 0 && watchedEps >= totalEps);
+
+    const hiddenRes = await checkHidden(userId, tmdbId);
+    setIsHidden(hiddenRes.hidden);
   }
 
   async function loadSeason(season) {
@@ -510,6 +517,21 @@ export default function Serie() {
       });
       setProgressMap({ ...episodeCountRef.current });
       setIsWatched(true);
+    }
+  }
+  async function handleToggleHidden() {
+    if (isHidden) {
+      await unhideTitle(userId, tmdbId);
+      setIsHidden(false);
+    } else {
+      await postHidden({
+        user_id: userId,
+        tmdb_id: tmdbId,
+        title: serie.title,
+        poster_url: serie.poster_url,
+        media_type: "tv",
+      });
+      setIsHidden(true);
     }
   }
 
@@ -691,6 +713,8 @@ export default function Serie() {
                         onReview={() => setShowSerieReview(true)}
                         onToggleWatched={handleToggleWatched}
                         isWatched={isWatched}
+                        onToggleHidden={handleToggleHidden}
+                        isHidden={isHidden}
                         onClose={() => setShowOptions(false)}
                       />
                     )}

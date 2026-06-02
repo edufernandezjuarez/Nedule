@@ -200,3 +200,8 @@ export async function unmarkSeriesComplete(userId, tmdbId) {
   });
   return res.json();
 }
+
+export async function checkHidden(userId, tmdbId) {
+  const res = await fetch(`${API}/hidden/${userId}/check/${tmdbId}`);
+  return res.json();
+}

@@ -152,6 +152,13 @@ router.get("/search", async (req, res) => {
     });
     if (!sortBy) combined = combined.sort((a, b) => b.popularity - a.popularity);
 
+    const { userId } = req.query;
+    if (userId) {
+      const hidden = await db.query("SELECT tmdb_id FROM hidden_titles WHERE user_id = $1", [userId]);
+      const hiddenIds = hidden.rows.map((r) => r.tmdb_id);
+      combined = combined.filter((i) => !hiddenIds.includes(i.tmdb_id));
+    }
+
     res.json({
       results: combined,
       moviePage: parseInt(moviePage),
@@ -390,6 +397,13 @@ router.get("/popular", async (req, res) => {
     });
     if (!sortBy) combined = combined.sort((a, b) => b.popularity - a.popularity);
 
+    const { userId } = req.query;
+    if (userId) {
+      const hidden = await db.query("SELECT tmdb_id FROM hidden_titles WHERE user_id = $1", [userId]);
+      const hiddenIds = hidden.rows.map((r) => r.tmdb_id);
+      combined = combined.filter((i) => !hiddenIds.includes(i.tmdb_id));
+    }
+
     res.json({
       results: combined,
       moviePage: parseInt(moviePage),
@@ -530,11 +544,16 @@ router.get("/swipe", async (req, res) => {
     const excludeIds = exclude ? exclude.split(",").map(Number) : [];
 
     let watchedIds = [];
+    let hiddenIds = [];
     if (userId) {
-      const watched = await db.query(`SELECT m.imdb_id FROM watched w JOIN movies m ON w.movie_id = m.id WHERE w.user_id = $1`, [userId]);
+      const [watched, hidden] = await Promise.all([
+        db.query(`SELECT m.imdb_id FROM watched w JOIN movies m ON w.movie_id = m.id WHERE w.user_id = $1`, [userId]),
+        db.query(`SELECT tmdb_id FROM hidden_titles WHERE user_id = $1`, [userId]),
+      ]);
       watchedIds = watched.rows.map((r) => parseInt(r.imdb_id.replace("tmdb_", "")));
+      hiddenIds = hidden.rows.map((r) => r.tmdb_id);
     }
-    pool = pool.filter((i) => ![...excludeIds, ...watchedIds].includes(i.id));
+    pool = pool.filter((i) => ![...excludeIds, ...watchedIds, ...hiddenIds].includes(i.id));
 
     if (!pool.length) return res.json(null);
 

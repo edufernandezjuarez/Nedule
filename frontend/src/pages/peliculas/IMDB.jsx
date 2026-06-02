@@ -3,6 +3,8 @@ import { useNavigate, Outlet, useMatch } from "react-router-dom";
 import { fetchTmdbPopular, fetchTmdbSearch, fetchGenres } from "../../api/index";
 import AddToListModal from "../../components/shared/AddToListModal";
 import FilterModal, { DEFAULT_FILTERS } from "../../components/shared/FilterModal";
+import { useAuth } from "../../hooks/useAuth";
+import { getUserId } from "../../api/index";
 
 const C = {
   bg: "#0d0f14",
@@ -217,6 +219,7 @@ function SortMenu({ current, onChange, onClose }) {
 // ── Main ──────────────────────────────────────────────────────────────────────
 export default function IMDB() {
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   const [query, setQuery] = useState("");
   const [results, setResults] = useState([]);
@@ -264,7 +267,7 @@ export default function IMDB() {
 
   function buildParams(f) {
     const CY = new Date().getFullYear();
-    const p = { moviePage: moviePage.current, tvPage: tvPage.current };
+    const p = { moviePage: moviePage.current, tvPage: tvPage.current, userId: getUserId(user) };
     if (movieHasMore.current === false) p.skipMovie = true;
     if (tvHasMore.current === false) p.skipTv = true;
     if (f.yearMin !== 1900) p.yearMin = f.yearMin;

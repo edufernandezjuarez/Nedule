@@ -2,14 +2,22 @@ const express = require("express");
 const router = express.Router();
 const pool = require("../db");
 
+// GET /api/hidden/:userId/check/:tmdbId
+router.get("/:userId/check/:tmdbId", async (req, res) => {
+  const { userId, tmdbId } = req.params;
+  try {
+    const result = await pool.query("SELECT 1 FROM hidden_titles WHERE user_id = $1 AND tmdb_id = $2", [userId, tmdbId]);
+    res.json({ hidden: result.rows.length > 0 });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // GET /api/hidden/:userId
 router.get("/:userId", async (req, res) => {
   const { userId } = req.params;
   try {
-    const result = await pool.query(
-      "SELECT * FROM hidden_titles WHERE user_id = $1 ORDER BY hidden_at DESC",
-      [userId],
-    );
+    const result = await pool.query("SELECT * FROM hidden_titles WHERE user_id = $1 ORDER BY hidden_at DESC", [userId]);
     res.json(result.rows);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -35,10 +43,7 @@ router.post("/", async (req, res) => {
 router.delete("/:userId/:tmdbId", async (req, res) => {
   const { userId, tmdbId } = req.params;
   try {
-    await pool.query(
-      "DELETE FROM hidden_titles WHERE user_id = $1 AND tmdb_id = $2",
-      [userId, tmdbId],
-    );
+    await pool.query("DELETE FROM hidden_titles WHERE user_id = $1 AND tmdb_id = $2", [userId, tmdbId]);
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: err.message });

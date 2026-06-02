@@ -12,6 +12,9 @@ import {
   markWatched,
   unmarkWatched,
   checkWatched,
+  checkHidden,
+  postHidden,
+  unhideTitle,
 } from "../../api/index";
 import AddToListModal from "../../components/shared/AddToListModal";
 
@@ -138,7 +141,7 @@ function ReviewModal({ existingReview, onSubmit, onClose }) {
 }
 
 // ── Options dropdown ──────────────────────────────────────────────────────────
-function OptionsMenu({ onReview, onToggleWatched, isWatched, onClose }) {
+function OptionsMenu({ onReview, onToggleWatched, isWatched, onToggleHidden, isHidden, onClose }) {
   const ref = useRef(null);
   useEffect(() => {
     function h(e) {
@@ -192,7 +195,7 @@ function OptionsMenu({ onReview, onToggleWatched, isWatched, onClose }) {
     >
       {btn("Review", C.white, onReview)}
       {btn(isWatched ? "Quitar de vistos" : "Agregar a vistos", C.white, onToggleWatched)}
-      {btn("Hide", "#e05c5c", () => {})}
+      {btn(isHidden ? "Unhide" : "Hide", "#e05c5c", onToggleHidden)}
     </div>
   );
 }
@@ -213,6 +216,7 @@ export default function Movie() {
   const [showReviewModal, setShowReviewModal] = useState(false);
   const [showOptions, setShowOptions] = useState(false);
   const [isWatched, setIsWatched] = useState(false);
+  const [isHidden, setIsHidden] = useState(false);
 
   const myReview = reviews.find((r) => r.user_id === userId) ?? null;
 
@@ -233,8 +237,9 @@ export default function Movie() {
       if (prog) setProgress({ season: prog.season, episode: prog.episode });
     }
     // AGREGAR:
-    const { watched } = await checkWatched(userId, tmdbId);
-    setIsWatched(watched);
+    const [watchedRes, hiddenRes] = await Promise.all([checkWatched(userId, tmdbId), checkHidden(userId, tmdbId)]);
+    setIsWatched(watchedRes.watched);
+    setIsHidden(hiddenRes.hidden);
   }
 
   async function handleSubmitReview(rating, comment) {
@@ -278,7 +283,21 @@ export default function Movie() {
       setIsWatched(true);
     }
   }
-
+  async function handleToggleHidden() {
+    if (isHidden) {
+      await unhideTitle(userId, tmdbId);
+      setIsHidden(false);
+    } else {
+      await postHidden({
+        user_id: userId,
+        tmdb_id: tmdbId,
+        title: movie.title,
+        poster_url: movie.poster_url,
+        media_type: type,
+      });
+      setIsHidden(true);
+    }
+  }
   if (!movie) {
     return (
       <div style={{ minHeight: "100vh", background: C.bg, display: "flex", alignItems: "center", justifyContent: "center" }}>
@@ -430,6 +449,8 @@ export default function Movie() {
                       onReview={() => setShowReviewModal(true)}
                       onToggleWatched={handleToggleWatched}
                       isWatched={isWatched}
+                      onToggleHidden={handleToggleHidden}
+                      isHidden={isHidden}
                       onClose={() => setShowOptions(false)}
                     />
                   )}
