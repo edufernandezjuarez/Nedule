@@ -10,7 +10,7 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 const path = require("path");
-app.use(express.static(path.join(__dirname, "../frontend")));
+app.use(express.static(path.join(__dirname, "../frontend/dist")));
 
 app.use("/api/lists", listsRouter);
 app.use("/api/movies", moviesRouter);
@@ -34,3 +34,7 @@ const hiddenRouter = require("./routes/hidden");
 app.use("/api/hidden", hiddenRouter);
 
 app.use("/api/watched", require("./routes/watched"));
+
+app.get("*", (req, res) => {
+  res.sendFile(path.join(__dirname, "../frontend/dist/index.html"));
+});
