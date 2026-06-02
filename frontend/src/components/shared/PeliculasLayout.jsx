@@ -222,7 +222,6 @@ export default function PeliculasLayout() {
       </main>
 
       {/* ── Mobile Bottom Nav ── */}
-      {/* FIX: ref cubre toda la nav incluyendo el botón de usuario y el dropdown */}
       <nav
         className="sm:hidden fixed bottom-0 left-0 right-0 z-40"
         style={{ background: C.navbar, borderTop: "1px solid rgba(255,255,255,0.06)" }}
@@ -266,7 +265,7 @@ export default function PeliculasLayout() {
                 {initial}
               </span>
             </span>
-            <span style={{ fontSize: 10, fontWeight: 500, color: C.gray, ...MP }}>Usuario</span>
+            <span style={{ fontSize: 10, fontWeight: 500, color: C.gray, ...MP }}>{user}</span>
           </button>
         </div>
 

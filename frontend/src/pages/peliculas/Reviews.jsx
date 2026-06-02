@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
 import { fetchUserReviews, getUserId } from "../../api/index";
 
@@ -29,7 +29,13 @@ function Stars({ rating }) {
 export default function Reviews() {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const [groups, setGroups] = useState([]); // [{general, seasonReviews:[]}]
+  const [searchParams] = useSearchParams();
+  const paramUserId = searchParams.get("userId");
+  const USER_NAMES = { 1: "Edu", 2: "Nicole" };
+  const isOwnProfile = !paramUserId;
+  const viewedUserName = paramUserId ? USER_NAMES[parseInt(paramUserId)] : user;
+
+  const [groups, setGroups] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -37,7 +43,7 @@ export default function Reviews() {
   }, []);
 
   useEffect(() => {
-    const userId = getUserId(user);
+    const userId = paramUserId ? parseInt(paramUserId) : getUserId(user);
     fetchUserReviews(userId).then(async (data) => {
       // Separar reviews generales de temporadas
       const generals = data.filter((r) => r.season === null || r.season === undefined);
@@ -115,7 +121,7 @@ export default function Reviews() {
     <div className="min-h-screen" style={{ background: "#0d0f14" }}>
       <div className="max-w-2xl mx-auto px-4 py-6">
         <h1 className="text-lg font-bold mb-4" style={{ color: "#f5c518", fontSize: "1.5rem", fontWeight: 800 }}>
-          Historial de Reviews
+          {isOwnProfile ? "Historial de Reviews" : `Reviews de ${viewedUserName}`}
         </h1>
         {groups.length === 0 ? (
           <p className="text-content-muted text-sm text-center py-12">No reviews yet</p>

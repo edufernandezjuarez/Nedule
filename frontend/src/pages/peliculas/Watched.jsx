@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
 import { fetchWatched, unmarkWatched, deleteProgress, getUserId } from "../../api/index";
+import { useSearchParams } from "react-router-dom";
 
 const C = {
   bg: "#0d0f14",
@@ -72,7 +73,12 @@ function TypeModal({ current, onChange, onClose }) {
 export default function Watched() {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const userId = getUserId(user);
+  const [searchParams] = useSearchParams();
+  const paramUserId = searchParams.get("userId");
+  const userId = paramUserId ? parseInt(paramUserId) : getUserId(user);
+  const USER_NAMES = { 1: "Edu", 2: "Nicole" };
+  const isOwnProfile = !paramUserId;
+  const viewedUserName = paramUserId ? USER_NAMES[parseInt(paramUserId)] : user;
 
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -154,7 +160,7 @@ export default function Watched() {
       {/* Header */}
       <div style={{ padding: "24px 16px 12px" }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
-          <span style={{ color: C.yellow, fontWeight: 800, fontSize: "2rem" }}>Vistos</span>
+          <span style={{ color: C.yellow, fontWeight: 800, fontSize: "2rem" }}>{isOwnProfile ? "Vistos" : `Vistos de ${viewedUserName}`}</span>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             {/* Sort */}
             <div className="relative" ref={sortMenuRef}>

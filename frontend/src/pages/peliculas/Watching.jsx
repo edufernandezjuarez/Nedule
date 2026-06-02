@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
 import { fetchWatching, getUserId } from "../../api/index";
 
@@ -15,12 +15,18 @@ const MP = { fontFamily: "'Maven Pro', sans-serif" };
 export default function Watching() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const paramUserId = searchParams.get("userId");
+  const USER_NAMES = { 1: "Edu", 2: "Nicole" };
+  const isOwnProfile = !paramUserId;
+  const viewedUserName = paramUserId ? USER_NAMES[parseInt(paramUserId)] : user;
+
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     window.scrollTo(0, 0);
-    const userId = getUserId(user);
+    const userId = paramUserId ? parseInt(paramUserId) : getUserId(user);
     fetchWatching(userId).then((data) => {
       setItems(data);
       setLoading(false);
@@ -38,7 +44,7 @@ export default function Watching() {
   return (
     <div style={{ minHeight: "100vh", background: C.bg, ...MP, paddingBottom: 80 }}>
       <div style={{ padding: "24px 16px 12px" }}>
-        <span style={{ color: C.yellow, fontWeight: 800, fontSize: "2rem" }}>Mirando</span>
+        <span style={{ color: C.yellow, fontWeight: 800, fontSize: "2rem" }}>{isOwnProfile ? "Mirando" : `Mirando de ${viewedUserName}`}</span>
       </div>
 
       <div style={{ padding: "0 16px" }}>

@@ -1,5 +1,5 @@
 import { useAuth } from "../../hooks/useAuth";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { fetchUserReviews, getUserId, fetchWatched, fetchGenres, fetchWatching } from "../../api/index";
 
@@ -13,6 +13,8 @@ const C = {
   blue: "#3b6fd4",
   red: "#e05c5c",
 };
+
+const USER_NAMES = { 1: "Edu", 2: "Nicole" };
 
 function Avatar({ name, size = 72 }) {
   const letter = name?.charAt(0).toUpperCase() ?? "?";
@@ -62,23 +64,6 @@ function SectionCard({ title, linkText, onLink, children }) {
   );
 }
 
-function PlaceholderRows({ count = 2, right = null }) {
-  return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-      {Array.from({ length: count }).map((_, i) => (
-        <div key={i} style={{ background: C.bg, borderRadius: 8, height: 72, display: "flex", alignItems: "center", gap: 12, padding: "0 14px" }}>
-          <div style={{ width: 44, height: 60, borderRadius: 4, background: "#1e2a4a", flexShrink: 0 }} />
-          <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 6 }}>
-            <div style={{ height: 10, borderRadius: 4, background: "#1e2a4a", width: "60%" }} />
-            <div style={{ height: 10, borderRadius: 4, background: "#1e2a4a", width: "40%" }} />
-          </div>
-          {right && <span style={{ fontSize: 11, color: C.gray }}>{right}</span>}
-        </div>
-      ))}
-    </div>
-  );
-}
-
 function RatingOverview({ reviews }) {
   const counts = Array.from({ length: 10 }, (_, i) => reviews.filter((r) => r.rating === i + 1).length);
   const max = Math.max(...counts, 1);
@@ -109,19 +94,16 @@ function RatingOverview({ reviews }) {
 }
 
 function TopGenres({ watched, genreMap }) {
-  // Contar frecuencia de cada genre_id en todos los vistos
   const counts = {};
   watched.forEach((item) => {
     (item.genre_ids ?? []).forEach((id) => {
       counts[id] = (counts[id] ?? 0) + 1;
     });
   });
-
   const top3 = Object.entries(counts)
     .sort((a, b) => b[1] - a[1])
     .slice(0, 3)
     .map(([id, count]) => ({ id: Number(id), name: genreMap[id] ?? `Genre ${id}`, count }));
-
   const maxCount = top3[0]?.count ?? 1;
   const COLORS = [C.blue, C.yellow, C.red];
 
@@ -154,28 +136,30 @@ function TopGenres({ watched, genreMap }) {
 
 export default function Profile() {
   const { user } = useAuth();
+  const { userId: paramUserId } = useParams();
   const navigate = useNavigate();
+
+  const viewedUserId = paramUserId ? parseInt(paramUserId) : getUserId(user);
+  const viewedUserName = paramUserId ? (USER_NAMES[viewedUserId] ?? "Usuario") : user;
+  const isOwnProfile = !paramUserId;
+
+  const otherUsers = isOwnProfile ? (user === "Edu" ? [{ id: 2, name: "Nicole" }] : user === "Nicole" ? [{ id: 1, name: "Edu" }] : []) : [];
 
   const [reviews, setReviews] = useState([]);
   const [watched, setWatched] = useState([]);
   const [genreMap, setGenreMap] = useState({});
   const [watching, setWatching] = useState([]);
 
-  const otherUsers = user === "Edu" ? [{ id: 2, name: "Nicole" }] : user === "Nicole" ? [{ id: 1, name: "Edu" }] : [];
-
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
 
   useEffect(() => {
-    const userId = getUserId(user);
-
-    fetchUserReviews(userId).then((data) => {
+    fetchUserReviews(viewedUserId).then((data) => {
       setReviews(data.filter((r) => r.season === null || r.season === undefined));
     });
-
-    fetchWatched(userId).then(setWatched);
-
+    fetchWatched(viewedUserId).then(setWatched);
+    fetchWatching(viewedUserId).then(setWatching);
     fetchGenres().then((genres) => {
       const map = {};
       genres.forEach((g) => {
@@ -183,25 +167,41 @@ export default function Profile() {
       });
       setGenreMap(map);
     });
-
-    fetchWatching(userId).then(setWatching);
-  }, [user]);
+  }, [viewedUserId]);
 
   const watchedMovies = watched.filter((i) => (i.media_type ?? "movie") === "movie").length;
   const watchedSeries = watched.filter((i) => i.media_type === "tv").length;
   const recentWatched = watched.slice(0, 10);
 
+  function navReviews() {
+    navigate(isOwnProfile ? "/peliculas/reviews" : `/peliculas/reviews?userId=${viewedUserId}`);
+  }
+  function navWatched() {
+    navigate(isOwnProfile ? "/peliculas/watched" : `/peliculas/watched?userId=${viewedUserId}`);
+  }
+  function navWatching() {
+    navigate(isOwnProfile ? "/peliculas/watching" : `/peliculas/watching?userId=${viewedUserId}`);
+  }
+
   return (
     <div style={{ minHeight: "100vh", background: C.bg, color: C.white, fontFamily: "system-ui, sans-serif", paddingBottom: 80 }}>
       {/* Header */}
       <div style={{ background: C.card, padding: "28px 24px 24px" }}>
+        {!isOwnProfile && (
+          <button
+            onClick={() => navigate(-1)}
+            style={{ background: "none", border: "none", color: C.gray, fontSize: 13, fontWeight: 600, cursor: "pointer", marginBottom: 16, padding: 0 }}
+          >
+            ← Volver
+          </button>
+        )}
         <div style={{ display: "flex", alignItems: "center", gap: 20, marginBottom: 20 }}>
-          <Avatar name={user} size={72} />
+          <Avatar name={viewedUserName} size={72} />
           <div>
-            <h1 style={{ fontSize: 32, fontWeight: 700, color: C.white, lineHeight: 1.1 }}>{user ?? "Usuario"}</h1>
+            <h1 style={{ fontSize: 32, fontWeight: 700, color: C.white, lineHeight: 1.1 }}>{viewedUserName}</h1>
           </div>
         </div>
-        <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 16 }}>
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: otherUsers.length > 0 ? 16 : 0 }}>
           <StatPill value={watchedMovies} label="Películas" />
           <StatPill value={watchedSeries} label="Series" />
           <StatPill value={reviews.length} label="Reviews" />
@@ -212,7 +212,7 @@ export default function Profile() {
             {otherUsers.map((u) => (
               <button
                 key={u.id}
-                onClick={() => navigate(`/profile/${u.id}`)}
+                onClick={() => navigate(`/peliculas/profile/${u.id}`)}
                 style={{
                   background: C.blue,
                   border: "none",
@@ -238,9 +238,9 @@ export default function Profile() {
       {/* Contenido */}
       <div style={{ padding: "20px 16px", display: "flex", flexDirection: "column", gap: 16, maxWidth: 900, margin: "0 auto" }}>
         {/* Reviews */}
-        <SectionCard title="Reviews" linkText="Ver todas..." onLink={() => navigate("/peliculas/reviews")}>
+        <SectionCard title="Reviews" linkText="Ver todas..." onLink={navReviews}>
           {reviews.length === 0 ? (
-            <PlaceholderRows count={2} />
+            <p style={{ color: C.gray, fontSize: 13, textAlign: "center", padding: "16px 0" }}>Sin reviews todavía</p>
           ) : (
             <div style={{ display: "flex", flexDirection: "column", gap: 10, maxHeight: 280, overflowY: "auto" }}>
               {reviews.map((r) => {
@@ -294,7 +294,7 @@ export default function Profile() {
         </div>
 
         {/* Vistos */}
-        <SectionCard title="Vistos recientes" linkText="Ver todos..." onLink={() => navigate("/peliculas/watched")}>
+        <SectionCard title="Vistos recientes" linkText="Ver todos..." onLink={navWatched}>
           {recentWatched.length === 0 ? (
             <p style={{ color: C.gray, fontSize: 13, textAlign: "center", padding: "16px 0" }}>No hay títulos vistos todavía</p>
           ) : (
@@ -334,7 +334,7 @@ export default function Profile() {
         </SectionCard>
 
         {/* Mirando */}
-        <SectionCard title="Mirando" linkText="Ver todos..." onLink={() => navigate("/peliculas/watching")}>
+        <SectionCard title="Mirando" linkText="Ver todos..." onLink={navWatching}>
           {watching.length === 0 ? (
             <p style={{ color: C.gray, fontSize: 13, textAlign: "center", padding: "16px 0" }}>No hay series en progreso</p>
           ) : (

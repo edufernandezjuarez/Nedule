@@ -43,13 +43,10 @@ export default function App() {
             </Route>
           </Route>
 
-          {/* Rutas independientes — desde listas, cast, swipe, etc. */}
           <Route path="/peliculas/movie/:id" element={<Movie />} />
           <Route path="/peliculas/tv/:id" element={<Serie />}>
             <Route path="season/:season/episode/:ep" element={<Episode />} />
           </Route>
-          <Route path="/peliculas/watching" element={<Watching />} />
-          <Route path="/peliculas/hidden" element={<Hidden />} />
 
           {/* Swipe */}
           <Route path="/peliculas/swipe" element={<Swipe />}>
@@ -59,11 +56,14 @@ export default function App() {
             </Route>
           </Route>
 
+          <Route path="/peliculas/watching" element={<Watching />} />
+          <Route path="/peliculas/hidden" element={<Hidden />} />
           <Route path="/peliculas/profile" element={<Profile />} />
           <Route path="/peliculas/person" element={<Person />} />
           <Route path="/peliculas/cast" element={<Cast />} />
           <Route path="/peliculas/reviews" element={<Reviews />} />
           <Route path="/peliculas/watched" element={<Watched />} />
+          <Route path="/peliculas/profile/:userId" element={<Profile />} />
         </Route>
 
         <Route path="/juegos/*" element={<Juegos />} />
