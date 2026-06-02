@@ -35,6 +35,6 @@ app.use("/api/hidden", hiddenRouter);
 
 app.use("/api/watched", require("./routes/watched"));
 
-app.get("*", (req, res) => {
+app.get("/{*path}", (req, res) => {
   res.sendFile(path.join(__dirname, "../frontend/dist/index.html"));
 });
