@@ -13,6 +13,11 @@ router.get("/user/:userId", async (req, res) => {
        FROM series_progress sp
        JOIN movies m ON sp.movie_id = m.id
        WHERE sp.user_id = $1
+         AND sp.episode > 0
+         AND NOT EXISTS (
+           SELECT 1 FROM watched w
+           WHERE w.movie_id = sp.movie_id AND w.user_id = sp.user_id
+         )
        ORDER BY sp.movie_id, sp.updated_at DESC`,
       [userId],
     );

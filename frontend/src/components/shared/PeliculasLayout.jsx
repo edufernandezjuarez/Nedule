@@ -95,12 +95,12 @@ export default function PeliculasLayout() {
   }
 
   function handleWatching() {
-    navigate("/watching");
+    navigate("/peliculas/watching");
     setShowUserMenu(false);
   }
 
   function handleHidden() {
-    navigate("/hidden");
+    navigate("/peliculas/hidden");
     setShowUserMenu(false);
   }
 

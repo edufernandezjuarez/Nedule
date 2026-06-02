@@ -18,6 +18,7 @@ import Swipe from "./pages/peliculas/Swipe";
 import Reviews from "./pages/peliculas/Reviews";
 import Watched from "./pages/peliculas/Watched";
 import Hidden from "./pages/peliculas/Hidden";
+import Watching from "./pages/peliculas/Watching";
 
 import Juegos from "./pages/juegos/index";
 import Personal from "./pages/personal/index";
@@ -47,6 +48,8 @@ export default function App() {
           <Route path="/peliculas/tv/:id" element={<Serie />}>
             <Route path="season/:season/episode/:ep" element={<Episode />} />
           </Route>
+          <Route path="/peliculas/watching" element={<Watching />} />
+          <Route path="/peliculas/hidden" element={<Hidden />} />
 
           {/* Swipe */}
           <Route path="/peliculas/swipe" element={<Swipe />}>
@@ -61,7 +64,6 @@ export default function App() {
           <Route path="/peliculas/cast" element={<Cast />} />
           <Route path="/peliculas/reviews" element={<Reviews />} />
           <Route path="/peliculas/watched" element={<Watched />} />
-          <Route path="/hidden" element={<Hidden />} />
         </Route>
 
         <Route path="/juegos/*" element={<Juegos />} />

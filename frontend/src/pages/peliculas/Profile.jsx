@@ -1,7 +1,7 @@
 import { useAuth } from "../../hooks/useAuth";
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
-import { fetchUserReviews, getUserId, fetchWatched, fetchGenres } from "../../api/index";
+import { fetchUserReviews, getUserId, fetchWatched, fetchGenres, fetchWatching } from "../../api/index";
 
 const C = {
   bg: "#0d0f14",
@@ -159,6 +159,7 @@ export default function Profile() {
   const [reviews, setReviews] = useState([]);
   const [watched, setWatched] = useState([]);
   const [genreMap, setGenreMap] = useState({});
+  const [watching, setWatching] = useState([]);
 
   const otherUsers = user === "Edu" ? [{ id: 2, name: "Nicole" }] : user === "Nicole" ? [{ id: 1, name: "Edu" }] : [];
 
@@ -182,6 +183,8 @@ export default function Profile() {
       });
       setGenreMap(map);
     });
+
+    fetchWatching(userId).then(setWatching);
   }, [user]);
 
   const watchedMovies = watched.filter((i) => (i.media_type ?? "movie") === "movie").length;
@@ -332,7 +335,46 @@ export default function Profile() {
 
         {/* Mirando */}
         <SectionCard title="Mirando" linkText="Ver todos..." onLink={() => navigate("/peliculas/watching")}>
-          <PlaceholderRows count={2} right="T1 · E3" />
+          {watching.length === 0 ? (
+            <p style={{ color: C.gray, fontSize: 13, textAlign: "center", padding: "16px 0" }}>No hay series en progreso</p>
+          ) : (
+            <div style={{ display: "flex", flexDirection: "column", gap: 8, maxHeight: 280, overflowY: "auto" }}>
+              {watching.slice(0, 5).map((item) => {
+                const tmdbId = item.imdb_id.replace("tmdb_", "");
+                return (
+                  <div
+                    key={item.movie_id}
+                    onClick={() => navigate(`/peliculas/tv/${tmdbId}`)}
+                    style={{ display: "flex", gap: 12, background: C.bg, borderRadius: 8, padding: "8px 12px", cursor: "pointer", alignItems: "center" }}
+                  >
+                    <img
+                      src={item.poster_url ?? ""}
+                      alt={item.title}
+                      style={{ width: 44, height: 60, objectFit: "cover", borderRadius: 6, flexShrink: 0, background: "#1e2a4a" }}
+                    />
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <p
+                        style={{
+                          color: C.white,
+                          fontWeight: 600,
+                          fontSize: 13,
+                          margin: "0 0 4px",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                          whiteSpace: "nowrap",
+                        }}
+                      >
+                        {item.title}
+                      </p>
+                      <p style={{ color: C.gray, fontSize: 11, margin: 0 }}>
+                        Temporada {item.season} · Episodio {item.episode}
+                      </p>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </SectionCard>
       </div>
     </div>
