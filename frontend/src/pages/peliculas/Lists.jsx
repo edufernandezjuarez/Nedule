@@ -13,7 +13,7 @@ if (typeof document !== "undefined" && !document.getElementById("maven-pro-font"
 }
 
 const C = {
-  bg: "#140d0d",
+  bg: "#0d0f14",
   card: "#121b37",
   yellow: "#f5c518",
   white: "#ffffff",
@@ -481,7 +481,7 @@ export default function Lists() {
         <div className="flex items-start justify-between mb-7">
           <div>
             <div style={{ color: C.yellow, fontWeight: 800, fontSize: "2rem", lineHeight: 1 }}>Listas</div>
-            <div style={{ color: C.white, fontWeight: 700, fontSize: "1.6rem", lineHeight: 1.3, marginTop: 4 }}>Personalessssss</div>
+            <div style={{ color: C.white, fontWeight: 700, fontSize: "1.6rem", lineHeight: 1.3, marginTop: 4 }}>Personales</div>
           </div>
           <button
             onClick={() => setShowNewList(true)}

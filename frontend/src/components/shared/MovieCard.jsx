@@ -178,7 +178,17 @@ function DesktopCard({ movie, onAdd, onDelete, onBeforeNavigate }) {
                 ? btnRef.current.getBoundingClientRect().top - 8 - 130
                 : btnRef.current.getBoundingClientRect().bottom + 8
               : 0,
-            left: btnRef.current ? Math.min(btnRef.current.getBoundingClientRect().right - 170, window.innerWidth - 180) : 0,
+            left: btnRef.current
+              ? (() => {
+                  const rect = btnRef.current.getBoundingClientRect();
+                  const menuWidth = 170;
+                  // Intentar abrir a la derecha, si no cabe abrir a la izquierda
+                  if (rect.left + menuWidth < document.documentElement.clientWidth) {
+                    return rect.left;
+                  }
+                  return Math.max(8, rect.right - menuWidth);
+                })()
+              : 0,
           }}
         >
           <CardMenu onAdd={onAdd} onDelete={onDelete} onClose={() => setOpen(false)} isWatched={isWatched} onToggleWatched={handleToggleWatched} />
