@@ -1,5 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../hooks/useAuth";
+import { getUserId, checkWatched, markWatched, unmarkWatched, markSeriesComplete, unmarkSeriesComplete, fetchTmdbDetail, fetchTvSeason } from "../../api/index";
 
 const C = {
   bg: "#0d0f14",
@@ -12,7 +14,7 @@ const C = {
 
 const MP = { fontFamily: "'Maven Pro', sans-serif" };
 
-function CardMenu({ onAdd, onDelete, onClose }) {
+function CardMenu({ onAdd, onDelete, onClose, isWatched, onToggleWatched }) {
   return (
     <div
       data-movie-menu
@@ -32,8 +34,15 @@ function CardMenu({ onAdd, onDelete, onClose }) {
           Añadir otra lista
         </button>
       )}
-      <button onClick={() => onClose()} className="w-full text-left px-4 py-3 text-sm hover:bg-white/5 transition-colors" style={{ color: C.white, ...MP }}>
-        Marcar como vista
+      <button
+        onClick={() => {
+          onClose();
+          onToggleWatched();
+        }}
+        className="w-full text-left px-4 py-3 text-sm hover:bg-white/5 transition-colors"
+        style={{ color: C.white, ...MP }}
+      >
+        {isWatched ? "Quitar de vistos" : "Marcar como visto"}
       </button>
       {onDelete && (
         <>
@@ -57,6 +66,9 @@ function CardMenu({ onAdd, onDelete, onClose }) {
 // ── Desktop card ─────────────────────────────────────────────────────────────
 function DesktopCard({ movie, onAdd, onDelete, onBeforeNavigate }) {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const userId = getUserId(user);
+  const [isWatched, setIsWatched] = useState(false);
   const [open, setOpen] = useState(false);
   const menuRef = useRef(null);
   const btnRef = useRef(null);
@@ -76,6 +88,49 @@ function DesktopCard({ movie, onAdd, onDelete, onBeforeNavigate }) {
     return () => document.removeEventListener("mousedown", h);
   }, []);
 
+  useEffect(() => {
+    checkWatched(userId, tmdbId).then(({ watched }) => setIsWatched(watched));
+  }, [tmdbId]);
+
+  async function handleToggleWatched() {
+    if (type === "tv") {
+      if (isWatched) {
+        await unmarkSeriesComplete(userId, tmdbId);
+        setIsWatched(false);
+      } else {
+        const detail = await fetchTmdbDetail(tmdbId, "tv");
+        const seasons = await Promise.all(Array.from({ length: detail.number_of_seasons }, (_, i) => fetchTvSeason(tmdbId, i + 1)));
+        const season_episode_counts = {};
+        seasons.forEach((s, i) => {
+          season_episode_counts[i + 1] = s.episodes?.length ?? 0;
+        });
+        await markSeriesComplete(userId, tmdbId, {
+          title: movie.title,
+          year: movie.year,
+          poster_url: movie.poster_url,
+          season_episode_counts,
+          genre_ids: movie.genre_ids ?? [],
+        });
+        setIsWatched(true);
+      }
+    } else {
+      if (isWatched) {
+        await unmarkWatched(userId, tmdbId);
+        setIsWatched(false);
+      } else {
+        await markWatched({
+          user_id: userId,
+          tmdb_id: tmdbId,
+          title: movie.title,
+          year: movie.year,
+          poster_url: movie.poster_url,
+          media_type: type,
+          genre_ids: movie.genre_ids ?? [],
+        });
+        setIsWatched(true);
+      }
+    }
+  }
   function handleOpenMenu(e) {
     e.stopPropagation();
     if (btnRef.current) {
@@ -123,20 +178,10 @@ function DesktopCard({ movie, onAdd, onDelete, onBeforeNavigate }) {
                 ? btnRef.current.getBoundingClientRect().top - 8 - 130
                 : btnRef.current.getBoundingClientRect().bottom + 8
               : 0,
-            left: btnRef.current
-              ? (() => {
-                  const rect = btnRef.current.getBoundingClientRect();
-                  const menuWidth = 170;
-                  // Intentar abrir a la derecha, si no cabe abrir a la izquierda
-                  if (rect.left + menuWidth < document.documentElement.clientWidth) {
-                    return rect.left;
-                  }
-                  return Math.max(8, rect.right - menuWidth);
-                })()
-              : 0,
+            left: btnRef.current ? Math.min(btnRef.current.getBoundingClientRect().right - 170, window.innerWidth - 180) : 0,
           }}
         >
-          <CardMenu onAdd={onAdd} onDelete={onDelete} onClose={() => setOpen(false)} />
+          <CardMenu onAdd={onAdd} onDelete={onDelete} onClose={() => setOpen(false)} isWatched={isWatched} onToggleWatched={handleToggleWatched} />
         </div>
       )}
       <div className="mt-0 px-2 py-2">
@@ -160,6 +205,9 @@ function DesktopCard({ movie, onAdd, onDelete, onBeforeNavigate }) {
 // ── Mobile card ───────────────────────────────────────────────────────────────
 function MobileCard({ movie, onAdd, onDelete, onBeforeNavigate }) {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const userId = getUserId(user);
+  const [isWatched, setIsWatched] = useState(false);
   const [open, setOpen] = useState(false);
   const menuRef = useRef(null);
   const btnRef = useRef(null);
@@ -177,6 +225,50 @@ function MobileCard({ movie, onAdd, onDelete, onBeforeNavigate }) {
     document.addEventListener("mousedown", h);
     return () => document.removeEventListener("mousedown", h);
   }, []);
+
+  useEffect(() => {
+    checkWatched(userId, tmdbId).then(({ watched }) => setIsWatched(watched));
+  }, [tmdbId]);
+
+  async function handleToggleWatched() {
+    if (type === "tv") {
+      if (isWatched) {
+        await unmarkSeriesComplete(userId, tmdbId);
+        setIsWatched(false);
+      } else {
+        const detail = await fetchTmdbDetail(tmdbId, "tv");
+        const seasons = await Promise.all(Array.from({ length: detail.number_of_seasons }, (_, i) => fetchTvSeason(tmdbId, i + 1)));
+        const season_episode_counts = {};
+        seasons.forEach((s, i) => {
+          season_episode_counts[i + 1] = s.episodes?.length ?? 0;
+        });
+        await markSeriesComplete(userId, tmdbId, {
+          title: movie.title,
+          year: movie.year,
+          poster_url: movie.poster_url,
+          season_episode_counts,
+          genre_ids: movie.genre_ids ?? [],
+        });
+        setIsWatched(true);
+      }
+    } else {
+      if (isWatched) {
+        await unmarkWatched(userId, tmdbId);
+        setIsWatched(false);
+      } else {
+        await markWatched({
+          user_id: userId,
+          tmdb_id: tmdbId,
+          title: movie.title,
+          year: movie.year,
+          poster_url: movie.poster_url,
+          media_type: type,
+          genre_ids: movie.genre_ids ?? [],
+        });
+        setIsWatched(true);
+      }
+    }
+  }
 
   return (
     <div
@@ -228,11 +320,11 @@ function MobileCard({ movie, onAdd, onDelete, onBeforeNavigate }) {
           style={{
             position: "fixed",
             top: btnRef.current ? btnRef.current.getBoundingClientRect().bottom + 6 : 0,
-            left: btnRef.current ? Math.min(btnRef.current.getBoundingClientRect().right - 170, document.documentElement.clientWidth - 180) : 0,
+            left: btnRef.current ? Math.min(btnRef.current.getBoundingClientRect().right - 170, window.innerWidth - 180) : 0,
             zIndex: 9999,
           }}
         >
-          <CardMenu onAdd={onAdd} onDelete={onDelete} onClose={() => setOpen(false)} />
+          <CardMenu onAdd={onAdd} onDelete={onDelete} onClose={() => setOpen(false)} isWatched={isWatched} onToggleWatched={handleToggleWatched} />
         </div>
       )}
     </div>
