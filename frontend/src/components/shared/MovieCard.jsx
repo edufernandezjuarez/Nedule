@@ -127,8 +127,11 @@ function DesktopCard({ movie, onAdd, onDelete, onBeforeNavigate }) {
               ? (() => {
                   const rect = btnRef.current.getBoundingClientRect();
                   const menuWidth = 170;
-                  const spaceRight = document.documentElement.clientWidth - rect.right;
-                  return spaceRight >= menuWidth ? rect.left : rect.right - menuWidth;
+                  // Intentar abrir a la derecha, si no cabe abrir a la izquierda
+                  if (rect.left + menuWidth < document.documentElement.clientWidth) {
+                    return rect.left;
+                  }
+                  return Math.max(8, rect.right - menuWidth);
                 })()
               : 0,
           }}
@@ -225,7 +228,7 @@ function MobileCard({ movie, onAdd, onDelete, onBeforeNavigate }) {
           style={{
             position: "fixed",
             top: btnRef.current ? btnRef.current.getBoundingClientRect().bottom + 6 : 0,
-            left: btnRef.current ? btnRef.current.getBoundingClientRect().right - 170 : 0,
+            left: btnRef.current ? Math.min(btnRef.current.getBoundingClientRect().right - 170, document.documentElement.clientWidth - 180) : 0,
             zIndex: 9999,
           }}
         >
