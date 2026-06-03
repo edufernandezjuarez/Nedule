@@ -123,7 +123,14 @@ function DesktopCard({ movie, onAdd, onDelete, onBeforeNavigate }) {
                 ? btnRef.current.getBoundingClientRect().top - 8 - 130
                 : btnRef.current.getBoundingClientRect().bottom + 8
               : 0,
-            left: btnRef.current ? Math.min(btnRef.current.getBoundingClientRect().right - 170, document.documentElement.clientWidth - 180) : 0,
+            left: btnRef.current
+              ? (() => {
+                  const rect = btnRef.current.getBoundingClientRect();
+                  const menuWidth = 170;
+                  const spaceRight = document.documentElement.clientWidth - rect.right;
+                  return spaceRight >= menuWidth ? rect.left : rect.right - menuWidth;
+                })()
+              : 0,
           }}
         >
           <CardMenu onAdd={onAdd} onDelete={onDelete} onClose={() => setOpen(false)} />
@@ -218,7 +225,7 @@ function MobileCard({ movie, onAdd, onDelete, onBeforeNavigate }) {
           style={{
             position: "fixed",
             top: btnRef.current ? btnRef.current.getBoundingClientRect().bottom + 6 : 0,
-            left: btnRef.current ? Math.min(btnRef.current.getBoundingClientRect().right - 170, document.documentElement.clientWidth - 180) : 0,
+            left: btnRef.current ? btnRef.current.getBoundingClientRect().right - 170 : 0,
             zIndex: 9999,
           }}
         >
