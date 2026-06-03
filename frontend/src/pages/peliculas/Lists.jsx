@@ -13,7 +13,7 @@ if (typeof document !== "undefined" && !document.getElementById("maven-pro-font"
 }
 
 const C = {
-  bg: "#0d0f14",
+  bg: "#c90707",
   card: "#121b37",
   yellow: "#f5c518",
   white: "#ffffff",
